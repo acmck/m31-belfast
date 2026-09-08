@@ -114,6 +114,22 @@ overlap only.
    channel carries about twice the noise of red/green and reads as a cast otherwise).
    Writes 16-bit TIFF, PNG, JPEG and a gentle/default/strong preview strip.
 
+## Noise: what actually moves the needle
+
+Measured on the M31 run (sky noise as % of sky level in the 8-bit output, Seestar's own JPEG = 15 %):
+
+| change | effect |
+|---|---|
+| `--target-bg 0.15` -> `0.10` (darker sky, like the Seestar's rendering) | large: the same noise is simply displayed smaller |
+| `--bg-smooth 1.0` (sky-only luminance blur, stars/galaxy protected) | 18 % -> 11 % |
+| `--bg-desat 0.7` (grey sky) | removes colour speckle, no effect on luminance noise |
+| `--denoise-strength 0.8` instead of GraXpert's default 0.5 | more AI smoothing of faint structure; check the dust lanes aren't softened |
+| more integration | the only thing that improves the *data*: noise falls as 1/sqrt(minutes). Two nights of 70 min = 1.4x cleaner |
+| shorter/longer subs | no effect on read-noise-limited noise here; the sky already dominates at 10 s |
+
+Stacking several nights: put all sessions' `lights/` into one session directory (or hard-link them) and run
+the pipeline once; QA judges each night against its own local trend so mixed conditions are fine.
+
 ## Manual finishing (optional)
 
 Open `final/04_dn.fits` (linear, colour-calibrated, flat background) in Siril or GraXpert's GUI for
