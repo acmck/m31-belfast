@@ -91,6 +91,21 @@ def desaturate_background(rgb, amount=0.7, protect_sigma=3.0):
     return np.clip(lum + (rgb - lum) * (1 - k), 0, 1)
 
 
+def smooth_background(rgb, sigma=1.0, protect_sigma=3.0):
+    """Masked luminance noise reduction: blur only where the pixel is sky (weight 0), leave stars and
+    galaxy (weight 1) untouched.  Equivalent to Siril's masked noise reduction / a starless-background blur."""
+    if sigma <= 0:
+        return rgb
+    from scipy.ndimage import gaussian_filter
+    lum = rgb.mean(axis=0)
+    med = np.median(lum); mad = 1.4826 * np.median(np.abs(lum - med))
+    w = np.clip((lum - med) / (protect_sigma * mad + 1e-9), 0, 1)
+    out = np.empty_like(rgb)
+    for i in range(3):
+        out[i] = w * rgb[i] + (1 - w) * gaussian_filter(rgb[i], sigma)
+    return out
+
+
 def saturate(rgb, s=1.25):
     lum = rgb.mean(axis=0)
     return np.clip(lum + s * (rgb - lum), 0, 1)
@@ -105,13 +120,14 @@ def main():
     ap.add_argument("inp")
     ap.add_argument("--out", required=True, help="output prefix (no extension)")
     ap.add_argument("--crop", type=float, default=0.04, help="fraction to trim from each edge")
-    ap.add_argument("--target-bg", type=float, default=0.15)
+    ap.add_argument("--target-bg", type=float, default=0.10)
     ap.add_argument("--shadow-sigma", type=float, default=2.8)
     ap.add_argument("--asinh", type=float, default=3.0)
     ap.add_argument("--saturation", type=float, default=1.15)
     ap.add_argument("--scnr", type=float, default=0.8)
     ap.add_argument("--no-scnr", action="store_true")
     ap.add_argument("--no-neutralize", action="store_true", help="skip per-channel background neutralisation")
+    ap.add_argument("--bg-smooth", type=float, default=1.0, help="sigma (px) of a sky-only luminance blur; 0 = off, 0.8-1.5 is gentle")
     ap.add_argument("--bg-desat", type=float, default=0.7, help="desaturate sky-background colour noise (0 = off, 1 = fully grey sky)")
     ap.add_argument("--rotate", type=int, default=0, choices=[0, 90, 180, 270], help="rotate output (Seestar frames are portrait)")
     a = ap.parse_args()
@@ -133,6 +149,7 @@ def main():
         x = asinh_color(x, asinh)
         x = saturate(x, sat)
         x = desaturate_background(x, a.bg_desat)
+        x = smooth_background(x, a.bg_smooth)
         return x
 
     final = finish(a.target_bg, a.asinh, a.saturation)

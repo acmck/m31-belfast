@@ -2,8 +2,8 @@
 # Post-process a linear stack:  plate-solve (ASTAP) -> colour calibration (Siril SPCC/PCC)
 #   -> background extraction (GraXpert AI) -> denoise (GraXpert AI) -> stretch + export.
 #
-#   scripts/post_process.sh SESSION_DIR [--skip-denoise] [--skip-cc] [--spcc] [--bge-smoothing 0.5]
-#                                       [--crop 0.04] [--target-bg 0.15] [--asinh 3] [--saturation 1.25] [--rotate 0|90|180|270]
+#   scripts/post_process.sh SESSION_DIR [--skip-denoise] [--skip-cc] [--spcc] [--bge-smoothing 0.5] [--denoise-strength 0.8]
+#                                       [--crop 0.04] [--target-bg 0.10] [--asinh 3] [--saturation 1.15] [--bg-smooth 1.0] [--rotate 0|90|180|270]
 #
 # Inputs : SESSION/stack/result.fit     (from stack.sh)
 # Outputs: SESSION/final/01_solved.fit, 02_cc.fit, 03_bge.fits, 04_dn.fits, final.{tif,png,jpg}
@@ -17,14 +17,15 @@ GRAX="${GRAX:-/Applications/GraXpert.app/Contents/MacOS/GraXpert}"
 ASTAP="${ASTAP:-$ROOT/tools/astap/cli/astap_cli}"
 ASTAP_DB="${ASTAP_DB:-$ROOT/tools/astap/db}"
 PY="$ROOT/.venv/bin/python"
-DENOISE=1; CC=1; SPCC=0; SMOOTH=0.5; STRETCH_ARGS=()
+DENOISE=1; CC=1; SPCC=0; SMOOTH=0.5; DN_STRENGTH=0.8; STRETCH_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --skip-denoise) DENOISE=0;;
     --skip-cc) CC=0;;
     --spcc) SPCC=1;;
     --bge-smoothing) SMOOTH="$2"; shift;;
-    --crop|--target-bg|--asinh|--saturation|--rotate|--scnr) STRETCH_ARGS+=("$1" "$2"); shift;;
+    --denoise-strength) DN_STRENGTH="$2"; shift;;
+    --crop|--target-bg|--asinh|--saturation|--rotate|--scnr|--bg-smooth|--bg-desat|--shadow-sigma) STRETCH_ARGS+=("$1" "$2"); shift;;
     *) echo "unknown option $1"; exit 2;;
   esac; shift
 done
@@ -72,8 +73,16 @@ BGE=""; for f in "$F"/03_bge.fit*; do [ -f "$f" ] && BGE="$f" && break; done
 if [ -n "$BGE" ]; then CUR="$BGE"; echo "  ok -> $BGE"; else echo "  GraXpert BGE failed (see $LOG), continuing without"; fi
 
 if [ "$DENOISE" = 1 ]; then
-  echo "== 4/5 denoise (GraXpert AI)"
-  "$GRAX" -cli -cmd denoising -output "$F/04_dn" "$CUR" >>"$LOG" 2>&1 || true
+  echo "== 4/5 denoise (GraXpert AI, strength $DN_STRENGTH)"
+  # GraXpert's CLI takes the denoise strength from a preferences file, not a flag.
+  PREFS="$HOME/Library/Application Support/GraXpert/preferences.json"
+  "$PY" - "$PREFS" "$F/graxpert_prefs.json" "$DN_STRENGTH" <<'PY'
+import json, sys, os
+d = json.load(open(sys.argv[1])) if os.path.exists(sys.argv[1]) else {}
+d["denoise_strength"] = float(sys.argv[3])
+json.dump(d, open(sys.argv[2], "w"))
+PY
+  "$GRAX" -cli -cmd denoising -preferences_file "$F/graxpert_prefs.json" -output "$F/04_dn" "$CUR" >>"$LOG" 2>&1 || true
   DN=""; for f in "$F"/04_dn.fit*; do [ -f "$f" ] && DN="$f" && break; done
   if [ -n "$DN" ]; then CUR="$DN"; echo "  ok -> $DN"; else echo "  denoise failed (see $LOG), continuing without"; fi
 else
