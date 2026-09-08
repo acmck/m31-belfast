@@ -110,6 +110,8 @@ overlap only.
 5. `stretch.py`: crop 4 % per edge (rotation-starved corners), equalise the per-channel sky level so the
    background is neutral grey, linked MTF autostretch to a 0.15 background, signal-weighted SCNR (green
    removal that leaves background noise alone, so no magenta cast), arcsinh colour boost, saturation.
+   Finally the sky background's colour noise is desaturated (`--bg-desat 0.7`; after PCC the blue
+   channel carries about twice the noise of red/green and reads as a cast otherwise).
    Writes 16-bit TIFF, PNG, JPEG and a gentle/default/strong preview strip.
 
 ## Manual finishing (optional)
@@ -117,3 +119,21 @@ overlap only.
 Open `final/04_dn.fits` (linear, colour-calibrated, flat background) in Siril or GraXpert's GUI for
 interactive GHS stretching, star removal (StarNet/StarXTerminator are not installed), or in
 PixInsight if you have it. `stack/result.fit` is the untouched linear stack.
+
+## First run: M31, night of 2026-09-07/08
+
+| | |
+|---|---|
+| Captured by the scope (from 11 s cadence) | ~617 exposures over 113 min |
+| Saved by the scope (its live stacker dropped ~134, 22 %, windy night) | 479 x 10 s = 79.8 min |
+| Rejected by QA (46 elongated, 41 bloated vs trend, 1 > 1.3x median, 1 few stars) | 52 |
+| Stacked | 427 x 10 s = 71.2 min |
+| Median FWHM / roundness / stars per sub | 16.6" / 0.90 / 488 |
+| Banding | rows 0.14 ADU (skip); columns 0.50 ADU fixed pattern at 3.3x noise floor (subtracted) |
+| Field rotation across the session | ~25 degrees (alt-az) |
+| Siril register + Bayer drizzle + stack | 139 s |
+| Whole pipeline wall clock on the M2-class Mac | ~8 min, of which GraXpert denoise ~4 min |
+
+Focus note: FOCUSPOS stayed at 1259 all night while the sensor warmed from 21 to 23 C and FWHM
+grew from 12.5" to 16.5". Enabling the scope's periodic autofocus (or refocusing mid-session)
+should tighten the second half of a long run.
