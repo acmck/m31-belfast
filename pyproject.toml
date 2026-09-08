@@ -1,0 +1,23 @@
+[project]
+name = "seestar-pipeline"
+version = "0.1.0"
+description = "Pull, QA, calibrate and post-process Seestar S30 Pro sub-frames"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "astropy>=6.0",
+  "photutils>=1.13",
+  "sep>=1.2",
+  "matplotlib>=3.8",
+  "scikit-image>=0.22",
+  "opencv-python-headless>=4.9",
+  "pillow>=10",
+  "tqdm>=4.66",
+  "rich>=13",
+  "pandas>=2.2",
+  "pyyaml>=6",
+]
+
+[tool.uv]
+package = false
