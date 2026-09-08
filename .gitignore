@@ -1,0 +1,10 @@
+# data and large binaries never go in git
+data/
+logs/
+tools/downloads/
+tools/astap/db/
+tools/astap/cli/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
