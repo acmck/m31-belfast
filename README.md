@@ -123,7 +123,7 @@ Measured on the M31 run (sky noise as % of sky level in the 8-bit output, Seesta
 | `--target-bg 0.15` -> `0.10` (darker sky, like the Seestar's rendering) | large: the same noise is simply displayed smaller |
 | `--bg-smooth 1.0` (sky-only luminance blur, stars/galaxy protected) | 18 % -> 11 % |
 | `--bg-desat 0.7` (grey sky) | removes colour speckle, no effect on luminance noise |
-| `--denoise-strength 0.8` instead of GraXpert's default 0.5 | more AI smoothing of faint structure; check the dust lanes aren't softened |
+| `--denoise-strength 0.8` instead of GraXpert's default 0.5 | negligible on this data (max pixel change 0.04 % of range, sky rms unchanged); the AI model already converges at 0.5 |
 | more integration | the only thing that improves the *data*: noise falls as 1/sqrt(minutes). Two nights of 70 min = 1.4x cleaner |
 | shorter/longer subs | no effect on read-noise-limited noise here; the sky already dominates at 10 s |
 
@@ -149,6 +149,7 @@ PixInsight if you have it. `stack/result.fit` is the untouched linear stack.
 | Field rotation across the session | ~25 degrees (alt-az) |
 | Siril register + Bayer drizzle + stack | 139 s |
 | Whole pipeline wall clock on the M2-class Mac | ~8 min, of which GraXpert denoise ~4 min |
+| Sky noise in the 8-bit output (Seestar's own JPEG: 15 %) | 13 % with the default stretch, 11 % with `--target-bg 0.09` |
 
 Focus note: FOCUSPOS stayed at 1259 all night while the sensor warmed from 21 to 23 C and FWHM
 grew from 12.5" to 16.5". Enabling the scope's periodic autofocus (or refocusing mid-session)
