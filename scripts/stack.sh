@@ -12,7 +12,7 @@
 #   register -2pass                                    (picks the best reference, computes transforms)
 #   seqapplyreg -drizzle scale 1.0                     (Bayer drizzle: debayer-free, no interpolation colour artefacts)
 #   stack    winsorized sigma clip, additive+scaling norm, wFWHM weights, RGB-equalised
-#   -> SESSION/stack/result.fit (32-bit linear RGB)
+#   -> SESSION/stack/result.fit (32-bit linear RGB, same orientation as the Seestar app shows)
 # macOS ships bash 3.2; re-exec under Homebrew bash 5 if available
 if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /opt/homebrew/bin/bash "$0" "$@"; fi
 set -euo pipefail
@@ -65,9 +65,6 @@ convert light -out=../process
 cd ../process
 $REG
 stack r_light rej $REJ 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=../stack/result
-load ../stack/result
-mirrorx -bottomup
-save ../stack/result
 close
 SSF
 echo "--- siril script:"; sed 's/^/    /' "$SCRIPT"
