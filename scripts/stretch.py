@@ -3,7 +3,8 @@
 Finish a linear, colour-calibrated, background-extracted RGB stack:
   crop rotation-starved edges -> neutral sky background -> SCNR green removal -> linked auto-stretch
   (midtone transfer function, Siril-style) -> arcsinh colour boost ->
-  saturation -> 16-bit TIFF, PNG and JPEG, plus a preview strip of 3 strengths.
+  saturation -> grey sky (background chroma-noise desaturation) ->
+  16-bit TIFF, PNG and JPEG, plus a preview strip of 3 strengths.
 
 Usage:
   stretch.py IN.fit(s) --out PREFIX [--crop 0.04] [--target-bg 0.15] [--shadow-sigma 2.8]
@@ -76,6 +77,20 @@ def asinh_color(rgb, beta=3.0):
     return np.clip(rgb * f, 0, 1)
 
 
+def desaturate_background(rgb, amount=0.7, protect_sigma=3.0):
+    """Pull sky-background pixels toward grey.  After photometric colour calibration the blue channel
+    carries ~2x the noise of red/green (the camera's weak blue response gets scaled up), which reads
+    as a coloured cast in a stretched sky.  Signal (stars, galaxy) is protected by the same
+    noise-unit weight used for SCNR, so object colour is untouched."""
+    if amount <= 0:
+        return rgb
+    lum = rgb.mean(axis=0)
+    med = np.median(lum); mad = 1.4826 * np.median(np.abs(lum - med))
+    w = np.clip((lum - med) / (protect_sigma * mad + 1e-9), 0, 1)      # 0 = sky, 1 = signal
+    k = amount * (1 - w)
+    return np.clip(lum + (rgb - lum) * (1 - k), 0, 1)
+
+
 def saturate(rgb, s=1.25):
     lum = rgb.mean(axis=0)
     return np.clip(lum + s * (rgb - lum), 0, 1)
@@ -97,6 +112,7 @@ def main():
     ap.add_argument("--scnr", type=float, default=0.8)
     ap.add_argument("--no-scnr", action="store_true")
     ap.add_argument("--no-neutralize", action="store_true", help="skip per-channel background neutralisation")
+    ap.add_argument("--bg-desat", type=float, default=0.7, help="desaturate sky-background colour noise (0 = off, 1 = fully grey sky)")
     ap.add_argument("--rotate", type=int, default=0, choices=[0, 90, 180, 270], help="rotate output (Seestar frames are portrait)")
     a = ap.parse_args()
 
@@ -116,6 +132,7 @@ def main():
             x = scnr(x, a.scnr)
         x = asinh_color(x, asinh)
         x = saturate(x, sat)
+        x = desaturate_background(x, a.bg_desat)
         return x
 
     final = finish(a.target_bg, a.asinh, a.saturation)
