@@ -77,5 +77,6 @@ t0=$(date +%s)
 rc=${PIPESTATUS[0]}
 echo "siril rc=$rc, $(( $(date +%s) - t0 ))s, log: $LOG"
 ls -la "$SESSION/stack/result.fit" 2>/dev/null || { echo "no result produced - see $LOG"; exit 1; }
-# The registered r_light_*.fit files are large; drop them once the stack exists.
+# The converted and drizzled frames (process/light_*, process/drizztmp) are ~10-50 GB; drop them once the stack exists.
 rm -f "$SESSION"/process/r_light_*.fit "$SESSION"/process/light_*.fit
+rm -rf "$SESSION"/process/drizztmp
