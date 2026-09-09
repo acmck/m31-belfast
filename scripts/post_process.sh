@@ -35,7 +35,7 @@ IN="$SESSION/stack/result.fit"; [ -f "$IN" ] || { echo "missing $IN - run stack.
 F="$SESSION/final"; mkdir -p "$F"; LOG="$F/post_process.log"; : > "$LOG"
 cp "$IN" "$F/01_solved.fit"
 
-echo "== 1/5 plate solve (ASTAP, D50 database)"
+echo "== 1/6 plate solve (ASTAP, D50 database)"
 "$ASTAP" -f "$F/01_solved.fit" -d "$ASTAP_DB" -r 20 -z 2 -update -log >>"$LOG" 2>&1 || true
 if "$PY" - "$F/01_solved.fit" <<'PY'
 import sys; from astropy.io import fits
@@ -47,7 +47,7 @@ then SOLVED=1; else SOLVED=0; fi
 
 CUR="$F/01_solved.fit"
 if [ "$CC" = 1 ] && [ "$SOLVED" = 1 ]; then
-  echo "== 2/5 colour calibration (Siril PCC; --spcc tries spectrophotometric first - crashes headless without a sensor DB)"
+  echo "== 2/6 colour calibration (Siril PCC; --spcc tries spectrophotometric first - crashes headless without a sensor DB)"
   CMDS="pcc"; [ "$SPCC" = 1 ] && CMDS="spcc pcc"
   for cmd in $CMDS; do
     rm -f "$F/02_cc.fit"
@@ -65,16 +65,16 @@ SSF
     fi
   done
 else
-  echo "== 2/5 colour calibration skipped (solved=$SOLVED cc=$CC)"
+  echo "== 2/6 colour calibration skipped (solved=$SOLVED cc=$CC)"
 fi
 
-echo "== 3/5 background extraction (GraXpert AI, subtraction, smoothing $SMOOTH)"
+echo "== 3/6 background extraction (GraXpert AI, subtraction, smoothing $SMOOTH)"
 "$GRAX" -cli -cmd background-extraction -correction Subtraction -smoothing "$SMOOTH" -output "$F/03_bge" "$CUR" >>"$LOG" 2>&1 || true
 BGE=""; for f in "$F"/03_bge.fit*; do [ -f "$f" ] && BGE="$f" && break; done
 if [ -n "$BGE" ]; then CUR="$BGE"; echo "  ok -> $BGE"; else echo "  GraXpert BGE failed (see $LOG), continuing without"; fi
 
 if [ "$DENOISE" = 1 ]; then
-  echo "== 4/5 denoise (GraXpert AI, strength $DN_STRENGTH)"
+  echo "== 4/6 denoise (GraXpert AI, strength $DN_STRENGTH)"
   # GraXpert's CLI takes the denoise strength from a preferences file, not a flag.
   PREFS="$HOME/Library/Application Support/GraXpert/preferences.json"
   "$PY" - "$PREFS" "$F/graxpert_prefs.json" "$DN_STRENGTH" <<'PY'
@@ -87,7 +87,7 @@ PY
   DN=""; for f in "$F"/04_dn.fit*; do [ -f "$f" ] && DN="$f" && break; done
   if [ -n "$DN" ]; then CUR="$DN"; echo "  ok -> $DN"; else echo "  denoise failed (see $LOG), continuing without"; fi
 else
-  echo "== 4/5 denoise skipped"
+  echo "== 4/6 denoise skipped"
 fi
 
 if [ "$DESTAR" = 1 ]; then
