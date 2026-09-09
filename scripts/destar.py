@@ -20,7 +20,9 @@ Usage:
 import argparse, os, sys, time
 from pathlib import Path
 import numpy as np
+import sep
 from astropy.io import fits
+from scipy.ndimage import gaussian_filter
 
 TILE, OVERLAP, BORDER = 256, 32, 5
 
@@ -179,6 +181,66 @@ def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True,
     return np.moveaxis(starless, -1, 0), np.moveaxis(stars, -1, 0)
 
 
+def remove_residual_points(starless_chw, k_sigma=10.0, max_radius_px=4.0, max_npix=200, smooth_sigma=20, margin=3):
+    """Mop up point sources the network left behind.  Common near a bright, high-surface-brightness
+    core: individual 256 px tiles there are dominated by the smooth bright galaxy gradient, so a star's
+    contrast against its immediate surroundings is much lower than the same star would show against
+    plain sky, and the network under-removes it.
+
+    Detection: subtract a heavily-smoothed (sigma=`smooth_sigma`) copy of the image, which tracks even a
+    steep galaxy nucleus about as well as a real background, and look for compact excess above that in
+    the residual.  A box-grid background (as used elsewhere in this file) is the wrong tool here: its
+    mesh is coarse relative to a nucleus's own falloff, so a star's contrast against a coarse local
+    background is barely better than against raw sky, which is the whole problem being fixed.
+    The compactness cut (`max_radius_px`, `max_npix`) matters more than usual: the nucleus's own peak is
+    not perfectly captured by a single Gaussian smoothing either, and shows up as a large, low-level
+    residual blob at the exact centre - real leftover stars are tiny (a few px) by comparison, so a tight
+    size cap keeps the nucleus itself untouched while still catching genuinely point-like residuals.
+
+    Fills each detection from the surrounding smooth background via a masked Gaussian blur (the same
+    masked-diffusion technique used for QA's star masking and the synthetic flat) - so a filled spot
+    picks up the true local galaxy brightness and gradient, not a flat patch or the network's own value.
+    """
+    img = np.moveaxis(starless_chw, 0, -1).astype(np.float32)
+    lum = np.ascontiguousarray(img.mean(-1))
+    smooth = gaussian_filter(lum, smooth_sigma)
+    resid = lum - smooth
+    sig = 1.4826 * np.median(np.abs(resid - np.median(resid)))
+    objs = sep.extract(np.ascontiguousarray(resid), thresh=k_sigma, err=max(sig, 1e-12), minarea=3,
+                        deblend_nthresh=32, deblend_cont=0.001, clean=True)
+    if len(objs) == 0:
+        return starless_chw, 0
+    # keep compact, round, small sources (a real leftover star, a few px across); reject anything as
+    # large as the nucleus's own smoothing residual, and anything elongated (dust-lane structure)
+    a, b = objs["a"], objs["b"]
+    compact = (a < max_radius_px) & (objs["npix"] < max_npix) & (b / np.maximum(a, 1e-6) > 0.5) & (objs["peak"] > 0)
+    obj = objs[compact]
+    if len(obj) == 0:
+        return starless_chw, 0
+
+    mask = np.zeros(lum.shape, bool)
+    yy, xx = np.mgrid[0:lum.shape[0], 0:lum.shape[1]]
+    for o in obj:
+        rad = max(3.0, 2.2 * max(o["a"], o["b"])) + margin
+        mask |= (yy - o["y"]) ** 2 + (xx - o["x"]) ** 2 <= rad ** 2
+
+    # masked-diffusion fill: blur the image with holes zeroed, blur a matching weight map, divide.
+    # Two passes at different scales bridges holes larger than a single blur radius cleanly.
+    filled = img.copy()
+    holes = mask.copy()
+    for sigma in (6, 16, 36):
+        if not holes.any():
+            break
+        w = (~holes).astype(np.float32)
+        for c in range(img.shape[-1]):
+            num = gaussian_filter(np.where(holes, 0.0, filled[..., c]), sigma)
+            den = gaussian_filter(w, sigma)
+            est = np.divide(num, den, out=np.zeros_like(num), where=den > 1e-6)
+            filled[..., c] = np.where(holes, est, filled[..., c])
+        holes &= (gaussian_filter((~holes).astype(np.float32), sigma) < 0.3)  # only re-fill still-empty core
+    return np.moveaxis(filled, -1, 0), len(obj)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("inp"); ap.add_argument("--out", required=True, help="output prefix")
@@ -191,6 +253,9 @@ def main():
     ap.add_argument("--rgb-order", action="store_true", help="colour mode: feed channels as RGB instead of the (better-measured) BGR order")
     ap.add_argument("--require-removed", action="store_true",
                     help="also require measurable removed flux before protecting (old behaviour; leaves a ring around M31's nucleus, see comment in destar())")
+    ap.add_argument("--no-cleanup", action="store_true",
+                    help="skip the residual-star cleanup pass (stars the network missed near a bright core)")
+    ap.add_argument("--cleanup-sigma", type=float, default=10.0, help="detection threshold for residual stars, in background sigma")
     ap.add_argument("--protect", type=float, default=0.45, help="restore bright, extended structures the network removed (galaxy cores); threshold on 12 px-smoothed stretched luminance, 0 = off")
     a = ap.parse_args()
 
@@ -209,6 +274,10 @@ def main():
     t0 = time.time()
     starless, stars = destar(d, sess, a.strength, a.norm, a.bg_match, not a.rgb_order, a.protect, a.mode,
                               require_removed=a.require_removed)
+    if not a.no_cleanup:
+        starless, n = remove_residual_points(starless, k_sigma=a.cleanup_sigma)
+        print(f"  residual-star cleanup: {n} leftover point sources filled")
+        stars = np.clip((d - starless) / np.clip(1 - starless, 1e-4, None), 0, 1)
     print(f"done in {time.time() - t0:.0f}s; starless median {np.median(starless):.5f}, stars max {stars.max():.3f}, star flux fraction {stars.sum() / max(d.sum(), 1e-9):.3%}")
     out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
     hdr["HISTORY"] = f"destar.py Dark Star {os.path.basename(a.model)} strength={a.strength}"
