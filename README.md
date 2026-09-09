@@ -90,15 +90,15 @@ hard-linked unchanged. Subtracting a noisy estimate from a clean frame would add
 it removes, so "do nothing" is the correct default when the measurement says so. `--force` overrides.
 Use `--axis both` to also check columns (CMOS column offsets); `deband_summary.json` records the numbers.
 
-On the 2026-09-07 M31 data the measured row banding was 0.2 ADU against a 3-4 ADU per-row noise floor,
-with no fixed pattern, and columns showed a 0.5 ADU fixed pattern just under the significance cut, so
-nothing was corrected. The Seestar's own stack showed no stripes either; banding in this camera is not
+On the 2026-09-07 M31 data the measured row banding was 0.14 ADU against a 0.20 ADU noise floor (skipped),
+and columns showed a 0.50 ADU fixed pattern at 3.3x its floor, which was subtracted from all 427 frames.
+`run_pipeline.sh` runs deband with `--axis both` so this is reproduced. The Seestar's own stack showed no stripes either; banding in this camera is not
 a problem at gain 200 with a sky-limited 10 s exposure.
 
 **Stack (`stack.sh`).** Siril: `convert` -> `register -2pass` (analyses every frame, picks the best
 reference by wFWHM/star count) -> `seqapplyreg -drizzle -scale=1 -pixfrac=1 -kernel=square`
 (Bayer drizzle: the CFA data are mapped straight onto the output without a debayer interpolation step,
-which the ~40 degrees of alt-az field rotation over the night dithers perfectly) -> `stack rej w 3 3`
+which the ~19 degrees of alt-az field rotation over the night dithers well) -> `stack rej w 3 3`
 (winsorized sigma clipping, additive+scaling normalisation, wFWHM weighting, RGB equalisation, 32-bit).
 The Seestar produces no darks/flats/bias, so there is no calibration step. `-framing=current` keeps
 the reference frame's footprint; use `--framing max` for the full rotated union or `min` for the
@@ -151,12 +151,12 @@ Measured on the M31 run (sky noise as % of sky level in the 8-bit output, Seesta
 
 | change | effect |
 |---|---|
-| `--target-bg 0.15` -> `0.10` (darker sky, like the Seestar's rendering) | large: the same noise is simply displayed smaller |
+| `--target-bg` 0.15 -> 0.10 (the default; darker sky, like the Seestar's rendering) | large: the same noise is simply displayed smaller |
 | `--bg-smooth 1.0` (sky-only luminance blur, stars/galaxy protected) | 18 % -> 11 % |
 | `--bg-desat 0.7` (grey sky) | removes colour speckle, no effect on luminance noise |
-| `--denoise-strength 0.8` instead of GraXpert's default 0.5 | negligible on this data (max pixel change 0.04 % of range, sky rms unchanged); the AI model already converges at 0.5 |
+| `--denoise-strength 0.8` instead of GraXpert's default 0.5 | real: strength is an exact linear blend `out = s*denoised + (1-s)*input`, so residual sky noise scales 0.5 / 0.8 / 1.0 (REVIEW.md 2.6). At 0.8 green sky noise drops 3.4x with no measurable loss of 2-8 px structure |
 | more integration | the only thing that improves the *data*: noise falls as 1/sqrt(minutes). Two nights of 70 min = 1.4x cleaner |
-| shorter/longer subs | no effect on read-noise-limited noise here; the sky already dominates at 10 s |
+| longer subs (20-30 s) | real but modest: read noise is 26-30 % of the per-pixel variance at 10 s (photon transfer, REVIEW.md 2.1), so 20 s subs gain ~8 % SNR/hour in green and ~18 % in blue, 30 s ~11 % / 27 %; cost is more wind rejections |
 
 Stacking several nights: put all sessions' `lights/` into one session directory (or hard-link them) and run
 the pipeline once; QA judges each night against its own local trend so mixed conditions are fine.
@@ -175,13 +175,59 @@ PixInsight if you have it. `stack/result.fit` is the untouched linear stack.
 | Saved by the scope (its live stacker dropped ~134, 22 %, windy night) | 479 x 10 s = 79.8 min |
 | Rejected by QA (46 elongated, 41 bloated vs trend, 1 > 1.3x median, 1 few stars) | 52 |
 | Stacked | 427 x 10 s = 71.2 min |
-| Median FWHM / roundness / stars per sub | 16.6" / 0.90 / 488 |
+| Median FWHM / roundness / stars per sub | 16.3" / 0.90 / 488  (at the solved 3.665"/px) |
 | Banding | rows 0.14 ADU (skip); columns 0.50 ADU fixed pattern at 3.3x noise floor (subtracted) |
-| Field rotation across the session | ~25 degrees (alt-az) |
+| Field rotation across the session | 19.4 degrees (alt-az), -18.8 to +0.7 relative to the reference |
 | Siril register + Bayer drizzle + stack | 139 s |
 | Whole pipeline wall clock on the M2-class Mac | ~8 min, of which GraXpert denoise ~4 min |
 | Sky noise in the 8-bit output (Seestar's own JPEG: 15 %) | 13 % with the default stretch, 11 % with `--target-bg 0.09` |
 
-Focus note: FOCUSPOS stayed at 1259 all night while the sensor warmed from 21 to 23 C and FWHM
-grew from 12.5" to 16.5". Enabling the scope's periodic autofocus (or refocusing mid-session)
-should tighten the second half of a long run.
+## Capture-side recommendations (from REVIEW.md; nothing in software recovers these)
+
+1. **Enable the scope's periodic autofocus, or refocus mid-session.** FOCUSPOS stayed at 1259 all night
+   while the sensor warmed from 21 to 23 C and FWHM grew from 12.9" to 17.3". This is the single largest
+   available resolution gain (likely 15-25 % smaller stars on a similar night).
+2. **Try 20 s subs on a calm night.** Read noise is 26-30 % of the per-pixel variance at 10 s; 20 s gains
+   ~8 % (green) to ~18 % (blue) SNR per hour and halves the 1 s/frame overhead. Watch the drop rate.
+3. **A flat is probably not needed for a frame-filling target like M31.** REVIEW.md quoted 17-22 %
+   corner falloff from a raw box-median comparison; that number turned out to be the galaxy's own
+   light inflating the "centre" reference, not lens vignetting. `scripts/synth_flat.py` masks the
+   target out before measuring and finds under 1-2 % falloff on this data, which it reports as
+   negligible and does not apply. Trust that verdict over a quick eyeball comparison; if you image
+   a smaller, off-centre target where the whole frame is clean sky, re-run it and check the number.
+4. **Stay in alt-az for this target.** EQ mode removes field rotation and allows 60 s subs but also removes
+   the free dithering; users report walking noise in EQ stacks.
+5. A second night of the same target stacks straight in: put both nights' lights in one session and run once
+   (see "Stacking several nights" below).
+
+## Review implementation (2026-09-09)
+
+`REVIEW.md` is an independent review of this pipeline against the free/paid-tool state of the art,
+run on the M31 session above. Its "do now" findings are implemented and are now the defaults:
+
+| finding | change | file |
+|---|---|---|
+| `-weight=wfwhm` cost 17-23 % SNR for a 9 % star-size gain | default weighting is `nbstars`; `--weight none\|noise\|nbstars\|wfwhm` | `stack.sh` |
+| registration reference sat at one end of the ~19 deg rotation, leaving 3 corners at 2x noise | reference reset to the mid-session frame by default; `--ref auto\|mid\|N` | `stack.sh` |
+| `--no-drizzle` silently produced a 1-layer (mono) stack | fixed: debayers before registration in that path | `stack.sh` |
+| trend-relative FWHM/roundness rejection cost 12 % SNR for a 3 % FWHM gain | off by default (absolute caps + cloud tests only); `--trend-reject` restores it | `qa_frames.py` |
+| GraXpert's AI background model fits ~half of M31's halo away | Siril `subsky 1` is the default gradient step, run before colour calibration; `--bge graxpert` restores the old behaviour | `post_process.sh` |
+| destar's inverse stretch was an approximation | exact analytic inverse; the safety clamp now reports how often it still fires | `destar.py` |
+| destar's core-protection guard left a ring around M32 | mask smoothing widened (6 px -> 15 px) | `destar.py` |
+| ASTAP solve had no distortion terms | `-sip` passed to ASTAP | `post_process.sh` |
+| nucleus clipped to a flat white disc | soft `--knee` highlight shoulder on the final image | `stretch.py` |
+| fixed 4 % crop missed the noisy rotated-in corners | `--crop auto` measures per-edge noise and crops to it | `stretch.py` |
+| blue-channel noise showed as sky colour blotches | `--bg-chroma-blur` low-pass on sky-only chroma | `stretch.py` |
+| Seestar has no calibration frames | `scripts/synth_flat.py` fits a vignetting flat from the lights' own sky, with a sanity check and a genuine finding below | new |
+| no plan for the built-in dual-band (LP) filter | `--palette hoo` in `stretch.py`; `post_process.sh` auto-detects `FILTER=LP` and skips broadband colour calibration; untested on real narrowband data | `stretch.py`, `post_process.sh` |
+
+**A finding beyond the review, found while building the flat:** `synth_flat.py`'s first version
+reproduced the review's ~18-22 % corner falloff, but the fit was numerically unstable (its radial
+model let the optical centre wander to nonsensical positions when fitting sky that has a
+galaxy-shaped hole cut out of it, and an unconstrained 2-D polynomial did the same by putting its
+peak in a corner). Pinning the optical centre at the sensor's geometric centre and adding a sanity
+check (reject a fit whose peak isn't near the centre, or that makes any corner brighter than the
+centre) turned up the real story: once M31's own light is masked out of the measurement, the sky
+is flat to within 1-2 % everywhere. The review's 17-22 % figure was the galaxy's own extended light
+inflating a naive "centre" box, not lens vignetting. The flat stage now measures this correctly,
+reports the verdict, and `run_pipeline.sh` does not apply a flat when it is negligible.

@@ -25,29 +25,31 @@ from astropy.io import fits
 TILE, OVERLAP, BORDER = 256, 32, 5
 
 
+def _mtf(x, m):
+    """Midtone transfer function with midtone m.  Its own inverse under m -> 1-m:  _mtf(_mtf(x, m), 1-m) == x."""
+    return (m - 1) * x / ((2 * m - 1) * x - m)
+
+
 def mtf_to_median(img, target=0.25):
-    """Linked MTF stretch (Cosmic Clarity 'stretch_image'): returns stretched, orig_min, orig_median."""
+    """Linked MTF stretch (Cosmic Clarity 'stretch_image'): subtract the minimum, then one MTF whose midtone m
+    maps the mean channel median to `target`.  Returns (stretched, orig_min, orig_median, m)."""
     mn = float(img.min())
     x = img - mn
     med = float(np.mean(np.median(x, axis=(0, 1))))
-    y = ((med - 1) * target * x) / (med * (target + x - 1) - target * x)
-    return np.clip(y, 0, 1), mn, med
+    m = float(_mtf(med, target))                   # the midtone that sends med -> target
+    return np.clip(_mtf(x, m), 0, 1), mn, med, m
 
 
-def mtf_undo(img, orig_median, orig_min):
-    med = float(np.mean(np.median(img, axis=(0, 1))))
-    y = ((med - 1) * orig_median * img) / (med * (orig_median + img - 1) - orig_median * img)
-    return np.clip(np.clip(y, 0, 1) + orig_min, 0, 1)
+def mtf_undo(img, m, orig_min):
+    """Exact inverse of mtf_to_median: x = _mtf(y, 1 - m) + orig_min.  (The old version re-estimated the
+    midtone from the *starless* image's median, so the inverse did not match the forward transform.)"""
+    return np.clip(np.clip(_mtf(img, 1.0 - m), 0, 1) + orig_min, 0, 1)
 
 
 def blend_weights(size, overlap):
     ramp = np.linspace(0, 1, overlap, dtype=np.float32)
     v = np.concatenate([ramp, np.ones(size - 2 * overlap, np.float32), ramp[::-1]])
     return np.outer(v, v)
-
-
-def _mtf(x, m):
-    return (m - 1) * x / ((2 * m - 1) * x - m)
 
 
 def run_model(session, img_hwc, batch=8, progress=True, norm="mtf", bg_match=False):
@@ -98,20 +100,27 @@ def run_model(session, img_hwc, batch=8, progress=True, norm="mtf", bg_match=Fal
     return out[:H, :W]
 
 
-def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True, protect=0.45, mode="mono"):
+PROTECT_SIGMA = 15.0      # final smoothing of the protection mask (px); 6 left a dark ring around M32
+PROTECT_RAMP = 0.20       # luminance ramp width above `protect` over which the mask goes 0 -> 1 (was 0.12)
+PROTECT_FLUX_RAMP = 0.06  # removed-flux ramp width above 0.02 (was 0.04)
+
+
+def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True, protect=0.45, mode="mono",
+           protect_sigma=PROTECT_SIGMA, protect_ramp=PROTECT_RAMP, protect_flux_ramp=PROTECT_FLUX_RAMP):
     """rgb_chw: (3,H,W) float32 in 0..1. Returns (starless, stars) both (3,H,W).
     mode:    "mono" runs the network on each channel separately as a grey image (3 passes; no
              cross-channel colour bias, measured residual < 2.5 % per channel) - default.
              "colour" is the single RGB pass (faster, but leaves magenta/cyan colour errors).
     bgr:     colour mode only: feed channels reversed (measured lower residual than RGB)
-    protect: bright extended cores (galaxy nuclei) are mistaken for stars; where the 8 px-smoothed
-             stretched luminance exceeds this level the original is blended back (0 disables)."""
+    protect: bright extended cores (galaxy nuclei) are mistaken for stars; where the 12 px-smoothed
+             stretched luminance exceeds this level the original is blended back (0 disables).
+             protect_sigma / protect_ramp / protect_flux_ramp soften the mask edge (see module constants)."""
     img = np.moveaxis(rgb_chw, 0, -1).astype(np.float32)
     med_all = float(np.median(img))
     bordered = np.pad(img, ((BORDER, BORDER), (BORDER, BORDER), (0, 0)), mode="constant", constant_values=med_all)
     linear = np.median(bordered) < 0.125
     if linear:
-        work, mn0, med0 = mtf_to_median(bordered)
+        work, mn0, med0, m0 = mtf_to_median(bordered)
     else:
         work = bordered
     if mode == "mono":
@@ -135,13 +144,20 @@ def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True,
         lum = work.mean(-1)
         big = gaussian_filter(lum, 12)
         removed = gaussian_filter(np.clip(lum - starless.mean(-1), 0, None), 12)
-        m = np.clip((big - protect) / 0.12, 0, 1) * np.clip((removed - 0.02) / 0.04, 0, 1)
-        m = gaussian_filter(m, 6)[..., None]                                 # soft edge, no ring
+        m = np.clip((big - protect) / protect_ramp, 0, 1) * np.clip((removed - 0.02) / protect_flux_ramp, 0, 1)
+        m = gaussian_filter(m, protect_sigma)[..., None]                     # wide soft edge, no ring
         starless = starless * (1 - m) + work * m
     if linear:
-        starless = mtf_undo(starless, med0, mn0)
+        starless = mtf_undo(starless, m0, mn0)
     starless = starless[BORDER:BORDER + img.shape[0], BORDER:BORDER + img.shape[1]]
-    starless = np.minimum(starless, img)                      # a starless image can never be brighter than the original
+    # A starless image can never be brighter than the original.  With the exact MTF inverse this clamp
+    # should be (nearly) a no-op; report how much it still touches so a regression is visible.
+    diff = starless - img; over = diff > 0
+    print(f"  np.minimum clamp: {int(over.sum())} of {over.size} values ({100 * over.mean():.2f} %), "
+          f"median signed (starless - orig) {float(np.median(diff)):+.2e} (a systematic offset means the inverse "
+          f"stretch is off; scatter around 0 is just sky noise vs the network's smooth sky), "
+          f"max excess {float(diff.max()):.2e}", flush=True)
+    starless = np.minimum(starless, img)
     if strength < 1.0:
         starless = img * (1 - strength) + starless * strength
     stars = np.clip((img - starless) / np.clip(1 - starless, 1e-4, None), 0, 1)   # unscreen
