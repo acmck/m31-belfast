@@ -106,7 +106,8 @@ PROTECT_FLUX_RAMP = 0.06  # removed-flux ramp width above 0.02 (was 0.04)
 
 
 def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True, protect=0.45, mode="mono",
-           protect_sigma=PROTECT_SIGMA, protect_ramp=PROTECT_RAMP, protect_flux_ramp=PROTECT_FLUX_RAMP):
+           protect_sigma=PROTECT_SIGMA, protect_ramp=PROTECT_RAMP, protect_flux_ramp=PROTECT_FLUX_RAMP,
+           require_removed=False):
     """rgb_chw: (3,H,W) float32 in 0..1. Returns (starless, stars) both (3,H,W).
     mode:    "mono" runs the network on each channel separately as a grey image (3 passes; no
              cross-channel colour bias, measured residual < 2.5 % per channel) - default.
@@ -138,13 +139,27 @@ def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True,
             work = work[..., ::-1]; starless = starless[..., ::-1]
     if protect > 0:
         # Galaxy nuclei and small companions (M32) get mistaken for stars.  Restore the original wherever
-        # the network removed something that is both bright over a large area and large in extent:
-        # a 12 px-smoothed luminance above `protect` AND a 12 px-smoothed removed-flux above 0.02.
+        # the target is bright over a large area (a 12 px-smoothed luminance above `protect`).
+        #
+        # An earlier version additionally required a 12 px-smoothed "removed flux" above a floor, on the
+        # theory that only pixels the network actually changed need protecting.  On M31's nucleus this
+        # made things WORSE: the network's own removal (in the stretched domain used here) falls from
+        # about 0.3-0.4 at the core to under 0.02 by ~65 px radius, while the extended brightness itself
+        # stays above a typical protect threshold out to ~90 px.  Gating on both meant protection was cut
+        # off at the tighter (removed-flux) radius, leaving an unprotected annulus between roughly 65 and
+        # 90 px where the network's removal was small but nonzero -- visible as a dark ring/"moat" around
+        # the nucleus, worst right where protection ended.  Brightness alone gives a clean, monotonic mask
+        # radius with no such gap; measured to remove the ring completely at the default threshold with no
+        # loss of star removal beyond it (checked down to protect=0.30 before stars near the core start
+        # reappearing).  protect_flux_ramp is kept as an argument for anyone who wants the old AND-gated
+        # behaviour back, via the (undocumented) --require-removed flag.
         from scipy.ndimage import gaussian_filter
         lum = work.mean(-1)
         big = gaussian_filter(lum, 12)
-        removed = gaussian_filter(np.clip(lum - starless.mean(-1), 0, None), 12)
-        m = np.clip((big - protect) / protect_ramp, 0, 1) * np.clip((removed - 0.02) / protect_flux_ramp, 0, 1)
+        m = np.clip((big - protect) / protect_ramp, 0, 1)
+        if require_removed:
+            removed = gaussian_filter(np.clip(lum - starless.mean(-1), 0, None), 12)
+            m = m * np.clip((removed - 0.02) / protect_flux_ramp, 0, 1)
         m = gaussian_filter(m, protect_sigma)[..., None]                     # wide soft edge, no ring
         starless = starless * (1 - m) + work * m
     if linear:
@@ -174,6 +189,8 @@ def main():
     ap.add_argument("--bg-match", action="store_true", help="re-anchor each tile's output median to its input (only useful in colour mode; causes blocks in mono mode)")
     ap.add_argument("--mode", choices=["mono", "colour"], default="mono", help="per-channel mono passes (default, cleanest) or one colour pass")
     ap.add_argument("--rgb-order", action="store_true", help="colour mode: feed channels as RGB instead of the (better-measured) BGR order")
+    ap.add_argument("--require-removed", action="store_true",
+                    help="also require measurable removed flux before protecting (old behaviour; leaves a ring around M31's nucleus, see comment in destar())")
     ap.add_argument("--protect", type=float, default=0.45, help="restore bright, extended structures the network removed (galaxy cores); threshold on 12 px-smoothed stretched luminance, 0 = off")
     a = ap.parse_args()
 
@@ -190,7 +207,8 @@ def main():
     scale = 65535.0 if d.max() > 1.5 else 1.0
     d /= scale
     t0 = time.time()
-    starless, stars = destar(d, sess, a.strength, a.norm, a.bg_match, not a.rgb_order, a.protect, a.mode)
+    starless, stars = destar(d, sess, a.strength, a.norm, a.bg_match, not a.rgb_order, a.protect, a.mode,
+                              require_removed=a.require_removed)
     print(f"done in {time.time() - t0:.0f}s; starless median {np.median(starless):.5f}, stars max {stars.max():.3f}, star flux fraction {stars.sum() / max(d.sum(), 1e-9):.3%}")
     out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
     hdr["HISTORY"] = f"destar.py Dark Star {os.path.basename(a.model)} strength={a.strength}"
