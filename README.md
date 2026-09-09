@@ -14,8 +14,10 @@ scripts/
   deband.py                measure-first CFA-aware row/column banding removal (skips itself when banding is negligible)
   stack.sh                 Siril 1.4 headless: convert -> 2-pass register -> Bayer drizzle -> winsorized stack
   post_process.sh          ASTAP plate solve -> Siril SPCC/PCC -> GraXpert BGE -> GraXpert denoise -> stretch.py
-  stretch.py               crop, SCNR, linked MTF autostretch, arcsinh colour, saturation -> TIFF/PNG/JPG + preview strip
+  destar.py                star removal: Seti Astro Dark Star network (MIT) run locally via onnxruntime -> starless + stars layers
+  stretch.py               crop, SCNR, linked MTF autostretch, arcsinh colour, saturation, star-layer recombination -> TIFF/PNG/JPG + preview strip
 tools/
+  darkstar/darkstar_v2.1c.onnx   Dark Star v2.1c star-removal model (15 MB, from github.com/setiastro/cosmicclarity releases)
   astap/cli/astap_cli      ASTAP command-line solver (arm64)
   astap/db/                D50 star database (wide fields, down to mag ~13)
   downloads/               the installers that were fetched
@@ -38,7 +40,8 @@ data/M31_2026-09-07/
   lights_db/         debanded (or linked unchanged) copies of lights_good -> Siril input
   process/           Siril working dir (registered frames are deleted after a successful stack)
   stack/result.fit   32-bit linear RGB stack + siril_stack.log
-  final/             01_solved.fit 02_cc.fit 03_bge.fits 04_dn.fits final.tif/.png/.jpg final_preview_strip.jpg
+  final/             01_solved.fit 02_cc.fit 03_bge.fits 04_dn.fits 05_starless.fits 05_stars.fits
+                     final.tif/.png/.jpg  final_starless.jpg  final_preview_strip.jpg
 ```
 
 ## Getting frames off the scope
@@ -107,12 +110,40 @@ overlap only.
    Both need internet. Headless SPCC currently crashes without sensor/filter names; PCC works.
 3. GraXpert AI background extraction (subtraction), models download to `~/Library/Application Support/GraXpert` on first use.
 4. GraXpert AI denoise.
-5. `stretch.py`: crop 4 % per edge (rotation-starved corners), equalise the per-channel sky level so the
+5. `destar.py` (star removal, `--no-destar` to skip). Runs Seti Astro's Dark Star network with onnxruntime
+   (CoreML on this Mac, CUDA on an NVIDIA PC, CPU otherwise; ~20 s for 8 MP). The image is MTF-stretched to
+   a 0.25 median, cut into 256 px tiles with 32 px overlap, each tile min-max normalised and lifted to a
+   0.25 median, run through the network **once per colour channel as a grey image**, stitched with soft
+   ramps and un-stretched. Stars-only = unscreen(original, starless). Bright, large structures the network
+   removed (the M31 nucleus, M32) are restored from the original. Writes `05_starless.fits` + `05_stars.fits`.
+6. `stretch.py`: crop 4 % per edge (rotation-starved corners), equalise the per-channel sky level so the
    background is neutral grey, linked MTF autostretch to a 0.15 background, signal-weighted SCNR (green
    removal that leaves background noise alone, so no magenta cast), arcsinh colour boost, saturation.
    Finally the sky background's colour noise is desaturated (`--bg-desat 0.7`; after PCC the blue
    channel carries about twice the noise of red/green and reads as a cast otherwise).
-   Writes 16-bit TIFF, PNG, JPEG and a gentle/default/strong preview strip.
+   With `--stars`, that whole chain runs on the **starless** image (so the galaxy can be stretched and
+   smoothed without bloating stars), the star layer gets the same midtone stretch scaled by
+   `--star-reduce 0.7`, and the two are screen-blended: `1 - (1-starless)(1-stars)`. Also writes
+   `final_starless.jpg`. Writes 16-bit TIFF, PNG, JPEG and a gentle/default/strong preview strip.
+
+## Star removal: what was tested
+
+Dark Star's ONNX model was chosen over StarNet (no scriptable download, non-commercial licence) and the
+Cosmic Clarity app (its CLI is folder-based). Findings on the M31 data, measured as residual flux at star
+positions in the stretched domain:
+
+| variant | result |
+|---|---|
+| single colour pass, Cosmic Clarity's per-tile min-max | stars gone (2-5 % residual) but tiles stitch into magenta/green blocks on faint sky |
+| colour pass, no tile normalisation | neutral colour but weak removal, coloured halo rings |
+| colour pass, BGR channel order | best of the colour passes (<1.5 % residual) |
+| 2x upscale, or two passes | no gain |
+| **per-channel mono passes** (default) | <2.5 % residual, no colour errors, no blocks; 3x slower (20 s) |
+| per-tile MTF to 0.25 median (default `--norm mtf`) | smoothest sky of the three normalisations |
+| galaxy core | always hollowed; restored by the bright-and-large guard (`--protect 0.45`) |
+
+`--star-reduce` is the creative knob: 1.0 puts stars back at plain-stretch brightness, 0.5 gives a
+"deep-sky first" look. `--no-destar` on `post_process.sh` returns to the plain stretch.
 
 ## Noise: what actually moves the needle
 

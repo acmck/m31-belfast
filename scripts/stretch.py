@@ -7,7 +7,7 @@ Finish a linear, colour-calibrated, background-extracted RGB stack:
   16-bit TIFF, PNG and JPEG, plus a preview strip of 3 strengths.
 
 Usage:
-  stretch.py IN.fit(s) --out PREFIX [--crop 0.04] [--target-bg 0.15] [--shadow-sigma 2.8]
+  stretch.py IN.fit(s) --out PREFIX [--stars STARS.fits --star-reduce 0.7] [--crop 0.04] [--target-bg 0.15] [--shadow-sigma 2.8]
              [--asinh 3] [--saturation 1.25] [--scnr 0.8] [--no-scnr]
 """
 import argparse
@@ -117,7 +117,9 @@ def to_img(rgb):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("inp")
+    ap.add_argument("inp", help="linear RGB FITS; with --stars this is the STARLESS image")
+    ap.add_argument("--stars", help="stars-only FITS from destar.py; stretched separately and screen-blended back")
+    ap.add_argument("--star-reduce", type=float, default=0.7, help="scale applied to the stretched star layer (1 = stars as bright as a plain stretch)")
     ap.add_argument("--out", required=True, help="output prefix (no extension)")
     ap.add_argument("--crop", type=float, default=0.04, help="fraction to trim from each edge")
     ap.add_argument("--target-bg", type=float, default=0.10)
@@ -133,14 +135,20 @@ def main():
     a = ap.parse_args()
 
     rgb = load_rgb(a.inp)
+    stars = load_rgb(a.stars) if a.stars else None
     _, H, W = rgb.shape
     cy, cx = int(H * a.crop), int(W * a.crop)
     rgb = rgb[:, cy:H - cy, cx:W - cx]
+    if stars is not None:
+        stars = stars[:, cy:H - cy, cx:W - cx]
     if a.rotate:
         rgb = np.rot90(rgb, k=a.rotate // 90, axes=(1, 2))
+        if stars is not None:
+            stars = np.rot90(stars, k=a.rotate // 90, axes=(1, 2))
     lin = neutralize_background(rgb) if not a.no_neutralize else rgb.copy()
 
     def finish(target_bg, asinh, sat):
+        # --- starless (or whole image): the full chain
         x = autostretch(lin, target_bg, a.shadow_sigma)
         if not a.no_neutralize:
             x = neutralize_background(x)
@@ -150,9 +158,21 @@ def main():
         x = saturate(x, sat)
         x = desaturate_background(x, a.bg_desat)
         x = smooth_background(x, a.bg_smooth)
-        return x
+        if stars is None:
+            return x
+        # --- stars: same midtone as the starless layer so they land where a plain stretch would put
+        # them, then scaled down by --star-reduce, and screen-blended: 1 - (1-a)(1-b)
+        lum = lin.mean(axis=0); med = np.median(lum); mad = 1.4826 * np.median(np.abs(lum - med))
+        c0 = max(0.0, med - a.shadow_sigma * mad); m = mtf(med - c0, target_bg)
+        s = mtf(np.clip(stars / (1 - c0), 0, 1), m) * a.star_reduce
+        s = saturate(s, sat)
+        return np.clip(1 - (1 - x) * (1 - s), 0, 1)
 
     final = finish(a.target_bg, a.asinh, a.saturation)
+    if stars is not None:   # also export the starless rendering on its own
+        _tmp = stars; stars = None
+        sl = finish(a.target_bg, a.asinh, a.saturation); stars = _tmp
+        Image.fromarray((to_img(sl) * 255).round().astype(np.uint8)).save(f"{a.out}_starless.jpg", quality=93, subsampling=0)
     img8 = (to_img(final) * 255).round().astype(np.uint8)
     img16 = (to_img(final) * 65535).round().astype(np.uint16)
     out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
