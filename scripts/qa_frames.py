@@ -6,13 +6,25 @@ For every light frame this measures, on a 2x2-binned green "superpixel" image:
   * star count, FWHM (native pixels), roundness (b/a), background level & RMS,
   * background gradient across the frame, saturated pixel count,
   * horizontal / vertical banding amplitude (high-passed row/column medians),
-then flags outliers with robust (median / MAD) statistics and writes:
+then rejects frames and writes:
   <out>/frames.csv, <out>/summary.json, <out>/report.html, <out>/*.png
   <out>/selected.txt, <out>/rejected.txt
   <select_dir>/  -> hard links to the frames that passed (feed this to Siril)
 
+Rejection (default): only clearly bad frames go.
+  * unreadable file / no stars measured
+  * FWHM > --fwhm-cap x session median (1.5x)      absolute seeing/focus cap
+  * roundness < --round-min (0.75)                 absolute elongation floor
+  * stars < --nstars-frac of the local trend       cloud
+  * background jump above the local trend          cloud / light
+  * top-50 star flux < --flux-frac of local trend  haze
+  * severe banding
+FWHM and roundness are NOT judged against the rolling trend unless --trend-reject is given:
+on a galaxy target that trend-relative cut removed 52/479 frames for a 3 % FWHM gain at a 12 %
+SNR cost.  The rolling trend is still computed and plotted so drift is visible in the report.
+
 Usage:
-  qa_frames.py --lights DIR --out DIR --select-dir DIR [thresholds...]
+  qa_frames.py --lights DIR --out DIR --select-dir DIR [--trend-reject] [thresholds...]
 """
 import argparse, base64, io, json, os, sys, time
 from concurrent.futures import ProcessPoolExecutor
@@ -24,7 +36,7 @@ import sep
 from astropy.io import fits
 from scipy.ndimage import median_filter
 
-PIX_SCALE_DEFAULT = 3.74  # arcsec/px for S30 Pro (2.9 um @ 160 mm)
+PIX_SCALE_DEFAULT = 3.665  # arcsec/px for S30 Pro from the plate solve (2.9 um @ 163 mm; header says 160 mm -> 3.74)
 
 
 def robust(x):
@@ -195,14 +207,18 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--select-dir", help="directory to fill with hard links to kept frames")
     ap.add_argument("--workers", type=int, default=max(2, os.cpu_count() - 2))
-    ap.add_argument("--pix-scale", type=float, default=PIX_SCALE_DEFAULT)
+    ap.add_argument("--pix-scale", type=float, default=PIX_SCALE_DEFAULT,
+                    help=f"arcsec/px (default {PIX_SCALE_DEFAULT}: plate-solved 163 mm focal length; header 160 mm gives 3.74)")
     ap.add_argument("--trend-window", type=int, default=41, help="frames in the rolling median used as the local trend")
-    ap.add_argument("--fwhm-mad", type=float, default=3.0, help="reject if FWHM exceeds local trend by k*MAD of the deviations")
-    ap.add_argument("--fwhm-min-delta", type=float, default=1.5, help="...with at least this many arcsec of headroom")
-    ap.add_argument("--fwhm-ratio", type=float, default=1.30, help="also reject if FWHM > ratio * session median")
-    ap.add_argument("--round-min", type=float, default=0.75, help="absolute roundness floor")
-    ap.add_argument("--round-mad", type=float, default=3.0)
-    ap.add_argument("--round-min-delta", type=float, default=0.06, help="minimum roundness drop below trend to reject")
+    ap.add_argument("--trend-reject", action="store_true",
+                    help="also reject FWHM / roundness outliers relative to the rolling trend (default: absolute caps only)")
+    ap.add_argument("--fwhm-cap", "--fwhm-ratio", dest="fwhm_cap", type=float, default=1.5,
+                    help="reject if FWHM > cap * session median (absolute cap, always on)")
+    ap.add_argument("--fwhm-mad", type=float, default=3.0, help="[--trend-reject] reject if FWHM exceeds local trend by k*MAD of the deviations")
+    ap.add_argument("--fwhm-min-delta", type=float, default=1.5, help="[--trend-reject] ...with at least this many arcsec of headroom")
+    ap.add_argument("--round-min", type=float, default=0.75, help="absolute roundness floor (always on)")
+    ap.add_argument("--round-mad", type=float, default=3.0, help="[--trend-reject] roundness drop below trend in MADs")
+    ap.add_argument("--round-min-delta", type=float, default=0.06, help="[--trend-reject] minimum roundness drop below trend to reject")
     ap.add_argument("--nstars-frac", type=float, default=0.6, help="reject if stars < frac * local trend")
     ap.add_argument("--bg-mad", type=float, default=4.0, help="reject if background jumps above local trend by k*MAD")
     ap.add_argument("--bg-min-delta", type=float, default=15.0, help="...and by at least this many ADU")
@@ -224,8 +240,10 @@ def main():
     print(f"  measured in {time.time()-t0:.0f}s")
 
     # ---- robust rejection
-    # Seeing, focus and altitude drift through a session, so FWHM / roundness / star counts are
-    # judged against a rolling median (local trend) as well as against absolute caps.
+    # Seeing, focus and altitude drift through a session.  Cloud tests (star count, background,
+    # transparency) are judged against a rolling median (local trend).  FWHM and roundness use
+    # absolute caps only, unless --trend-reject also enables the trend-relative cuts; the trend
+    # deviations are always computed so they land in frames.csv and the plots.
     def detrended(x, win=a.trend_window):
         base = x.rolling(win, center=True, min_periods=max(5, win // 4)).median()
         return x - base, base
@@ -243,14 +261,21 @@ def main():
     dev, base = detrended(df.fwhm_arcsec)
     _, dmad = robust(dev)
     lim = max(a.fwhm_mad * dmad, a.fwhm_min_delta)
-    flag(dev > lim, f"fwhm > local trend +{lim:.1f}\"")
-    flag(df.fwhm_arcsec > a.fwhm_ratio * med, f"fwhm > {a.fwhm_ratio:.2f}x session median ({a.fwhm_ratio*med:.1f}\")")
+    df["fwhm_trend"] = base
+    df["fwhm_dev"] = dev
+    if a.trend_reject:
+        flag(dev > lim, f"fwhm > local trend +{lim:.1f}\"")
+    flag(df.fwhm_arcsec > a.fwhm_cap * med, f"fwhm > {a.fwhm_cap:.2f}x session median ({a.fwhm_cap*med:.1f}\")")
 
     rmed, rmad = robust(df.roundness)
-    rdev, _ = detrended(df.roundness)
+    rdev, rbase = detrended(df.roundness)
     _, rdmad = robust(rdev)
     rlim = max(a.round_mad * rdmad, a.round_min_delta)
-    flag((rdev < -rlim) | (df.roundness < a.round_min), f"roundness < trend -{rlim:.2f} or < {a.round_min}")
+    df["roundness_trend"] = rbase
+    df["roundness_dev"] = rdev
+    if a.trend_reject:
+        flag(rdev < -rlim, f"roundness < trend -{rlim:.2f}")
+    flag(df.roundness < a.round_min, f"roundness < {a.round_min}")
 
     nmed, _ = robust(df.nstars)
     ndev, nbase = detrended(df.nstars)
