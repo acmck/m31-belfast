@@ -1,0 +1,31 @@
+{
+ "id": "cur_1016",
+ "label": "16/17 Oct alone",
+ "nights": [
+  "2026-10-16"
+ ],
+ "frames": 375,
+ "minutes": 62.5,
+ "fwhm_arcsec": 9.4,
+ "stars": 4133,
+ "sky_noise_pct": 2.423,
+ "snr": {
+  "major 20′ NE": 29.7,
+  "major 40′ NE": 10.78,
+  "major 20′ SW": 26.25,
+  "major 40′ SW": 16.94,
+  "minor 10′ SE": 22.29,
+  "minor 20′ SE": 0.93,
+  "minor 10′ NW": 9.98,
+  "minor 20′ NW": 0.85
+ },
+ "snr_headline": 13.86,
+ "nucleus_wcs_vs_peak_px": 0.9,
+ "provenance": {
+  "snr": "data/M31_2026-10-16/stack/result.fit (WCS from data/M31_2026-10-16/snap_20261016/01_solved.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "fwhm_arcsec": "scripts/measure_stack.py on data/M31_2026-10-16/stack/result.fit at 3.667\"/px (from the plate solution)",
+  "frames": "STACKCNT of data/M31_2026-10-16/stack/result.fit",
+  "minutes": "LIVETIME of data/M31_2026-10-16/stack/result.fit",
+  "image": "data/M31_2026-10-16/final/history/20261016-235241.jpg"
+ }
+}

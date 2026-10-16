@@ -18,6 +18,7 @@ dependencies = [
   "pandas>=2.2",
   "pyyaml>=6",
   "onnxruntime>=1.29.0",
+  "astroalign>=2.6.2",
 ]
 
 [tool.uv]
