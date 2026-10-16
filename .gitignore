@@ -11,5 +11,6 @@ tools/astap/cli/
 __pycache__/
 *.pyc
 .DS_Store
+.wrangler/
 # the private-terms list for scripts/privacy_check.py stays on each machine
 /config/private_terms.txt
