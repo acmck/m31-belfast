@@ -1,0 +1,16 @@
+# Example of the private-terms file read by scripts/privacy_check.py.
+#
+# Copy this file to config/private_terms.txt and replace the examples with the real terms. The copy is
+# git-ignored: never commit it, and never paste its contents into the repo, an issue or a commit message.
+#
+# One regular expression per line (Python syntax), matched case-insensitively against every line of every
+# scanned file. Blank lines and lines starting with # are ignored. Keep each term on every machine that
+# pushes or deploys; a check without the real terms cannot pass.
+#
+# What belongs here: names of employers and their networks, private address prefixes, header keywords that
+# carry a location, and device serial numbers.
+
+\bexample-employer\b
+\bexample-network-name\b
+10\.99\.
+EXAMPLE-SERIAL-0000

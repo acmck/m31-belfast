@@ -12,7 +12,7 @@
 #   sessions.txt   which nights went in, and how many frames from each
 # then run_pipeline.sh runs `stack post` on it with:
 #   --weight noise           frames from a moonlit night are noisier; inverse-noise weighting keeps them from
-#                            diluting the dark-sky nights (REVIEW.md: noise weighting matters across nights)
+#                            diluting the dark-sky nights (docs/REVIEW.md: noise weighting matters across nights)
 #   framing current          (the default) output is the reference frame's rectangle; areas fewer frames cover
 #                            are just noisier and stretch.py's auto-crop trims them.  --framing max --maximize
 #                            was tried first and is a bad fit: nights framed at different rotations give a ragged
