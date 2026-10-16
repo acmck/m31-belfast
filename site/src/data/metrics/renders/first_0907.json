@@ -1,0 +1,31 @@
+{
+ "id": "first_0907",
+ "label": "First pipeline (8 Sep)",
+ "nights": [
+  "2026-09-07"
+ ],
+ "frames": 427,
+ "minutes": 71.2,
+ "fwhm_arcsec": 14.4,
+ "stars": 2070,
+ "sky_noise_pct": 1.668,
+ "snr": {
+  "major 20′ NE": 28.59,
+  "major 40′ NE": 7.85,
+  "major 20′ SW": 24.31,
+  "major 40′ SW": 13.38,
+  "minor 10′ SE": 21.26,
+  "minor 20′ SE": 0.01,
+  "minor 10′ NW": 8.75,
+  "minor 20′ NW": 0.0
+ },
+ "snr_headline": 11.07,
+ "nucleus_wcs_vs_peak_px": 1.5,
+ "provenance": {
+  "snr": "data/M31_2026-09-07/first_pipeline/final/03_bge.fits (WCS from data/M31_2026-09-07/first_pipeline/final/01_solved.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "fwhm_arcsec": "scripts/measure_stack.py on data/M31_2026-09-07/first_pipeline/stack/result.fit at 3.666\"/px (from the plate solution)",
+  "frames": "STACKCNT of data/M31_2026-09-07/first_pipeline/stack/result.fit",
+  "minutes": "LIVETIME of data/M31_2026-09-07/first_pipeline/stack/result.fit",
+  "image": "data/M31_2026-09-07/first_pipeline/final/final.png"
+ }
+}

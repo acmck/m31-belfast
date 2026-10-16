@@ -1,0 +1,207 @@
+{
+ "generated": "2026-10-16T23:50:14Z",
+ "location": "Belfast city centre",
+ "nights": [
+  {
+   "session": "M31_2026-09-07",
+   "utc_start": "2026-09-07T23:21:11Z",
+   "utc_end": "2026-09-08T01:14:20Z",
+   "exposure_s": 10.0,
+   "frames_total": 479,
+   "frames_kept": 467,
+   "qa_rejected": 12,
+   "scope_drop_rate": 0.217,
+   "scope_estimated_captured": 617,
+   "sky_adu": 1326.0,
+   "fwhm_arcsec_frames_median": 16.2,
+   "weather": {
+    "source": "open-meteo archive (ERA5)",
+    "url": "https://archive-api.open-meteo.com/v1/archive?latitude=54.6&longitude=-5.93&hourly=cloud_cover%2Cwind_gusts_10m%2Crelative_humidity_2m%2Ctemperature_2m%2Cdew_point_2m&wind_speed_unit=mph&temperature_unit=celsius&timezone=UTC&start_date=2026-09-07&end_date=2026-09-08",
+    "hours_utc": [
+     "2026-09-07T23:00Z",
+     "2026-09-08T00:00Z",
+     "2026-09-08T01:00Z"
+    ],
+    "cloud_pct_mean": 3.7,
+    "gust_mph_max": 28.2,
+    "humidity_pct_mean": 82.0,
+    "temp_minus_dew_c_min": 2.4,
+    "hourly": {
+     "cloud_cover": [
+      2,
+      2,
+      7
+     ],
+     "wind_gusts_10m": [
+      28.2,
+      25.9,
+      25.5
+     ],
+     "relative_humidity_2m": [
+      85,
+      81,
+      80
+     ],
+     "temperature_2m": [
+      11.6,
+      11.5,
+      11.2
+     ],
+     "dew_point_2m": [
+      9.2,
+      8.4,
+      7.9
+     ]
+    }
+   },
+   "moon": {
+    "illum_pct": 12.3,
+    "alt_deg_max": -3.2,
+    "alt_deg_mean": -8.0,
+    "samples": 23,
+    "at_utc": "2026-09-08T00:17Z",
+    "method": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   },
+   "provenance": {
+    "utc_start/utc_end": "data/M31_2026-09-07/qa/frames.csv date_obs (first, last + exptime)",
+    "frames_total/kept/qa_rejected/scope_drop_rate/sky_adu/fwhm": "data/M31_2026-09-07/qa/summary.json",
+    "weather": "open-meteo archive (ERA5) hourly at 54.6,-5.93, hours overlapping the span",
+    "moon": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   }
+  },
+  {
+   "session": "M31_2026-09-25",
+   "utc_start": "2026-09-25T21:35:20Z",
+   "utc_end": "2026-09-25T23:59:39Z",
+   "exposure_s": 10.0,
+   "frames_total": 590,
+   "frames_kept": 529,
+   "qa_rejected": 61,
+   "scope_drop_rate": 0.245,
+   "scope_estimated_captured": 787,
+   "sky_adu": 1857.8,
+   "fwhm_arcsec_frames_median": 11.5,
+   "weather": {
+    "source": "open-meteo archive (ERA5)",
+    "url": "https://archive-api.open-meteo.com/v1/archive?latitude=54.6&longitude=-5.93&hourly=cloud_cover%2Cwind_gusts_10m%2Crelative_humidity_2m%2Ctemperature_2m%2Cdew_point_2m&wind_speed_unit=mph&temperature_unit=celsius&timezone=UTC&start_date=2026-09-25&end_date=2026-09-25",
+    "hours_utc": [
+     "2026-09-25T21:00Z",
+     "2026-09-25T22:00Z",
+     "2026-09-25T23:00Z"
+    ],
+    "cloud_pct_mean": 5.7,
+    "gust_mph_max": 27.5,
+    "humidity_pct_mean": 80.7,
+    "temp_minus_dew_c_min": 3.1,
+    "hourly": {
+     "cloud_cover": [
+      2,
+      7,
+      8
+     ],
+     "wind_gusts_10m": [
+      23.3,
+      25.1,
+      27.5
+     ],
+     "relative_humidity_2m": [
+      80,
+      81,
+      81
+     ],
+     "temperature_2m": [
+      12.1,
+      11.9,
+      11.8
+     ],
+     "dew_point_2m": [
+      8.8,
+      8.8,
+      8.7
+     ]
+    }
+   },
+   "moon": {
+    "illum_pct": 99.3,
+    "alt_deg_max": 34.2,
+    "alt_deg_mean": 32.4,
+    "samples": 29,
+    "at_utc": "2026-09-25T22:47Z",
+    "method": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   },
+   "provenance": {
+    "utc_start/utc_end": "data/M31_2026-09-25/run_529/qa/frames.csv date_obs (first, last + exptime)",
+    "frames_total/kept/qa_rejected/scope_drop_rate/sky_adu/fwhm": "data/M31_2026-09-25/run_529/qa/summary.json",
+    "weather": "open-meteo archive (ERA5) hourly at 54.6,-5.93, hours overlapping the span",
+    "moon": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   }
+  },
+  {
+   "session": "M31_2026-10-16",
+   "utc_start": "2026-10-16T19:45:34Z",
+   "utc_end": "2026-10-16T21:22:56Z",
+   "exposure_s": 10.0,
+   "frames_total": 384,
+   "frames_kept": 376,
+   "qa_rejected": 8,
+   "scope_drop_rate": 0.269,
+   "scope_estimated_captured": 531,
+   "sky_adu": 1423.4,
+   "fwhm_arcsec_frames_median": 10.3,
+   "weather": {
+    "source": "open-meteo archive (ERA5)",
+    "url": "https://archive-api.open-meteo.com/v1/archive?latitude=54.6&longitude=-5.93&hourly=cloud_cover%2Cwind_gusts_10m%2Crelative_humidity_2m%2Ctemperature_2m%2Cdew_point_2m&wind_speed_unit=mph&temperature_unit=celsius&timezone=UTC&start_date=2026-10-16&end_date=2026-10-16",
+    "hours_utc": [
+     "2026-10-16T19:00Z",
+     "2026-10-16T20:00Z",
+     "2026-10-16T21:00Z"
+    ],
+    "cloud_pct_mean": 3.3,
+    "gust_mph_max": 15.0,
+    "humidity_pct_mean": 82.3,
+    "temp_minus_dew_c_min": 2.5,
+    "hourly": {
+     "cloud_cover": [
+      2,
+      2,
+      6
+     ],
+     "wind_gusts_10m": [
+      15.0,
+      12.8,
+      12.1
+     ],
+     "relative_humidity_2m": [
+      81,
+      82,
+      84
+     ],
+     "temperature_2m": [
+      8.2,
+      7.6,
+      7.0
+     ],
+     "dew_point_2m": [
+      5.2,
+      4.7,
+      4.5
+     ]
+    }
+   },
+   "moon": {
+    "illum_pct": 33.3,
+    "alt_deg_max": -0.7,
+    "alt_deg_mean": -5.2,
+    "samples": 20,
+    "at_utc": "2026-10-16T20:34Z",
+    "method": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   },
+   "provenance": {
+    "utc_start/utc_end": "data/M31_2026-10-16/qa/frames.csv date_obs (first, last + exptime)",
+    "frames_total/kept/qa_rejected/scope_drop_rate/sky_adu/fwhm": "data/M31_2026-10-16/qa/summary.json",
+    "weather": "open-meteo archive (ERA5) hourly at 54.6,-5.93, hours overlapping the span",
+    "moon": "astropy get_body (moon, sun) at Belfast city centre; illumination = (1+cos phase angle)/2"
+   }
+  }
+ ]
+}

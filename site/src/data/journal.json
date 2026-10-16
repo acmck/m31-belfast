@@ -1,0 +1,576 @@
+{
+ "generated": "2026-10-16T23:51:59Z",
+ "nights": [
+  {
+   "id": "2026-09-07",
+   "label": "7/8 Sep 2026",
+   "utc_start": "2026-09-07T23:21:11Z",
+   "utc_end": "2026-09-08T01:14:20Z",
+   "exposure_s": 10.0,
+   "frames_total": 479,
+   "frames_kept": 467,
+   "qa_rejected": 12,
+   "scope_drop_rate": 0.217,
+   "minutes": 78,
+   "fwhm_arcsec": 16.2,
+   "sky_adu": 1326.0,
+   "moon": {
+    "illum_pct": 12.3,
+    "alt_deg_max": -3.2,
+    "alt_deg_mean": -8.0
+   },
+   "weather": {
+    "cloud_pct_mean": 3.7,
+    "gust_mph_max": 28.2,
+    "humidity_pct_mean": 82.0,
+    "temp_minus_dew_c_min": 2.4
+   },
+   "weather_source": "open-meteo archive (ERA5)",
+   "log_line": "23:21–01:14 UTC · 479 × 10 s · moon 12 % below horizon · cloud 4 % · gusts 28 mph · 22 % dropped"
+  },
+  {
+   "id": "2026-09-25",
+   "label": "25/26 Sep 2026",
+   "utc_start": "2026-09-25T21:35:20Z",
+   "utc_end": "2026-09-25T23:59:39Z",
+   "exposure_s": 10.0,
+   "frames_total": 590,
+   "frames_kept": 529,
+   "qa_rejected": 61,
+   "scope_drop_rate": 0.245,
+   "minutes": 88,
+   "fwhm_arcsec": 11.5,
+   "sky_adu": 1857.8,
+   "moon": {
+    "illum_pct": 99.3,
+    "alt_deg_max": 34.2,
+    "alt_deg_mean": 32.4
+   },
+   "weather": {
+    "cloud_pct_mean": 5.7,
+    "gust_mph_max": 27.5,
+    "humidity_pct_mean": 80.7,
+    "temp_minus_dew_c_min": 3.1
+   },
+   "weather_source": "open-meteo archive (ERA5)",
+   "log_line": "21:35–23:59 UTC · 590 × 10 s · moon 99 % up to 34° · cloud 6 % · gusts 28 mph · 24 % dropped"
+  },
+  {
+   "id": "2026-10-16",
+   "label": "16/17 Oct 2026",
+   "utc_start": "2026-10-16T19:45:34Z",
+   "utc_end": "2026-10-16T21:22:56Z",
+   "exposure_s": 10.0,
+   "frames_total": 384,
+   "frames_kept": 376,
+   "qa_rejected": 8,
+   "scope_drop_rate": 0.269,
+   "minutes": 63,
+   "fwhm_arcsec": 10.3,
+   "sky_adu": 1423.4,
+   "moon": {
+    "illum_pct": 33.3,
+    "alt_deg_max": -0.7,
+    "alt_deg_mean": -5.2
+   },
+   "weather": {
+    "cloud_pct_mean": 3.3,
+    "gust_mph_max": 15.0,
+    "humidity_pct_mean": 82.3,
+    "temp_minus_dew_c_min": 2.5
+   },
+   "weather_source": "open-meteo archive (ERA5)",
+   "log_line": "19:45–21:22 UTC · 384 × 10 s · moon 33 % below horizon · cloud 3 % · gusts 15 mph · 27 % dropped"
+  }
+ ],
+ "stages": [
+  {
+   "id": "00-scope",
+   "index": 0,
+   "title": "What the scope gives you",
+   "dates": [
+    "2026-09-07"
+   ],
+   "night_ids": [
+    "2026-09-07"
+   ],
+   "before": {
+    "label": "Seestar live stack",
+    "frames": 479,
+    "minutes": 80,
+    "fwhm_arcsec": 17.0,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 41.84,
+     "major 40′ NE": 15.17,
+     "major 20′ SW": 36.26,
+     "major 40′ SW": 23.65,
+     "minor 10′ SE": 31.33,
+     "minor 20′ SE": 1.08,
+     "minor 10′ NW": 13.89,
+     "minor 20′ NW": 1.53
+    },
+    "snr_headline": 19.41
+   },
+   "after": {
+    "label": "First pipeline (8 Sep)",
+    "frames": 427,
+    "minutes": 71,
+    "fwhm_arcsec": 14.4,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 28.59,
+     "major 40′ NE": 7.85,
+     "major 20′ SW": 24.31,
+     "major 40′ SW": 13.38,
+     "minor 10′ SE": 21.26,
+     "minor 20′ SE": 0.01,
+     "minor 10′ NW": 8.75,
+     "minor 20′ NW": 0.0
+    },
+    "snr_headline": 11.07
+   },
+   "what_changed": "I took the 7/8 Sep subs off the scope and ran my first pipeline on them, as it stood on 8 Sep: frame QA, Siril drizzle stacking weighted towards the sharpest frames, and GraXpert's AI background removal.",
+   "what_it_did": "Stars shrank from 17.0″ to 14.4″, but SNR at my eight fixed points in the disc fell from 19.41 to 11.07, so the scope's own stack was still the deeper image.",
+   "images": {
+    "before": {
+     "avif": "/img/00-scope/before.avif",
+     "webp": "/img/00-scope/before.webp",
+     "avif_1200": "/img/00-scope/before-1200.avif",
+     "webp_1200": "/img/00-scope/before-1200.webp",
+     "width": 2400,
+     "height": 1151
+    },
+    "after": {
+     "avif": "/img/00-scope/after.avif",
+     "webp": "/img/00-scope/after.webp",
+     "avif_1200": "/img/00-scope/after-1200.avif",
+     "webp_1200": "/img/00-scope/after-1200.webp",
+     "width": 2400,
+     "height": 1151
+    },
+    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABQAwCdASoYAAwAPtFWo0uoJKMhsAgBABoJaQAAW+sv2dcHAAD+7oWYZsmmAhNpyrrxmWq9pBHY7lSBMymuW3j7iNwoAA=="
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 302,
+    "median_residual_px": 0.233
+   }
+  },
+  {
+   "id": "01-measure",
+   "index": 1,
+   "title": "Measure, don't guess",
+   "dates": [
+    "2026-09-07"
+   ],
+   "night_ids": [
+    "2026-09-07"
+   ],
+   "before": {
+    "label": "First pipeline (8 Sep)",
+    "frames": 427,
+    "minutes": 71,
+    "fwhm_arcsec": 14.4,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 28.59,
+     "major 40′ NE": 7.85,
+     "major 20′ SW": 24.31,
+     "major 40′ SW": 13.38,
+     "minor 10′ SE": 21.26,
+     "minor 20′ SE": 0.01,
+     "minor 10′ NW": 8.75,
+     "minor 20′ NW": 0.0
+    },
+    "snr_headline": 11.07
+   },
+   "after": {
+    "label": "7/8 Sep, current pipeline",
+    "frames": 467,
+    "minutes": 78,
+    "fwhm_arcsec": 15.5,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 34.96,
+     "major 40′ NE": 12.76,
+     "major 20′ SW": 30.42,
+     "major 40′ SW": 20.19,
+     "minor 10′ SE": 25.8,
+     "minor 20′ SE": 0.93,
+     "minor 10′ NW": 11.34,
+     "minor 20′ NW": 1.11
+    },
+    "snr_headline": 16.48
+   },
+   "what_changed": "A review measured what each step cost, so I kept almost every frame, weighted them by star count instead of sharpness, and replaced the AI background model with a flat plane fit that leaves the halo alone.",
+   "what_it_did": "Same night, 467 frames instead of 427: SNR went from 11.07 to 16.48 (+49 %), and stars grew a little, from 14.4″ to 15.5″.",
+   "images": {
+    "before": {
+     "avif": "/img/01-measure/before.avif",
+     "webp": "/img/01-measure/before.webp",
+     "avif_1200": "/img/01-measure/before-1200.avif",
+     "webp_1200": "/img/01-measure/before-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "after": {
+     "avif": "/img/01-measure/after.avif",
+     "webp": "/img/01-measure/after.webp",
+     "avif_1200": "/img/01-measure/after-1200.avif",
+     "webp_1200": "/img/01-measure/after-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "placeholder": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAwCdASoYAAoAPtFapEwoJSOiMAgBABoJZwDLLCFSaNfe3WknwAD+7oevwLaz+MC/0k1BvRi6wcC/RhOaWcfAfc0ut9m1Y7KgAA=="
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 285,
+    "median_residual_px": 0.156
+   }
+  },
+  {
+   "id": "02-moon",
+   "index": 2,
+   "title": "The full moon night",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "night_ids": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": {
+    "label": "7/8 Sep, current pipeline",
+    "frames": 467,
+    "minutes": 78,
+    "fwhm_arcsec": 15.5,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 34.96,
+     "major 40′ NE": 12.76,
+     "major 20′ SW": 30.42,
+     "major 40′ SW": 20.19,
+     "minor 10′ SE": 25.8,
+     "minor 20′ SE": 0.93,
+     "minor 10′ NW": 11.34,
+     "minor 20′ NW": 1.11
+    },
+    "snr_headline": 16.48
+   },
+   "after": {
+    "label": "25/26 Sep, first 529 frames",
+    "frames": 529,
+    "minutes": 88,
+    "fwhm_arcsec": 10.1,
+    "sky": "moon 99 %",
+    "snr": {
+     "major 20′ NE": 22.25,
+     "major 40′ NE": 8.36,
+     "major 20′ SW": 19.25,
+     "major 40′ SW": 12.45,
+     "minor 10′ SE": 17.28,
+     "minor 20′ SE": 0.88,
+     "minor 10′ NW": 7.21,
+     "minor 20′ NW": 0.74
+    },
+    "snr_headline": 10.4
+   },
+   "what_changed": "My second night, 25/26 Sep, was under a 99 % moon. These are the first 529 frames to come off the scope; the rest were still copying.",
+   "what_it_did": "Moonlight raised the frame background to 1858 ADU from 1326, and SNR dropped to 10.4 from 16.48 despite more minutes, while stars came out at 10.1″ against 15.5″.",
+   "images": {
+    "before": {
+     "avif": "/img/02-moon/before.avif",
+     "webp": "/img/02-moon/before.webp",
+     "avif_1200": "/img/02-moon/before-1200.avif",
+     "webp_1200": "/img/02-moon/before-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "after": {
+     "avif": "/img/02-moon/after.avif",
+     "webp": "/img/02-moon/after.webp",
+     "avif_1200": "/img/02-moon/after-1200.avif",
+     "webp_1200": "/img/02-moon/after-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABwAwCdASoYAAoAPtFUo0uoJKMhsAgBABoJaQAAWkfyqW+GOAAA/u6Y6VRBgAgVjxr/QecfIxN9RAGqJpK7S3k1BwAAAA=="
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 281,
+    "median_residual_px": 0.151
+   }
+  },
+  {
+   "id": "04-stacking",
+   "index": 3,
+   "title": "Stacking nights",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "night_ids": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": {
+    "label": "7/8 Sep, current pipeline",
+    "frames": 467,
+    "minutes": 78,
+    "fwhm_arcsec": 15.5,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 34.96,
+     "major 40′ NE": 12.76,
+     "major 20′ SW": 30.42,
+     "major 40′ SW": 20.19,
+     "minor 10′ SE": 25.8,
+     "minor 20′ SE": 0.93,
+     "minor 10′ NW": 11.34,
+     "minor 20′ NW": 1.11
+    },
+    "snr_headline": 16.48
+   },
+   "after": {
+    "label": "Two nights combined",
+    "frames": 995,
+    "minutes": 166,
+    "fwhm_arcsec": 13.3,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 40.5,
+     "major 40′ NE": 15.03,
+     "major 20′ SW": 35.04,
+     "major 40′ SW": 22.9,
+     "minor 10′ SE": 30.75,
+     "minor 20′ SE": 1.4,
+     "minor 10′ NW": 13.51,
+     "minor 20′ NW": 1.49
+    },
+    "snr_headline": 18.96
+   },
+   "what_changed": "I stacked both nights frame by frame, with each frame weighted by its noise so the moonlit ones can't dilute the dark ones. Before is my best single night by SNR, 7/8 Sep.",
+   "what_it_did": "995 frames and 166 minutes lifted SNR from 16.48 to 18.96 (+15 %), with stars at 13.3″.",
+   "images": {
+    "before": {
+     "avif": "/img/04-stacking/before.avif",
+     "webp": "/img/04-stacking/before.webp",
+     "avif_1200": "/img/04-stacking/before-1200.avif",
+     "webp_1200": "/img/04-stacking/before-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "after": {
+     "avif": "/img/04-stacking/after.avif",
+     "webp": "/img/04-stacking/after.webp",
+     "avif_1200": "/img/04-stacking/after-1200.avif",
+     "webp_1200": "/img/04-stacking/after-1200.webp",
+     "width": 2400,
+     "height": 971
+    },
+    "placeholder": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACwAwCdASoYAAoAPtFUo0uoJKMhsAgBABoJZwAAWkgZqTbxYA6iAAD+7pjFs3U36R9jgPNsUB7AR+XQHBn+K2/qk8Iu0BioAAA="
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 285,
+    "median_residual_px": 0.102
+   }
+  },
+  {
+   "id": "06-sharp",
+   "index": 4,
+   "title": "The sharp night",
+   "dates": [
+    "2026-09-25",
+    "2026-10-16"
+   ],
+   "night_ids": [
+    "2026-09-25",
+    "2026-10-16"
+   ],
+   "before": {
+    "label": "25/26 Sep, first 529 frames",
+    "frames": 529,
+    "minutes": 88,
+    "fwhm_arcsec": 10.1,
+    "sky": "moon 99 %",
+    "snr": {
+     "major 20′ NE": 22.25,
+     "major 40′ NE": 8.36,
+     "major 20′ SW": 19.25,
+     "major 40′ SW": 12.45,
+     "minor 10′ SE": 17.28,
+     "minor 20′ SE": 0.88,
+     "minor 10′ NW": 7.21,
+     "minor 20′ NW": 0.74
+    },
+    "snr_headline": 10.4
+   },
+   "after": {
+    "label": "16/17 Oct alone",
+    "frames": 375,
+    "minutes": 62,
+    "fwhm_arcsec": 9.4,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 29.7,
+     "major 40′ NE": 10.78,
+     "major 20′ SW": 26.25,
+     "major 40′ SW": 16.94,
+     "minor 10′ SE": 22.29,
+     "minor 20′ SE": 0.93,
+     "minor 10′ NW": 9.98,
+     "minor 20′ NW": 0.85
+    },
+    "snr_headline": 13.86
+   },
+   "what_changed": "On 16/17 Oct the moon was down, gusts peaked at 15 mph against 28, and I got 62 minutes of 10 s subs.",
+   "what_it_did": "Stars came out at 9.4″ against 10.1″, the sharpest night so far. SNR reached 13.86 in 62 minutes, where the moonlit night managed 10.4 in 88.",
+   "images": {
+    "before": {
+     "avif": "/img/06-sharp/before.avif",
+     "webp": "/img/06-sharp/before.webp",
+     "avif_1200": "/img/06-sharp/before-1200.avif",
+     "webp_1200": "/img/06-sharp/before-1200.webp",
+     "width": 2400,
+     "height": 1196
+    },
+    "after": {
+     "avif": "/img/06-sharp/after.avif",
+     "webp": "/img/06-sharp/after.webp",
+     "avif_1200": "/img/06-sharp/after-1200.avif",
+     "webp_1200": "/img/06-sharp/after-1200.webp",
+     "width": 2400,
+     "height": 1196
+    },
+    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoYAAwAPtFUpEuoJKOhsAgBABoJZwAAWsfVjOF/fdgNYAD+7ohgzz5HLe0N2yRj/TJr5mrd95/inMf9Zp50Rtw9HKn7RwAA"
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 281,
+    "median_residual_px": 0.202
+   }
+  },
+  {
+   "id": "07-latest",
+   "index": 5,
+   "title": "Latest so far",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "night_ids": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": {
+    "label": "Seestar live stack",
+    "frames": 479,
+    "minutes": 80,
+    "fwhm_arcsec": 17.0,
+    "sky": "dark",
+    "snr": {
+     "major 20′ NE": 41.84,
+     "major 40′ NE": 15.17,
+     "major 20′ SW": 36.26,
+     "major 40′ SW": 23.65,
+     "minor 10′ SE": 31.33,
+     "minor 20′ SE": 1.08,
+     "minor 10′ NW": 13.89,
+     "minor 20′ NW": 1.53
+    },
+    "snr_headline": 19.41
+   },
+   "after": {
+    "label": "Two nights combined",
+    "frames": 995,
+    "minutes": 166,
+    "fwhm_arcsec": 13.3,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 40.5,
+     "major 40′ NE": 15.03,
+     "major 20′ SW": 35.04,
+     "major 40′ SW": 22.9,
+     "minor 10′ SE": 30.75,
+     "minor 20′ SE": 1.4,
+     "minor 10′ NW": 13.51,
+     "minor 20′ NW": 1.49
+    },
+    "snr_headline": 18.96
+   },
+   "what_changed": "This is where things stand: the scope's own stack from my first night next to both nights through the current pipeline. The 16/17 Oct night is still being added.",
+   "what_it_did": "Stars tightened from 17.0″ to 13.3″ and SNR went from 19.41 to 18.96, with 166 minutes against 80.",
+   "images": {
+    "before": {
+     "avif": "/img/07-latest/before.avif",
+     "webp": "/img/07-latest/before.webp",
+     "avif_1200": "/img/07-latest/before-1200.avif",
+     "webp_1200": "/img/07-latest/before-1200.webp",
+     "width": 2400,
+     "height": 1091
+    },
+    "after": {
+     "avif": "/img/07-latest/after.avif",
+     "webp": "/img/07-latest/after.webp",
+     "avif_1200": "/img/07-latest/after-1200.avif",
+     "webp_1200": "/img/07-latest/after-1200.webp",
+     "width": 2400,
+     "height": 1091
+    },
+    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoYAAsAPtFUo0uoJKMhsAgBABoJZwAAWnhK4JjJBDcogAD+7GvR1xGmCWuA83e5Qj7R4JOKrM28thCq1yf4EtZ4novMwAAA"
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 392,
+    "median_residual_px": 0.233
+   }
+  }
+ ],
+ "chart": [
+  {
+   "stage_id": "00-scope",
+   "label": "First pipeline (8 Sep)",
+   "minutes": 71,
+   "snr": 11.07
+  },
+  {
+   "stage_id": "01-measure",
+   "label": "7/8 Sep, current pipeline",
+   "minutes": 78,
+   "snr": 16.48
+  },
+  {
+   "stage_id": "02-moon",
+   "label": "25/26 Sep, first 529 frames",
+   "minutes": 88,
+   "snr": 10.4
+  },
+  {
+   "stage_id": "04-stacking",
+   "label": "Two nights combined",
+   "minutes": 166,
+   "snr": 18.96
+  },
+  {
+   "stage_id": "06-sharp",
+   "label": "16/17 Oct alone",
+   "minutes": 62,
+   "snr": 13.86
+  },
+  {
+   "stage_id": "07-latest",
+   "label": "Two nights combined",
+   "minutes": 166,
+   "snr": 18.96
+  }
+ ],
+ "hero_stage_id": "07-latest",
+ "method": {
+  "snr": "(per render, written to site/src/data/metrics/renders/<id>.json):\n  SNR at fixed M31 positions.  The image's own plate solution (WCS) places eight points at fixed offsets from\n  M31's nucleus (RA 00h42m44.3s, Dec +41d16m07s) along the major axis (PA 38 deg: 20' and 40' each way) and the\n  minor axis (10' and 20' each way), clear of M32 and NGC 205.  Binned 4x4 (14.7\"; removes the different\n  pixel-to-pixel correlation of drizzle and of the scope's own debayering), per channel: a plane is fitted to sky\n  pixels and subtracted; signal = median within 1.2' of each point; noise = 1.4826 x MAD of the sky after a 9-px\n  median high-pass.  The three channel SNRs are added in quadrature (the SNR of the optimally weighted channel\n  sum), which makes the figure independent of colour-calibration factors.  Headline = median of the eight points.\n  FWHM, sky noise, frame count and minutes: scripts/measure_stack.py on the linear stack, and its FITS header.\n  ring (stage 03): radial profile of the starless linear image around the nucleus; ring depth = the largest dip\n  of the profile below the brightest point further out, in % of that point.\n  color (stage 05): per-channel signal at the eight points; disk colour as R/G and B/G ratios."
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "before": {
+  "src": "/Users/andrew/src/seestar/data/M31_2026-09-25/run_529/final/history/20261016-220213.jpg",
+  "method": "astroalign similarity",
+  "n_stars": 281,
+  "n_control": 21,
+  "median_residual_px": 0.151,
+  "rotation_deg": -4.368,
+  "scale": 1.00001,
+  "shift_px": [
+   -246.91,
+   327.23
+  ]
+ },
+ "after": {
+  "src": "/Users/andrew/src/seestar/data/M31_2026-10-16/final/history/20261016-235241.jpg",
+  "method": "astroalign similarity",
+  "n_stars": 284,
+  "n_control": 29,
+  "median_residual_px": 0.202,
+  "rotation_deg": -0.198,
+  "scale": 0.99977,
+  "shift_px": [
+   -224.6,
+   261.71
+  ]
+ },
+ "ref": "/Users/andrew/src/seestar/data/M31_combined_2026-10-16/snap_20261016/final.png",
+ "crop": {
+  "x": 16,
+  "y": 316,
+  "width": 1688,
+  "height": 3388
+ },
+ "output_size": [
+  1688,
+  3388
+ ],
+ "worst_median_residual_px": 0.202,
+ "method": "astroalign similarity",
+ "n_stars": 281,
+ "median_residual_px": 0.202
+}

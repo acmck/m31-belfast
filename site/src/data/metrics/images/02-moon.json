@@ -1,0 +1,47 @@
+{
+ "stage": "02-moon",
+ "images": {
+  "before": {
+   "width": 2400,
+   "height": 971,
+   "width_1200": 1200,
+   "height_1200": 485,
+   "avif": "/img/02-moon/before.avif",
+   "avif_1200": "/img/02-moon/before-1200.avif",
+   "webp": "/img/02-moon/before.webp",
+   "webp_1200": "/img/02-moon/before-1200.webp"
+  },
+  "after": {
+   "width": 2400,
+   "height": 971,
+   "width_1200": 1200,
+   "height_1200": 485,
+   "avif": "/img/02-moon/after.avif",
+   "avif_1200": "/img/02-moon/after-1200.avif",
+   "webp": "/img/02-moon/after.webp",
+   "webp_1200": "/img/02-moon/after-1200.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABwAwCdASoYAAoAPtFUo0uoJKMhsAgBABoJaQAAWkfyqW+GOAAA/u6Y6VRBgAgVjxr/QecfIxN9RAGqJpK7S3k1BwAAAA=="
+ },
+ "bytes": {
+  "before.avif": 212820,
+  "before-1200.avif": 73984,
+  "before.webp": 203524,
+  "before-1200.webp": 75530,
+  "after.avif": 216623,
+  "after-1200.avif": 68493,
+  "after.webp": 191960,
+  "after-1200.webp": 64226
+ },
+ "quality": {
+  "before.avif": 62,
+  "before-1200.avif": 62,
+  "before.webp": 80,
+  "before-1200.webp": 80,
+  "after.avif": 62,
+  "after-1200.avif": 62,
+  "after.webp": 80,
+  "after-1200.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}
