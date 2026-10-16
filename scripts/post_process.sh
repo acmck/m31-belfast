@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Post-process a linear stack:
 #   1 plate solve (ASTAP, with SIP distortion terms) -> 2 gradient removal (Siril subsky | GraXpert AI)
-#   -> 3 colour calibration (Siril PCC; --spcc tries SPCC first) -> 4 denoise (GraXpert AI)
+#   -> 3 colour calibration (Siril PCC with local Gaia or NOMAD, corrected to the SPCC balance; --spcc tries SPCC first) -> 4 denoise (GraXpert AI)
 #   -> 5 star removal (destar.py) -> 6 stretch + export (stretch.py).
 #
-#   scripts/post_process.sh SESSION_DIR [--skip-denoise] [--skip-cc] [--spcc] [--no-destar]
+#   scripts/post_process.sh SESSION_DIR [--skip-denoise] [--skip-cc] [--spcc] [--pcc-catalog auto|localgaia|nomad]
+#                                       [--no-cc-correct] [--no-destar]
 #                                       [--bge subsky|graxpert] [--subsky-degree 1] [--bge-smoothing 0.5] [--denoise-strength 0.8]
 #                                       [--palette rgb|hoo]
 #                                       [--crop 0.04|auto] [--target-bg 0.10] [--asinh 3] [--saturation 1.15] [--bg-smooth 1.0]
@@ -36,12 +37,14 @@ GRAX="${GRAX:-/Applications/GraXpert.app/Contents/MacOS/GraXpert}"
 ASTAP="${ASTAP:-$ROOT/tools/astap/cli/astap_cli}"
 ASTAP_DB="${ASTAP_DB:-$ROOT/tools/astap/db}"
 PY="$ROOT/.venv/bin/python"
-DENOISE=1; CC=1; SPCC=0; BGE=subsky; SUBSKY_DEG=1; SMOOTH=0.5; DN_STRENGTH=0.8; DESTAR=1; PALETTE=""; STRETCH_ARGS=()
+DENOISE=1; CC=1; SPCC=0; PCC_CAT=auto; CC_CORRECT=1; BGE=subsky; SUBSKY_DEG=1; SMOOTH=0.5; DN_STRENGTH=0.8; DESTAR=1; PALETTE=""; STRETCH_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --skip-denoise) DENOISE=0;;
     --skip-cc) CC=0;;
     --spcc) SPCC=1;;
+    --pcc-catalog) PCC_CAT="$2"; shift;;
+    --no-cc-correct) CC_CORRECT=0;;
     --no-destar) DESTAR=0;;
     --bge) BGE="$2"; shift;;
     --subsky-degree) SUBSKY_DEG="$2"; shift;;
@@ -103,21 +106,40 @@ fi
 if [ "$NARROWBAND" = 1 ] && [ "$CC" = 1 ]; then
   echo "== 3/6 colour calibration skipped: FILTER='LP' (dual-band Ha/OIII) - no broadband star colours to calibrate against; stretch uses --palette $PALETTE"
 elif [ "$CC" = 1 ] && [ "$SOLVED" = 1 ]; then
-  echo "== 3/6 colour calibration (Siril PCC on the flattened sky; --spcc tries spectrophotometric first - crashes headless without a sensor DB)"
-  CMDS="pcc"; [ "$SPCC" = 1 ] && CMDS="spcc pcc"
+  # PCC catalogue: local Gaia (offline) when Siril's preferences point at an installed copy, else NOMAD (VizieR).
+  # PCC's white balance is then corrected to the SPCC balance by scripts/cc_correct.py (measured per catalogue;
+  # headless SPCC segfaults in Siril 1.4.4).  --spcc still tries SPCC first; its result is used uncorrected.
+  SIRIL_CFG="$HOME/Library/Application Support/org.siril.Siril/siril/config.1.4.ini"
+  GAIA_ASTRO="$(sed -n 's/^catalogue_gaia_astro=//p' "$SIRIL_CFG" 2>/dev/null | head -1)"
+  case "$PCC_CAT" in
+    auto) if [ -n "$GAIA_ASTRO" ] && [ -s "$GAIA_ASTRO" ]; then CATS="localgaia nomad"; else CATS="nomad"; fi;;
+    localgaia|nomad) CATS="$PCC_CAT";;
+    *) echo "unknown --pcc-catalog $PCC_CAT"; exit 2;;
+  esac
+  CMDS=""; [ "$SPCC" = 1 ] && CMDS="spcc"
+  for c in $CATS; do CMDS="$CMDS pcc:$c"; done
+  echo "== 3/6 colour calibration (Siril PCC on the flattened sky, catalogue order: ${CATS// / -> }; correction to SPCC balance: $([ "$CC_CORRECT" = 1 ] && echo on || echo off))"
   for cmd in $CMDS; do
     rm -f "$F/03_cc.fit"
+    case "$cmd" in
+      pcc:*) SIRCMD="pcc -catalog=${cmd#pcc:}";;
+      *)     SIRCMD="$cmd";;
+    esac
     cat > "$F/cc.ssf" <<SSF
 requires 1.4.0
 load $CUR
-$cmd
+$SIRCMD
 save $F/03_cc
 close
 SSF
     if "$SIRIL" -s "$F/cc.ssf" >>"$LOG" 2>&1 && [ -f "$F/03_cc.fit" ]; then
-      echo "  $cmd ok"; CUR="$F/03_cc.fit"; break
+      echo "  $SIRCMD ok"; CUR="$F/03_cc.fit"
+      if [ "$CC_CORRECT" = 1 ] && [ "${cmd%%:*}" = pcc ]; then
+        "$PY" "$ROOT/scripts/cc_correct.py" "$F/03_cc.fit" "$F/03_cc.fit" --catalog "${cmd#pcc:}" | sed 's/^/  /'
+      fi
+      break
     else
-      echo "  $cmd failed (see $LOG)"
+      echo "  $SIRCMD failed (see $LOG)"
     fi
   done
 else
