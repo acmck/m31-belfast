@@ -64,6 +64,7 @@
 if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /opt/homebrew/bin/bash "$0" "$@"; fi
 set -euo pipefail
 SESSION="$(cd "${1:?session dir}" && pwd)"; shift
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SUB=""; DRIZZLE=1; PIXFRAC=1.0; SCALE=1.0; FRAMING=current; REJ=w; LIMIT=0
 WEIGHT=nbstars; REF=mid; FLAT=""; MAXIMIZE=0; FEATHER=0; FASTNORM=0
 while [ $# -gt 0 ]; do
@@ -145,26 +146,41 @@ STACKOPTS="-norm=addscale -output_norm -rgb_equal"
 [ "$WEIGHT" = none ] || STACKOPTS="$STACKOPTS -weight=$WEIGHT"
 [ "$FEATHER" -gt 0 ] && STACKOPTS="$STACKOPTS -feather=$FEATHER"
 [ "$MAXIMIZE" = 1 ] && STACKOPTS="$STACKOPTS -maximize"
-STACK="stack r_$SEQ rej $REJ 3 3 $STACKOPTS -32b -out=../stack/result"
 
+HEADER='requires 1.4.0
+setext fit
+set core.mem_mode=1
+set core.mem_ratio=0.75'
+# Two Siril runs with a check in between: Siril 1.4.4's drizzle occasionally writes an all-zero frame
+# (even the reference), which makes the stack abort with "Normalization failed".  check_registered.py
+# finds those and the second run unselects them (and moves the reference if needed) before stacking.
 {
-  echo "requires 1.4.0"
-  echo "setext fit"
-  echo "set core.mem_mode=1"
-  echo "set core.mem_ratio=0.75"
+  echo "$HEADER"
   echo "cd $SUB"
   echo "$CONVERT"
   echo "cd ../process"
   [ -n "$CALIB" ] && echo "$CALIB"
   echo "$REG"
   echo "$APPLY"
-  echo "$STACK"
   echo "close"
 } > "$SCRIPT"
-echo "--- siril script:"; sed 's/^/    /' "$SCRIPT"
+SCRIPT2="$SESSION/process/stack2.ssf"
 LOG="$SESSION/stack/siril_stack.log"
 t0=$(date +%s)
-"$SIRIL" -d "$SESSION" -s "$SCRIPT" 2>&1 | tee "$LOG" | grep -E -i 'error|warning|reference|frames|stack|Total|saved|exposure|rejected|Registration|drizzle|calibrat' | grep -v -i 'Not an image' || true
+echo "--- siril script (register):"; sed 's/^/    /' "$SCRIPT"
+"$SIRIL" -d "$SESSION" -s "$SCRIPT" 2>&1 | tee "$LOG" | grep -E -i 'error|warning|reference|frames|Total|Registration|drizzle|calibrat' | grep -v -i 'Not an image' || true
+echo "--- checking registered frames"
+FIX="$("$ROOT/.venv/bin/python" "$ROOT/scripts/check_registered.py" "$SESSION/process" "r_$SEQ" 2> >(sed 's/^/    /' >&2))" || FIX=""
+FILTER=""; [ -n "$FIX" ] && FILTER="-filter-included"
+{
+  echo "$HEADER"
+  echo "cd process"
+  [ -n "$FIX" ] && echo "$FIX"
+  echo "stack r_$SEQ rej $REJ 3 3 $STACKOPTS $FILTER -32b -out=../stack/result"
+  echo "close"
+} > "$SCRIPT2"
+echo "--- siril script (stack):"; sed 's/^/    /' "$SCRIPT2"
+"$SIRIL" -d "$SESSION" -s "$SCRIPT2" 2>&1 | tee -a "$LOG" | grep -E -i 'error|warning|stack|saved|rejected|selected' | grep -v -i 'Not an image' || true
 rc=${PIPESTATUS[0]}
 echo "siril rc=$rc, $(( $(date +%s) - t0 ))s, log: $LOG"
 ls -la "$SESSION/stack/result.fit" 2>/dev/null || { echo "no result produced - see $LOG"; exit 1; }

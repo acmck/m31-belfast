@@ -70,5 +70,7 @@ if has post; then
   echo; echo "########## [$(t)] POST: solve, Siril gradient removal, colour-calibrate, GraXpert denoise, star removal, stretch"
   # shellcheck disable=SC2086
   "$ROOT/scripts/post_process.sh" "$SESSION" ${POST_ARGS:-}
+  # keep a dated copy + log line of this result, and point data/<TARGET>_latest at this session
+  "$ROOT/scripts/record_result.sh" "$SESSION" || echo "record_result failed (result itself is fine)"
 fi
 echo; echo "########## [$(t)] done"

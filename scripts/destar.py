@@ -105,11 +105,38 @@ def run_model(session, img_hwc, batch=8, progress=True, norm="mtf", bg_match=Fal
 PROTECT_SIGMA = 15.0      # final smoothing of the protection mask (px); 6 left a dark ring around M32
 PROTECT_RAMP = 0.20       # luminance ramp width above `protect` over which the mask goes 0 -> 1 (was 0.12)
 PROTECT_FLUX_RAMP = 0.06  # removed-flux ramp width above 0.02 (was 0.04)
+# Relative protection (default).  Levels are fractions of the nucleus's own 12 px-smoothed brightness above
+# the sky, measured in the LINEAR input, so they mark the same isophote of the galaxy whatever the sky
+# brightness.  Calibrated on M31 2026-09-07 to reproduce the stretched-mode mask that cured the ring there
+# (raw mask 0 at r~160 px, 1 at r~80 px); on the moonlit 2026-09-25 data the stretched mode collapsed to a
+# peak of 0.17 and the network hollowed the nucleus, leaving a ring.
+PROTECT_REL_LO = 0.03     # protection starts where the galaxy is 3 % of the nucleus brightness above sky
+PROTECT_REL_RAMP = 0.06   # ...and is full at 9 %
+NUCLEUS_SIGMA = 40.0      # heavy smoothing used only to locate the nucleus (stars wash out, the core does not)
+NUCLEUS_MIN_SNR = 20.0    # skip protection if no extended peak stands this far above the smoothed sky noise
+
+
+def relative_protect_mask(lin_hwc, lo=PROTECT_REL_LO, ramp=PROTECT_REL_RAMP, sigma=PROTECT_SIGMA):
+    """Protection mask (H, W) in 0..1 from the linear image, independent of sky brightness and stretch.
+    Returns (mask, info) where info describes the nucleus found (or why protection was skipped)."""
+    from scipy.ndimage import gaussian_filter
+    lum = lin_hwc.mean(-1).astype(np.float64)
+    s12 = gaussian_filter(lum, 12)
+    sky = float(np.median(s12))
+    noise = 1.4826 * float(np.median(np.abs(s12 - sky))) + 1e-12
+    s40 = gaussian_filter(lum, NUCLEUS_SIGMA)
+    iy, ix = np.unravel_index(int(np.argmax(s40)), s40.shape)
+    norm = float(s12[iy, ix]) - sky
+    if norm < NUCLEUS_MIN_SNR * noise:
+        return np.zeros(lum.shape, np.float32), f"no extended core (peak {norm / noise:.1f}x smoothed sky noise < {NUCLEUS_MIN_SNR:g}); protection off"
+    m = np.clip(((s12 - sky) / norm - lo) / ramp, 0, 1)
+    m = gaussian_filter(m, sigma).astype(np.float32)
+    return m, f"nucleus at (row {iy}, col {ix}), {norm / noise:.0f}x smoothed sky noise; mask >0.5 over {int((m > 0.5).sum())} px"
 
 
 def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True, protect=0.45, mode="mono",
            protect_sigma=PROTECT_SIGMA, protect_ramp=PROTECT_RAMP, protect_flux_ramp=PROTECT_FLUX_RAMP,
-           require_removed=False):
+           require_removed=False, protect_mode="relative"):
     """rgb_chw: (3,H,W) float32 in 0..1. Returns (starless, stars) both (3,H,W).
     mode:    "mono" runs the network on each channel separately as a grey image (3 passes; no
              cross-channel colour bias, measured residual < 2.5 % per channel) - default.
@@ -155,14 +182,25 @@ def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True,
         # loss of star removal beyond it (checked down to protect=0.30 before stars near the core start
         # reappearing).  protect_flux_ramp is kept as an argument for anyone who wants the old AND-gated
         # behaviour back, via the (undocumented) --require-removed flag.
+        #
+        # That absolute stretched threshold still depends on the sky: the stretch puts the sky at 0.25, so a
+        # bright (moonlit) sky compresses the nucleus.  M31 2026-09-07 reached 0.93 and was fully protected;
+        # 2026-09-25 under a near-full moon reached only 0.54, the mask peaked at 0.17, the network removed the
+        # nucleus as a star and the edge of the hole showed as a ring.  protect_mode="relative" (default)
+        # measures brightness above sky as a fraction of the nucleus in the linear input instead.
         from scipy.ndimage import gaussian_filter
-        lum = work.mean(-1)
-        big = gaussian_filter(lum, 12)
-        m = np.clip((big - protect) / protect_ramp, 0, 1)
-        if require_removed:
-            removed = gaussian_filter(np.clip(lum - starless.mean(-1), 0, None), 12)
-            m = m * np.clip((removed - 0.02) / protect_flux_ramp, 0, 1)
-        m = gaussian_filter(m, protect_sigma)[..., None]                     # wide soft edge, no ring
+        if protect_mode == "relative":
+            m, info = relative_protect_mask(bordered, sigma=protect_sigma)
+            print(f"  core protection (relative): {info}", flush=True)
+            m = m[..., None]
+        else:
+            lum = work.mean(-1)
+            big = gaussian_filter(lum, 12)
+            m = np.clip((big - protect) / protect_ramp, 0, 1)
+            if require_removed:
+                removed = gaussian_filter(np.clip(lum - starless.mean(-1), 0, None), 12)
+                m = m * np.clip((removed - 0.02) / protect_flux_ramp, 0, 1)
+            m = gaussian_filter(m, protect_sigma)[..., None]                 # wide soft edge, no ring
         starless = starless * (1 - m) + work * m
     if linear:
         starless = mtf_undo(starless, m0, mn0)
@@ -206,6 +244,7 @@ def remove_residual_points(starless_chw, k_sigma=10.0, max_radius_px=4.0, max_np
     smooth = gaussian_filter(lum, smooth_sigma)
     resid = lum - smooth
     sig = 1.4826 * np.median(np.abs(resid - np.median(resid)))
+    sep.set_extract_pixstack(5_000_000)   # default 300k overflowed on a large multi-night canvas
     objs = sep.extract(np.ascontiguousarray(resid), thresh=k_sigma, err=max(sig, 1e-12), minarea=3,
                         deblend_nthresh=32, deblend_cont=0.001, clean=True)
     if len(objs) == 0:
@@ -256,7 +295,9 @@ def main():
     ap.add_argument("--no-cleanup", action="store_true",
                     help="skip the residual-star cleanup pass (stars the network missed near a bright core)")
     ap.add_argument("--cleanup-sigma", type=float, default=10.0, help="detection threshold for residual stars, in background sigma")
-    ap.add_argument("--protect", type=float, default=0.45, help="restore bright, extended structures the network removed (galaxy cores); threshold on 12 px-smoothed stretched luminance, 0 = off")
+    ap.add_argument("--protect", type=float, default=0.45, help="restore bright, extended structures the network removed (galaxy cores); 0 = off. In --protect-mode stretched this is the threshold on 12 px-smoothed stretched luminance")
+    ap.add_argument("--protect-mode", choices=["relative", "stretched"], default="relative",
+                    help="relative (default): protect where the linear image is >3-9 %% of the nucleus brightness above sky - independent of sky brightness; stretched: the old absolute threshold --protect on the stretched image (fails under moonlight)")
     a = ap.parse_args()
 
     import onnxruntime as ort
@@ -273,7 +314,7 @@ def main():
     d /= scale
     t0 = time.time()
     starless, stars = destar(d, sess, a.strength, a.norm, a.bg_match, not a.rgb_order, a.protect, a.mode,
-                              require_removed=a.require_removed)
+                              require_removed=a.require_removed, protect_mode=a.protect_mode)
     if not a.no_cleanup:
         starless, n = remove_residual_points(starless, k_sigma=a.cleanup_sigma)
         print(f"  residual-star cleanup: {n} leftover point sources filled")
