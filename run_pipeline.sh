@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end Seestar post-processing pipeline.
+# End-to-end Seestar S30 Pro pipeline, tuned for M31.
 #
 #   ./run_pipeline.sh SESSION_DIR [stages...]      stages: qa deband flat stack post   (default: all)
 #
@@ -14,8 +14,12 @@
 #   stack/result.fit 32-bit linear RGB stack
 #   final/           solved, colour-calibrated, background-extracted, denoised, stretched outputs
 #
-# Environment overrides: QA_ARGS, DEBAND_ARGS, FLAT_ARGS, STACK_ARGS, POST_ARGS  (extra flags for each stage)
-# Defaults follow REVIEW.md: no trend-relative frame culling, column deband checked, synthetic flat,
+# M31 defaults live in config/m31.env (M31_QA_ARGS, M31_DEBAND_ARGS, M31_FLAT_ARGS, M31_STACK_ARGS, M31_POST_ARGS),
+# each with the measured reason for it. They restate the scripts' own defaults. PIPELINE_CONFIG=path picks another
+# file; PIPELINE_CONFIG=/dev/null skips it.
+# Environment overrides: QA_ARGS, DEBAND_ARGS, FLAT_ARGS, STACK_ARGS, POST_ARGS  (extra flags for each stage).
+# They are appended after the config's flags, and every stage lets the last flag win, so they override it.
+# Defaults follow docs/REVIEW.md: no trend-relative frame culling, column deband checked, synthetic flat,
 # nbstars weighting with a mid-session reference, Siril subsky before PCC, auto-crop, highlight knee.
 # macOS ships bash 3.2; re-exec under Homebrew bash 5 if available
 if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /opt/homebrew/bin/bash "$0" "$@"; fi
@@ -24,10 +28,20 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 SESSION="$(cd "${1:?session dir}" && pwd)"; shift
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(qa deband flat stack post)
 PY="$ROOT/.venv/bin/python"
+# Target defaults first, caller's overrides after them (last flag wins in every stage).
+CONFIG="${PIPELINE_CONFIG:-$ROOT/config/m31.env}"
+M31_QA_ARGS=""; M31_DEBAND_ARGS=""; M31_FLAT_ARGS=""; M31_STACK_ARGS=""; M31_POST_ARGS=""
+# shellcheck disable=SC1090
+if [ -f "$CONFIG" ] || [ "$CONFIG" = /dev/null ]; then . "$CONFIG"; else echo "no config $CONFIG"; exit 2; fi
+QA_ARGS="$M31_QA_ARGS ${QA_ARGS:-}"
+DEBAND_ARGS="$M31_DEBAND_ARGS ${DEBAND_ARGS:-}"
+FLAT_ARGS="$M31_FLAT_ARGS ${FLAT_ARGS:-}"
+STACK_ARGS="$M31_STACK_ARGS ${STACK_ARGS:-}"
+POST_ARGS="$M31_POST_ARGS ${POST_ARGS:-}"
 mkdir -p "$ROOT/logs"
 LOG="$ROOT/logs/pipeline_$(basename "$SESSION")_$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee -a "$LOG") 2>&1
-echo "session: $SESSION   stages: ${STAGES[*]}   log: $LOG"
+echo "session: $SESSION   stages: ${STAGES[*]}   log: $LOG   config: $CONFIG"
 
 has() { for s in "${STAGES[@]}"; do [ "$s" = "$1" ] && return 0; done; return 1; }
 t() { date +%H:%M:%S; }
