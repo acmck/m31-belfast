@@ -50,6 +50,9 @@
 #   --feather N         stack -feather=N: feather each frame's borders over N px (hides seams between
 #                       frames with different framing; multi-night sessions)
 #   --fastnorm          stack -fastnorm: faster location/scale estimators than IKSS for normalisation
+#   --seqsubsky DEG     remove a degree-DEG polynomial background from every frame before registration
+#                       (Siril seqsubsky; works on CFA frames, so it is compatible with drizzle). Aimed at
+#                       moonlit / light-polluted nights where the gradient turns with the field. Off by default.
 #
 # Pipeline (OSC; the Seestar has no calibration masters unless --flat is given):
 #   convert  -> CFA FITS sequence                      (process/light_*.fit)  [-debayer if --no-drizzle]
@@ -65,7 +68,7 @@ if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /
 set -euo pipefail
 SESSION="$(cd "${1:?session dir}" && pwd)"; shift
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SUB=""; DRIZZLE=1; PIXFRAC=1.0; SCALE=1.0; FRAMING=current; REJ=w; LIMIT=0
+SEQSUBSKY=0; SUB=""; DRIZZLE=1; PIXFRAC=1.0; SCALE=1.0; FRAMING=current; REJ=w; LIMIT=0
 WEIGHT=nbstars; REF=mid; FLAT=""; MAXIMIZE=0; FEATHER=0; FASTNORM=0
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -81,6 +84,7 @@ while [ $# -gt 0 ]; do
     --maximize) MAXIMIZE=1;;
     --feather) FEATHER="$2"; shift;;
     --fastnorm) FASTNORM=1;;
+    --seqsubsky) SEQSUBSKY="$2"; shift;;
     -*) echo "unknown option $1"; exit 2;;
     *) SUB="$1";;
   esac; shift
@@ -131,6 +135,11 @@ if [ -n "$FLAT" ]; then
 elif [ "$DRIZZLE" = 0 ]; then
   # Without -debayer the CFA mosaic would be registered as mono and stacked into a 1-layer image.
   CONVERT="convert light -debayer -out=../process"
+fi
+if [ "$SEQSUBSKY" -gt 0 ]; then
+  CALIB="${CALIB:+$CALIB
+}seqsubsky $SEQ $SEQSUBSKY"
+  SEQ="bkg_$SEQ"
 fi
 REG="register $SEQ -2pass"
 [ "$REFIDX" -gt 0 ] && REG="$REG
@@ -187,5 +196,6 @@ ls -la "$SESSION/stack/result.fit" 2>/dev/null || { echo "no result produced - s
 # The converted, calibrated and registered frames (process/light_*, pp_light_*, r_*, process/drizztmp)
 # are ~10-50 GB; drop them once the stack exists.
 rm -f "$SESSION"/process/r_light_*.fit "$SESSION"/process/light_*.fit \
-      "$SESSION"/process/pp_light_*.fit "$SESSION"/process/r_pp_light_*.fit
+      "$SESSION"/process/pp_light_*.fit "$SESSION"/process/r_pp_light_*.fit \
+      "$SESSION"/process/bkg_*.fit "$SESSION"/process/r_bkg_*.fit
 rm -rf "$SESSION"/process/drizztmp
