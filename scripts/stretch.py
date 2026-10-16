@@ -14,7 +14,7 @@ Usage:
 
 Crop.  `--crop auto` (default) measures a local-noise map on the linear input luminance: high-pass (image minus a
 9 px median filter), robust std (1.4826 MAD) per 64 px block, central noise = median of the middle 50 % of blocks.
-Along each edge the run of block rows/cols whose median noise exceeds --crop-noise-ratio x central is trimmed, plus
+Edges are trimmed one block row/col at a time (the edge with the most blocks above --crop-noise-ratio x central first) until every border has < 5 % such blocks, plus
 one block of margin; clamped to 1..15 % per edge.  Registered stacks with field rotation have ~2x noise in the corners
 the reference frame did not cover, and a fixed 4 % misses them.  A number instead of `auto` is a fixed fraction.
 
@@ -78,16 +78,34 @@ def auto_crop_amounts(lum, ratio=1.35, block=64, min_frac=0.01, max_frac=0.15):
     central = float(np.median(noise[ny // 4: ny - ny // 4, nx // 4: nx - nx // 4]))
     r = noise / (central + 1e-12)
 
-    def depth(line, n, sizes):
-        k = 0
-        while k < n // 2 and np.median(line(k)) > ratio:
-            k += 1
-        return int(sum(sizes[:k + 1])) if k else 0          # k bad blocks + one block margin
-
-    top = depth(lambda k: r[k], ny, hs)
-    bottom = depth(lambda k: r[ny - 1 - k], ny, hs[::-1])
-    left = depth(lambda k: r[:, k], nx, ws)
-    right = depth(lambda k: r[:, nx - 1 - k], nx, ws[::-1])
+    # Greedy shrink: repeatedly drop one block row/col from whichever edge has the largest fraction of noisy
+    # blocks along it, until every border has < 5 % noisy blocks.  The earlier rule (median of each edge line)
+    # missed low-coverage strips and wedges that run along only part of an edge - e.g. a multi-night stack
+    # where one night was framed at a different rotation leaves a half-height strip on one side and a
+    # triangular wedge in a corner, neither of which moves an edge's median.
+    bad = r > ratio
+    lim_y, lim_x = max(1, int(max_frac * ny)), max(1, int(max_frac * nx))
+    t = b = l = rt = 0
+    while True:
+        sub = bad[t:ny - b, l:nx - rt]
+        if sub.size == 0:
+            break
+        cand = {}
+        if t < lim_y: cand["t"] = sub[0].mean()
+        if b < lim_y: cand["b"] = sub[-1].mean()
+        if l < lim_x: cand["l"] = sub[:, 0].mean()
+        if rt < lim_x: cand["r"] = sub[:, -1].mean()
+        if not cand:
+            break
+        k = max(cand, key=cand.get)
+        if cand[k] < 0.05:
+            break
+        if k == "t": t += 1
+        elif k == "b": b += 1
+        elif k == "l": l += 1
+        else: rt += 1
+    px = lambda n, sizes: int(sum(sizes[:n + 1])) if n else 0   # n bad blocks + one block margin
+    top, bottom, left, right = px(t, hs), px(b, hs[::-1]), px(l, ws), px(rt, ws[::-1])
     H, W = lum.shape
     clamp = lambda v, n: int(min(max(v, round(min_frac * n)), round(max_frac * n)))
     return clamp(top, H), clamp(bottom, H), clamp(left, W), clamp(right, W), central, r

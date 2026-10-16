@@ -611,7 +611,10 @@ def main():
         v = np.nanpercentile(np.abs(r[np.isfinite(r)]), 99) if np.isfinite(r).any() else 1
         im = axs[1, 1].imshow(r, cmap="RdBu_r", vmin=-v, vmax=v, aspect="equal",
                               extent=(0, p.shape[1], p.shape[0], 0))
-        axs[1, 1].set_title(f"(block median - model) / centre, %  fit rms {100 * report['G1']['fits'][report['G1']['choice']]['rms']:.3f} %")
+        g1 = report["G1"]
+        rms_txt = (f"fit rms {100 * g1['fits'][g1['choice']]['rms']:.3f} %" if g1["choice"] in g1["fits"]
+                   else "no model passed the sanity check (flat = 1.0)")
+        axs[1, 1].set_title(f"(block median - model) / centre, %  {rms_txt}")
         fig.colorbar(im, ax=axs[1, 1], shrink=0.8)
         for a in axs.ravel():
             a.set_xticks([]); a.set_yticks([])
