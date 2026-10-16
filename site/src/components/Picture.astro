@@ -1,0 +1,30 @@
+---
+import type { Img } from '../lib/journal';
+import { versioned as v } from '../lib/version';
+
+interface Props {
+  img: Img;
+  alt: string;
+  sizes?: string;
+  priority?: boolean;
+  class?: string;
+}
+
+const { img, alt, sizes = '(min-width: 1100px) 1040px, 100vw', priority = false, class: cls } = Astro.props;
+const avif = `${v(img.avif_1200)} 1200w, ${v(img.avif)} ${img.width}w`;
+const webp = `${v(img.webp_1200)} 1200w, ${v(img.webp)} ${img.width}w`;
+---
+<picture class={cls}>
+  <source type="image/avif" srcset={avif} sizes={sizes} />
+  <source type="image/webp" srcset={webp} sizes={sizes} />
+  <img
+    src={v(img.webp_1200)}
+    alt={alt}
+    width={img.width}
+    height={img.height}
+    loading={priority ? 'eager' : 'lazy'}
+    decoding={priority ? 'sync' : 'async'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    draggable="false"
+  />
+</picture>

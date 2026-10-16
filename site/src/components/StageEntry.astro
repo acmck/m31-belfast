@@ -1,0 +1,40 @@
+---
+import Compare from './Compare.astro';
+import { num, type Stage, type Night, isNum } from '../lib/journal';
+
+interface Props {
+  stage: Stage;
+  nights: Night[];
+}
+
+const { stage, nights } = Astro.props;
+const nn = String(stage.index).padStart(2, '0');
+const nightLabels = stage.night_ids
+  .map((id) => nights.find((n) => n.id === id)?.id ?? id)
+  .join(' + ');
+const dates = stage.dates.length ? stage.dates.join(', ') : '—';
+const al = stage.alignment;
+const alignNote =
+  al && isNum(al.median_residual_px)
+    ? `aligned on ${num(al.n_stars)} stars, median residual ${num(al.median_residual_px, 2)} px`
+    : null;
+---
+<article class="stage" id={`stage-${stage.id}`} aria-labelledby={`h-${stage.id}`}>
+  <p class="stage-no" aria-hidden="true">{nn}</p>
+  <header class="stage-head">
+    <h2 id={`h-${stage.id}`}><span class="vh">Stage {nn}: </span>{stage.title}</h2>
+    <p class="log">{dates}{nightLabels && nightLabels !== dates ? ` · nights ${nightLabels}` : ''}</p>
+  </header>
+  <Compare stage={stage} />
+  <dl class="stage-notes">
+    <div>
+      <dt>What changed</dt>
+      <dd>{stage.what_changed || '—'}</dd>
+    </div>
+    <div>
+      <dt>What it did</dt>
+      <dd>{stage.what_it_did || '—'}</dd>
+    </div>
+  </dl>
+  {alignNote && <p class="log fine">{alignNote}</p>}
+</article>

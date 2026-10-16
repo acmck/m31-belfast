@@ -1,6 +1,9 @@
 # data and large binaries never go in git
-data/
-logs/
+/data/
+/logs/
+*.fit
+*.fits
+*.fts
 tools/downloads/
 tools/astap/db/
 tools/astap/cli/

@@ -1,0 +1,59 @@
+---
+import Picture from './Picture.astro';
+import { readout, type Stage } from '../lib/journal';
+
+interface Props {
+  stage: Stage;
+}
+
+const { stage } = Astro.props;
+const { before, after, images } = stage;
+const rb = readout(before);
+const ra = readout(after);
+const ratio = `${images.after.width} / ${images.after.height}`;
+const beforeName = before.label || 'before';
+const afterName = after.label || 'after';
+---
+<compare-slider
+  value="50"
+  data-before={beforeName}
+  data-after={afterName}
+  style={`--ratio: ${ratio}`}
+>
+  <div class="cs-frame">
+    <div class="cs-layer cs-after">
+      <Picture img={images.after} alt={`After: ${afterName}`} />
+    </div>
+    <div class="cs-layer cs-before">
+      <Picture img={images.before} alt={`Before: ${beforeName}`} />
+    </div>
+    <div
+      class="cs-handle"
+      role="slider"
+      tabindex="0"
+      aria-label={`Compare ${beforeName} with ${afterName}`}
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="50"
+      aria-valuetext={`50 percent ${beforeName} on the left, 50 percent ${afterName} on the right`}
+    >
+      <span class="cs-line" aria-hidden="true"></span>
+      <span class="cs-read cs-read-before" aria-hidden="true">
+        {rb.map((l) => <span>{l}</span>)}
+      </span>
+      <span class="cs-read cs-read-after" aria-hidden="true">
+        {ra.map((l) => <span>{l}</span>)}
+      </span>
+    </div>
+  </div>
+  <dl class="cs-captions">
+    <div class="cs-cap cs-cap-before">
+      <dt>Before (left)</dt>
+      {rb.map((l) => <dd>{l}</dd>)}
+    </div>
+    <div class="cs-cap cs-cap-after">
+      <dt>After (right)</dt>
+      {ra.map((l) => <dd>{l}</dd>)}
+    </div>
+  </dl>
+</compare-slider>

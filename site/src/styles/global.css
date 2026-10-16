@@ -1,0 +1,780 @@
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2-variations'),
+    url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Martian Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  font-stretch: 75% 112.5%;
+  src: url('/fonts/martian-mono-latin-standard-normal.woff2') format('woff2-variations'),
+    url('/fonts/martian-mono-latin-standard-normal.woff2') format('woff2');
+}
+
+/* Metric-matched fallbacks so text doesn't jump when the web fonts swap in. */
+@font-face {
+  font-family: 'Newsreader Fallback';
+  src: local('Georgia'), local('Times New Roman');
+  size-adjust: 94%;
+  ascent-override: 92%;
+  descent-override: 24%;
+}
+
+@font-face {
+  font-family: 'Martian Fallback';
+  src: local('Menlo'), local('Consolas'), local('DejaVu Sans Mono');
+  size-adjust: 104%;
+}
+
+/* ---------- tokens ---------- */
+:root {
+  /* The ground is the median sky of my Sep 7 Seestar live stack. */
+  --ground: #211f1c;
+  --ink: #e8e2d6;
+  --ink-2: #a39b8c;
+  --rule: #4a453d;
+  --accent: #d9a35b;
+  --banner: #8a2a1a;
+
+  --serif: 'Newsreader', 'Newsreader Fallback', Georgia, serif;
+  --mono: 'Martian Mono', 'Martian Fallback', ui-monospace, Menlo, monospace;
+
+  --prose: 66ch;
+  --wide: 1100px;
+  --gutter: 16px;
+  --margin: 0px;
+
+  color-scheme: dark;
+}
+
+:root[data-light='red'] {
+  /* Night-vision red: green and blue at exactly zero. One shade only. */
+  --ground: #000;
+  --ink: #f00;
+  --ink-2: #f00;
+  --rule: #f00;
+  --accent: #f00;
+  --banner: #000;
+}
+
+@media (min-width: 760px) {
+  :root {
+    --gutter: 32px;
+    --margin: 5.5rem;
+  }
+}
+
+/* ---------- base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ground);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.55;
+  font-variant-numeric: lining-nums tabular-nums;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+:root[data-light='red'] a:hover {
+  text-decoration-thickness: 3px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.vh {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.log {
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.fine {
+  font-size: 0.6875rem;
+}
+
+.lede {
+  max-width: var(--prose);
+  color: var(--ink);
+}
+
+/* ---------- placeholder guard ---------- */
+.placeholder-banner {
+  /* Not pinned: nothing may sit over the slider readouts. */
+  background: var(--banner);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 6px var(--gutter);
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 14px var(--gutter);
+  border-bottom: 1px solid var(--rule);
+}
+
+.wordmark {
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.red-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.75rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.red-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c00;
+  box-shadow: 0 0 0 1px var(--ground), 0 0 0 2px #c00;
+}
+
+.red-toggle[aria-pressed='true'] {
+  background: #f00;
+  color: #000;
+  border-color: #f00;
+  font-weight: 700;
+}
+
+.red-toggle[aria-pressed='true'] .red-dot {
+  background: #000;
+  box-shadow: none;
+}
+
+.red-toggle:focus-visible {
+  outline-offset: 3px;
+}
+
+/* ---------- sections ---------- */
+main,
+.colophon {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.hero {
+  padding: 2.5rem 0 3rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 7.4vw, 4.6rem);
+  font-weight: 400;
+  max-width: 17ch;
+}
+
+.hero .lede {
+  font-size: 1.1875rem;
+}
+
+.hero-fig {
+  margin: 0.75rem 0 0;
+}
+
+.hero-img {
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-fig figcaption {
+  margin-top: 0.5rem;
+}
+
+.red-note {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  max-width: var(--prose);
+}
+
+.section-title {
+  font-size: 1.75rem;
+}
+
+.journey > .lede,
+.journey > .section-title {
+  margin-bottom: 1rem;
+}
+
+.journey {
+  border-top: 1px solid var(--rule);
+  padding-top: 2rem;
+}
+
+/* ---------- stage ---------- */
+.stage {
+  position: relative;
+  padding: 2.25rem 0 2.5rem var(--margin);
+  border-top: 1px solid var(--rule);
+  display: grid;
+  gap: 1rem;
+}
+
+.journey > .lede + .stage {
+  margin-top: 1.5rem;
+}
+
+.stage-no {
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.8125rem;
+  color: var(--accent);
+}
+
+@media (min-width: 760px) {
+  .stage-no {
+    position: absolute;
+    left: 0;
+    top: 2.5rem;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--ink-2);
+  }
+}
+
+.stage-head {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.stage h2 {
+  font-size: clamp(1.6rem, 4.6vw, 2.4rem);
+}
+
+.stage-notes {
+  margin: 0;
+  display: grid;
+  gap: 0.9rem;
+  max-width: var(--prose);
+}
+
+.stage-notes dt {
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}
+
+.stage-notes dd {
+  margin: 0.15rem 0 0;
+}
+
+@media (min-width: 900px) {
+  .stage-notes {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: none;
+  }
+}
+
+/* ---------- compare slider ---------- */
+compare-slider {
+  --pos: 50;
+  display: block;
+}
+
+.cs-frame {
+  position: relative;
+  aspect-ratio: var(--ratio, 3 / 2);
+  overflow: hidden;
+  background: #0d0c0b;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: ew-resize;
+}
+
+.cs-layer,
+.cs-layer picture,
+.cs-layer img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cs-layer img {
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.cs-before {
+  clip-path: inset(0 calc(100% - var(--pos) * 1%) 0 0);
+}
+
+.cs-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--pos) * 1%);
+  width: 44px;
+  margin-left: -22px;
+  z-index: 3;
+  outline: none;
+}
+
+.cs-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 21.5px;
+  width: 1px;
+  background: var(--accent);
+  box-shadow: -1px 0 0 rgb(0 0 0 / 0.65), 1px 0 0 rgb(0 0 0 / 0.65);
+}
+
+/* A small grip so the line reads as something to grab, without an icon. */
+.cs-line::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  width: 9px;
+  height: 36px;
+  margin-top: -18px;
+  border: 1px solid var(--accent);
+  background: rgb(0 0 0 / 0.55);
+}
+
+.cs-handle:focus-visible .cs-line::after {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.cs-handle:focus-visible .cs-line {
+  width: 2px;
+  left: 21px;
+}
+
+.cs-read {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .cs-read {
+    position: absolute;
+    top: 12px;
+    display: grid;
+    gap: 1px;
+    padding: 6px 8px;
+    min-width: 0;
+    max-width: 30ch;
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-stretch: 87.5%;
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    color: #f1ece2;
+    background: rgb(12 11 10 / 0.78);
+    pointer-events: none;
+  }
+
+  .cs-read-before {
+    right: 30px;
+    text-align: right;
+  }
+
+  .cs-read-after {
+    left: 30px;
+  }
+
+  .cs-read > span:first-child {
+    color: var(--accent);
+  }
+
+  /* Near the edges, tuck the squeezed readout onto the roomy side, lower down. */
+  compare-slider[data-edge='left'] .cs-read-before {
+    right: auto;
+    left: 30px;
+    top: auto;
+    bottom: 12px;
+    text-align: left;
+  }
+
+  compare-slider[data-edge='right'] .cs-read-after {
+    left: auto;
+    right: 30px;
+    top: auto;
+    bottom: 12px;
+    text-align: right;
+  }
+
+  .cs-captions {
+    display: none !important;
+  }
+}
+
+.cs-captions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+  padding-top: 8px;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+.cs-cap {
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cs-cap-after {
+  text-align: right;
+}
+
+.cs-cap dt {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cs-cap dd {
+  margin: 0;
+}
+
+compare-slider[data-side='before'] .cs-cap-before,
+compare-slider[data-side='after'] .cs-cap-after {
+  color: var(--ink);
+  border-top: 2px solid var(--accent);
+  padding-top: 5px;
+}
+
+/* ---------- red light ---------- */
+:root[data-light='red'] .cs-layer img,
+:root[data-light='red'] .hero-img img {
+  filter: grayscale(1) brightness(0.55);
+}
+
+:root[data-light='red'] .cs-frame::after,
+:root[data-light='red'] .hero-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #f00;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 2;
+}
+
+:root[data-light='red'] .hero-img {
+  position: relative;
+  background-image: none !important;
+}
+
+:root[data-light='red'] .cs-read {
+  background: #000;
+  color: #f00;
+  border: 1px solid #f00;
+}
+
+:root[data-light='red'] .cs-line {
+  box-shadow: -1px 0 0 #000, 1px 0 0 #000;
+}
+
+:root[data-light='red'] .cs-line::after {
+  background: #000;
+}
+
+:root[data-light='red'] compare-slider[data-side='before'] .cs-cap-before,
+:root[data-light='red'] compare-slider[data-side='after'] .cs-cap-after {
+  font-weight: 700;
+}
+
+:root[data-light='red'] .stage-no {
+  font-weight: 600;
+}
+
+/* ---------- conditions ---------- */
+.conditions,
+.integration {
+  border-top: 1px solid var(--rule);
+  padding: 2.5rem 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.conditions h2,
+.integration h2 {
+  font-size: 1.75rem;
+}
+
+.nights {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+}
+
+.night {
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--rule);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.night:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.night-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+}
+
+.night-span {
+  color: var(--ink);
+}
+
+.night-label {
+  font-size: 1rem;
+}
+
+.night-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 1.1rem;
+  margin: 0;
+}
+
+.night-cells div {
+  display: flex;
+  gap: 0.4em;
+}
+
+.night-cells dt {
+  color: var(--ink-2);
+}
+
+.night-cells dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.night-log {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  max-width: var(--prose);
+}
+
+/* ---------- chart ---------- */
+.chart {
+  margin: 0.5rem 0 0;
+  max-width: 600px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 11px;
+  overflow: visible;
+  /* viewBox units: about 9.5px on a phone, 15px at full width */
+}
+
+.chart .grid line {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.chart .grid line.axis {
+  stroke: var(--ink-2);
+}
+
+.chart .grid text,
+.chart .axis-label {
+  fill: var(--ink-2);
+}
+
+.chart .expect {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 5;
+  opacity: 0.55;
+}
+
+.chart .expect-label {
+  fill: var(--ink-2);
+  font-size: 13px;
+}
+
+.chart .trail {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+.chart .pt circle {
+  fill: var(--accent);
+  stroke: var(--ground);
+  stroke-width: 2;
+}
+
+.chart .pt.below circle {
+  fill: var(--ground);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.chart .pt text {
+  fill: var(--ink);
+}
+
+.chart figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  max-width: var(--prose);
+}
+
+:root[data-light='red'] .chart .expect {
+  opacity: 1;
+}
+
+/* ---------- footer ---------- */
+.colophon {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  border-top: 1px solid var(--rule);
+  display: grid;
+  gap: 0.25rem;
+  font-size: 1rem;
+}
+
+.colophon .fine {
+  margin-top: 0.75rem;
+}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .cs-line {
+    background: Highlight;
+  }
+}
+
+:root[data-light='red'] .placeholder-banner {
+  color: #f00;
+  border-bottom: 1px solid #f00;
+}

@@ -1,0 +1,95 @@
+---
+import Base from '../layouts/Base.astro';
+import Picture from '../components/Picture.astro';
+import StageEntry from '../components/StageEntry.astro';
+import Conditions from '../components/Conditions.astro';
+import Chart from '../components/Chart.astro';
+import { journal, isPlaceholder, minutes, num, arcsec } from '../lib/journal';
+
+const REPO = 'https://github.com/acmck/m31-belfast';
+
+if (isPlaceholder) {
+  console.warn('\n[m31-belfast] journal.json still contains PLACEHOLDER values. Do not deploy this build.\n');
+}
+
+const stages = [...journal.stages].sort((a, b) => a.index - b.index);
+const hero = stages.find((s) => s.id === journal.hero_stage_id) ?? stages[stages.length - 1];
+const heroImg = hero?.images.after;
+const heroBg = hero?.images.placeholder ? `background-image:url(${hero.images.placeholder})` : undefined;
+const heroLog = hero
+  ? `${hero.after.label} · ${num(hero.after.frames)} frames · ${minutes(hero.after.minutes)} · ${arcsec(hero.after.fwhm_arcsec)}`
+  : '';
+const title = 'M31 from Belfast';
+const description =
+  'Learning how to capture M31 from rainy, Bortle 6 Belfast with a Seestar S30 Pro: every processing change, before and after.';
+---
+<Base title={title} description={description}>
+  {isPlaceholder && (
+    <p class="placeholder-banner" role="note">PLACEHOLDER DATA: this build uses test images and fake numbers.</p>
+  )}
+  <header class="masthead">
+    <p class="wordmark">M31 / Belfast</p>
+    <button type="button" class="red-toggle" data-red-toggle aria-pressed="false">
+      <span class="red-dot" aria-hidden="true"></span>Red light
+    </button>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="h-hero">
+      <h1 id="h-hero">Learning how to capture M31 from rainy, Bortle&nbsp;6 Belfast</h1>
+      <p class="lede">
+        I pointed a Seestar S30 Pro at the Andromeda Galaxy from Belfast, where the sky is Bortle 6 and most nights
+        it rains. Below are the processing changes I made, one at a time, and what each one did to the picture.
+      </p>
+      {heroImg && (
+        <figure class="hero-fig">
+          <div class="hero-img" style={heroBg}>
+            <Picture
+              img={heroImg}
+              alt={`M31, the Andromeda Galaxy: ${hero.after.label}`}
+              priority
+              sizes="(min-width: 1100px) 1040px, 100vw"
+            />
+          </div>
+          <figcaption class="log">{heroLog}</figcaption>
+        </figure>
+      )}
+      <p class="red-note">
+        The red light button turns the page red. I switch my phone to red in the garden so I keep my night vision.
+      </p>
+    </section>
+
+    <section class="journey" aria-labelledby="h-journey">
+      <h2 id="h-journey" class="section-title">Stages</h2>
+      <p class="lede">
+        Each stage changes one thing. Before is on the left and after is on the right, aligned on the same stars.
+        Drag the line, or tab to it and use the arrow keys.
+      </p>
+      {stages.map((s) => <StageEntry stage={s} nights={journal.nights} />)}
+    </section>
+
+    <Conditions nights={journal.nights} />
+
+    <section class="integration" aria-labelledby="h-chart">
+      <h2 id="h-chart">Signal against time</h2>
+      <p class="lede">
+        With nothing else changed, signal-to-noise grows with the square root of time, which is the faint curve.
+        Points under it lost something along the way. Points over it gained more from processing than the extra
+        minutes alone would give.
+      </p>
+      <Chart points={journal.chart} stages={stages} />
+    </section>
+  </main>
+
+  <footer class="colophon">
+    <p>Made with a ZWO Seestar S30 Pro.</p>
+    <p>Processed with Siril, GraXpert, Dark Star and ASTAP.</p>
+    <p>The pipeline and this site are on <a href={REPO}>GitHub</a>.</p>
+    <p class="log fine">data generated {journal.generated.slice(0, 10)}</p>
+  </footer>
+
+  <script>
+    import '../scripts/compare-slider.ts';
+    import '../scripts/red-light.ts';
+  </script>
+</Base>

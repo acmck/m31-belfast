@@ -1,0 +1,57 @@
+---
+import { arcsec, num, pct, unit, utcSpan, type Night } from '../lib/journal';
+
+interface Props {
+  nights: Night[];
+}
+
+const { nights } = Astro.props;
+
+const rows = nights.map((n) => {
+  const frames =
+    n.frames_kept != null && n.exposure_s != null
+      ? `${num(n.frames_kept)} × ${num(n.exposure_s)} s`
+      : `${num(n.frames_kept)} fr`;
+  return {
+    id: n.id,
+    label: n.label,
+    span: utcSpan(n.utc_start, n.utc_end),
+    cells: [
+      ['frames', frames],
+      ['FWHM', arcsec(n.fwhm_arcsec)],
+      ['moon', pct(n.moon?.illum_pct)],
+      ['gusts', unit(n.weather?.gust_mph_max, ' mph')],
+      ['cloud', pct(n.weather?.cloud_pct_mean)],
+      ['dropped', pct(n.scope_drop_rate)],
+      ['QA out', num(n.qa_rejected)],
+    ] as [string, string][],
+    log: n.log_line,
+  };
+});
+---
+<section class="conditions" aria-labelledby="h-conditions">
+  <h2 id="h-conditions">The nights</h2>
+  <p class="lede">
+    Most nights here are cloudy. These are the clear ones, with Belfast's weather for the hours I was imaging and
+    what the frames recorded.
+  </p>
+  <ol class="nights">
+    {rows.map((r) => (
+      <li class="night">
+        <p class="night-head">
+          <span class="night-span log">{r.span}</span>
+          <span class="night-label">{r.label}</span>
+        </p>
+        <dl class="night-cells log">
+          {r.cells.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        {r.log && <p class="night-log">{r.log}</p>}
+      </li>
+    ))}
+  </ol>
+</section>
