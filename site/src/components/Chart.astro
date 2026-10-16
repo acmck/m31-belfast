@@ -1,0 +1,131 @@
+---
+import { isNum, num, type ChartPoint, type Stage } from '../lib/journal';
+
+interface Props {
+  points: ChartPoint[];
+  stages: Stage[];
+}
+
+const { points, stages } = Astro.props;
+
+const W = 420;
+const H = 270;
+const m = { t: 18, r: 24, b: 38, l: 40 };
+const iw = W - m.l - m.r;
+const ih = H - m.t - m.b;
+
+const pts = points
+  .filter((p) => isNum(p.minutes) && isNum(p.snr))
+  .map((p) => {
+    const st = stages.find((s) => s.id === p.stage_id);
+    return {
+      ...p,
+      minutes: p.minutes as number,
+      snr: p.snr as number,
+      no: st ? String(st.index).padStart(2, '0') : p.stage_id,
+      order: st?.index ?? 99,
+    };
+  })
+  .sort((a, b) => a.order - b.order);
+
+const maxX = Math.max(1, ...pts.map((p) => p.minutes)) * 1.08;
+const maxY = Math.max(1, ...pts.map((p) => p.snr)) * 1.15;
+
+function nice(max: number, count = 4): number[] {
+  const raw = max / count;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((s) => s >= raw) ?? raw;
+  const out: number[] = [];
+  for (let v = 0; v <= max + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000);
+  return out;
+}
+const xTicks = nice(maxX);
+const yTicks = nice(maxY);
+const x = (v: number) => m.l + (v / maxX) * iw;
+const y = (v: number) => m.t + ih - (v / maxY) * ih;
+
+// √t expectation, anchored on the first measured stage: SNR should grow with the
+// square root of integration time if nothing else changes.
+const anchor = pts.find((p) => p.minutes > 0);
+const k = anchor ? anchor.snr / Math.sqrt(anchor.minutes) : null;
+let curve = '';
+if (k) {
+  const steps = 60;
+  const seg: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = (maxX * i) / steps;
+    const v = k * Math.sqrt(t);
+    if (v > maxY) break;
+    seg.push(`${i === 0 ? 'M' : 'L'}${x(t).toFixed(1)},${y(v).toFixed(1)}`);
+  }
+  curve = seg.join(' ');
+}
+
+// Label placement: points that share an x (processing-only stages) get their labels
+// alternated left and right so they don't sit on top of each other.
+const seen = new Map<number, number>();
+const marks = pts.map((p) => {
+  const key = Math.round(x(p.minutes));
+  const n = seen.get(key) ?? 0;
+  seen.set(key, n + 1);
+  const expected = k ? k * Math.sqrt(p.minutes) : null;
+  const below = expected != null && p.snr < expected * 0.95;
+  const side = n % 2 === 0 ? 1 : -1;
+  return {
+    ...p,
+    cx: x(p.minutes),
+    cy: y(p.snr),
+    below,
+    lx: x(p.minutes) + side * 9,
+    anchor: side > 0 ? 'start' : 'end',
+  };
+});
+// Path joining the stages in journey order.
+const path = marks.map((p, i) => `${i ? 'L' : 'M'}${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ');
+---
+<figure class="chart" aria-labelledby="chart-cap">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title" preserveAspectRatio="xMinYMin meet">
+    <title id="chart-title">SNR against total integration minutes, one point per stage, with a square-root-of-time expectation curve</title>
+    <g class="grid">
+      {yTicks.map((t) => (
+        <g>
+          <line x1={m.l} x2={W - m.r} y1={y(t)} y2={y(t)} />
+          <text x={m.l - 8} y={y(t)} dy="0.32em" text-anchor="end">{num(t, t % 1 ? 1 : 0)}</text>
+        </g>
+      ))}
+      {xTicks.map((t) => (
+        <text x={x(t)} y={H - m.b + 18} text-anchor="middle">{num(t, 0)}</text>
+      ))}
+      <line class="axis" x1={m.l} x2={W - m.r} y1={m.t + ih} y2={m.t + ih} />
+    </g>
+    <text class="axis-label" x={W - m.r} y={H - 4} text-anchor="end">total minutes</text>
+    <text class="axis-label" x={m.l} y={m.t - 4} text-anchor="start" dx="-32">SNR</text>
+    {curve && <path class="expect" d={curve} />}
+    {curve && k && (
+      <text class="expect-label" x={x(maxX * 0.98)} y={y(Math.min(maxY * 0.98, k * Math.sqrt(maxX * 0.98)))} dy="-8" text-anchor="end">√t</text>
+    )}
+    <path class="trail" d={path} />
+    {marks.map((p) => (
+      <g class={p.below ? 'pt below' : 'pt'}>
+        <circle cx={p.cx} cy={p.cy} r="5">
+          <title>{`${p.no} ${p.label}: ${num(p.snr, 1)} SNR at ${num(p.minutes, 0)} min`}</title>
+        </circle>
+        <text x={p.lx} y={p.cy} dy="0.32em" text-anchor={p.anchor}>{p.no}</text>
+      </g>
+    ))}
+  </svg>
+  <figcaption id="chart-cap">
+    Filled points are at or above the √t line through stage {marks[0]?.no ?? '—'}; hollow ones fall more than 5 % short of it.
+  </figcaption>
+  <div class="vh">
+  <table>
+    <caption>SNR by stage</caption>
+    <thead><tr><th scope="col">Stage</th><th scope="col">Minutes</th><th scope="col">SNR</th><th scope="col">√t expectation</th></tr></thead>
+    <tbody>
+      {marks.map((p) => (
+        <tr><th scope="row">{p.no} {p.label}</th><td>{num(p.minutes, 0)}</td><td>{num(p.snr, 1)}</td><td>{k ? num(k * Math.sqrt(p.minutes), 1) : '—'}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  </div>
+</figure>
