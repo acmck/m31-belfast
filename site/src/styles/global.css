@@ -660,6 +660,205 @@ compare-slider[data-side='after'] .cs-cap-after {
   max-width: var(--prose);
 }
 
+/* first-light reference level on the SNR chart */
+.chart .fl line {
+  stroke: var(--ink);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+
+.chart .fl text {
+  fill: var(--ink);
+}
+
+/* ---------- night charts ---------- */
+:root {
+  /* tile tones shared with the story's frame wall */
+  --tile-kept: #8c8476;
+  --tile-reject: #4f4a42;
+  --tile-drop: #6b6458;
+}
+
+.chart-wide {
+  max-width: 760px;
+}
+
+.cn-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin-top: 0.6rem;
+}
+
+.cn-key > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.cn-key .sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--rule);
+}
+
+.cn-key .sw.usable {
+  background: transparent;
+  border: 1.5px solid var(--ink);
+}
+
+.cn-key .dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.clear-nights .cn-dow,
+.clear-nights .cn-day {
+  fill: var(--ink-2);
+  font-size: 11px;
+}
+
+.clear-nights .cn-day.on-light {
+  fill: var(--ground);
+}
+
+.clear-nights .cn-cell.usable rect {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.clear-nights .cn-cell.usable .cn-day {
+  fill: var(--ink);
+}
+
+.clear-nights circle {
+  fill: var(--accent);
+  stroke: var(--ground);
+  stroke-width: 2;
+}
+
+.charts-pair {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .charts-pair {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.fn-rows {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fn-night {
+  margin: 0 0 0.2rem;
+}
+
+.fn-track {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fn-bar {
+  display: flex;
+  gap: 2px;
+  height: 18px;
+  min-width: 0;
+}
+
+.fn-seg {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fn-in {
+  padding-left: 4px;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 11px;
+  /* near-black, not the ground: 5.3:1 on the stacked tone (the ground is only 4.4:1) */
+  color: #0b0a09;
+}
+
+.fn-total {
+  flex: none;
+}
+
+.fn-k,
+.cn-key .sw.fn-k {
+  background: var(--tile-kept);
+}
+
+.fn-q,
+.cn-key .sw.fn-q {
+  background: var(--tile-reject);
+}
+
+.fn-seg.fn-d {
+  border: 1px solid var(--tile-drop);
+}
+
+.cn-key .sw.fn-d {
+  background: transparent;
+  border: 1px solid var(--tile-drop);
+}
+
+.wind .pt circle {
+  fill: var(--accent);
+  stroke: var(--ground);
+  stroke-width: 2;
+}
+
+.fd-panels {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 760px) {
+  .fd-panels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.fd-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.25rem;
+}
+
+.fd-drift {
+  color: var(--ink);
+}
+
+.focus .fd-band {
+  fill: var(--ink-2);
+  opacity: 0.18;
+}
+
+.focus .fd-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.focus .fd-hit {
+  fill: transparent;
+}
+
 /* ---------- footer ---------- */
 .colophon {
   padding-top: 2rem;

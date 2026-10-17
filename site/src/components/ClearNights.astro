@@ -1,0 +1,98 @@
+---
+// Every night from the start of the record, shaded by Belfast city-centre cloud cover (one gray ramp:
+// dark = clear, light = cloud). Usable nights get an outline; nights I imaged get an amber dot.
+import { num } from '../lib/journal';
+
+interface Row {
+  night: string;
+  cloud_pct_mean: number;
+  usable: boolean;
+  imaged: boolean;
+  moon_illum_pct?: number;
+}
+interface Props {
+  data: { rows: Row[]; usable: number; total: number; usable_rule: string; window_utc: string; source: string };
+}
+
+const { data } = Astro.props;
+const rows = data.rows;
+
+// Monday-first calendar: pad the first week so columns are weekdays.
+const first = new Date(rows[0].night + 'T12:00:00Z');
+const lead = (first.getUTCDay() + 6) % 7;
+const cells: (Row | null)[] = [...Array(lead).fill(null), ...rows];
+const weeks: (Row | null)[][] = [];
+for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+const C = 44; // cell pitch in viewBox units
+const G = 4;
+const top = 22;
+const W = 7 * C;
+const H = top + weeks.length * C;
+
+// One-hue ramp between the page ground (clear) and a cloud gray, in sRGB; lightness rises with cloud.
+const clear = [0x21, 0x1f, 0x1c];
+const cloud = [0x8f, 0x89, 0x7e];
+function fill(p: number) {
+  const f = Math.max(0, Math.min(1, p / 100));
+  const c = clear.map((v, i) => Math.round(v + (cloud[i] - v) * f));
+  return `rgb(${c.join(',')})`;
+}
+const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const label = (r: Row) => {
+  const d = new Date(r.night + 'T12:00:00Z');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+};
+---
+<figure class="chart chart-wide clear-nights" aria-labelledby="cn-cap">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="cn-title" preserveAspectRatio="xMinYMin meet">
+    <title id="cn-title">Mean cloud cover each night from {label(rows[0])} to {label(rows[rows.length - 1])}, with the nights I imaged marked</title>
+    {dayName.map((d, i) => (
+      <text class="cn-dow" x={i * C + (C - G) / 2} y={top - 8} text-anchor="middle">{d}</text>
+    ))}
+    {weeks.map((wk, wi) =>
+      wk.map((r, di) =>
+        r ? (
+          <g class={`cn-cell${r.usable ? ' usable' : ''}${r.imaged ? ' imaged' : ''}`}>
+            <rect x={di * C} y={top + wi * C} width={C - G} height={C - G} fill={fill(r.cloud_pct_mean)}>
+              <title>{`${label(r)}: cloud ${num(r.cloud_pct_mean, 0)} %${r.usable ? ', usable' : ''}${r.imaged ? ', imaged' : ''}`}</title>
+            </rect>
+            <text
+              x={di * C + 5}
+              y={top + wi * C + 14}
+              class={r.cloud_pct_mean > 55 ? 'cn-day on-light' : 'cn-day'}
+            >{r.night.slice(8).replace(/^0/, '')}</text>
+            {(r.night.endsWith('-01') || r === rows[0]) && (
+              <text x={di * C + 5} y={top + wi * C + 27} class={r.cloud_pct_mean > 55 ? 'cn-day on-light' : 'cn-day'}>
+                {label(r).split(' ')[1]}
+              </text>
+            )}
+            {r.imaged && <circle cx={di * C + C - G - 9} cy={top + wi * C + C - G - 9} r="4.5" />}
+          </g>
+        ) : null,
+      ),
+    )}
+  </svg>
+  <figcaption id="cn-cap">
+    {data.usable} of {data.total} nights were usable (mean cloud {data.usable_rule.replace('mean cloud cover ', '')} between
+    {data.window_utc.split(' ')[0]} UTC), and I imaged {rows.filter((r) => r.imaged).length} of them.
+    <span class="cn-key log">
+      <span><i class="sw" style={`background:${fill(0)}`}></i>0 %</span>
+      <span><i class="sw" style={`background:${fill(50)}`}></i>50 %</span>
+      <span><i class="sw" style={`background:${fill(100)}`}></i>100 % cloud</span>
+      <span><i class="sw usable"></i>usable</span>
+      <span><i class="dot"></i>imaged</span>
+    </span>
+  </figcaption>
+  <div class="vh">
+    <table>
+      <caption>Cloud cover by night</caption>
+      <thead><tr><th scope="col">Night</th><th scope="col">Cloud %</th><th scope="col">Usable</th><th scope="col">Imaged</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr><th scope="row">{label(r)}</th><td>{num(r.cloud_pct_mean, 0)}</td><td>{r.usable ? 'yes' : 'no'}</td><td>{r.imaged ? 'yes' : 'no'}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</figure>

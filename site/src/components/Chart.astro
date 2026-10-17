@@ -7,9 +7,11 @@ interface Props {
   order: { id: string; index: number }[];
   /** What one point is: 'step' on the timeline, 'stage' for lessons. */
   noun?: string;
+  /** A labeled reference level: the Seestar's own first-light stack. */
+  firstLight?: { snr: number; label: string } | null;
 }
 
-const { points, order, noun = 'stage' } = Astro.props;
+const { points, order, noun = 'stage', firstLight = null } = Astro.props;
 
 const W = 420;
 const H = 270;
@@ -33,7 +35,7 @@ const pts = points
   .sort((a, b) => a.order - b.order);
 
 const maxX = Math.max(1, ...pts.map((p) => p.minutes)) * 1.08;
-const maxY = Math.max(1, ...pts.map((p) => p.snr)) * 1.15;
+const maxY = Math.max(1, ...pts.map((p) => p.snr), firstLight?.snr ?? 0) * 1.15;
 
 function nice(max: number, count = 4): number[] {
   const raw = max / count;
@@ -104,6 +106,14 @@ const path = marks.map((p, i) => `${i ? 'L' : 'M'}${p.cx.toFixed(1)},${p.cy.toFi
     </g>
     <text class="axis-label" x={W - m.r} y={H - 4} text-anchor="end">total minutes</text>
     <text class="axis-label" x={m.l} y={m.t - 4} text-anchor="start" dx="-32">SNR</text>
+    {firstLight && (
+      <g class="fl">
+        <line x1={m.l} x2={W - m.r} y1={y(firstLight.snr)} y2={y(firstLight.snr)}>
+          <title>{`${firstLight.label}: SNR ${num(firstLight.snr, 1)}`}</title>
+        </line>
+        <text x={m.l + 6} y={y(firstLight.snr)} dy="-6">first light {num(firstLight.snr, 1)}</text>
+      </g>
+    )}
     {curve && <path class="expect" d={curve} />}
     {curve && k && (
       <text class="expect-label" x={x(maxX * 0.98)} y={y(Math.min(maxY * 0.98, k * Math.sqrt(maxX * 0.98)))} dy="-8" text-anchor="end">√t</text>
@@ -120,6 +130,7 @@ const path = marks.map((p, i) => `${i ? 'L' : 'M'}${p.cx.toFixed(1)},${p.cy.toFi
   </svg>
   <figcaption id="chart-cap">
     Filled points are at or above the √t line through {noun} {marks[0]?.no ?? '—'}; hollow ones fall more than 5 % short of it.
+    {firstLight && <> The solid line is first light, the scope's own stack.</>}
   </figcaption>
   <div class="vh">
   <table>

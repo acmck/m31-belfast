@@ -1,0 +1,110 @@
+---
+// Star size (FWHM) through each night, small multiples on one shared y scale: the median of the frames
+// QA kept in each time bin, with the bin's min-max as a faint band. Gaps in the record break the line.
+import { num, type Night } from '../lib/journal';
+
+interface Pt { t: string; med: number | null; lo: number | null; hi: number | null; n: number; rej: number }
+interface Focus {
+  utc_start: string;
+  bin_s: number;
+  start_fwhm: number;
+  end_fwhm: number;
+  drift: number;
+  median_kept: number;
+  points: Pt[];
+}
+interface Props {
+  focus: Record<string, Focus>;
+  nights: Night[];
+}
+
+const { focus, nights } = Astro.props;
+const label = (id: string) => nights.find((n) => n.id === id)?.label ?? id;
+const ids = Object.keys(focus).sort();
+
+// shared y domain from the medians, padded to whole arcseconds
+const meds = ids.flatMap((id) => focus[id].points.map((p) => p.med).filter((v): v is number => v != null));
+const y0 = Math.floor(Math.min(...meds)) - 1;
+const y1 = Math.ceil(Math.max(...meds)) + 1;
+const yTicks: number[] = [];
+for (let v = Math.ceil(y0 / 2) * 2; v <= y1; v += 2) yTicks.push(v);
+
+const W = 300;
+const H = 170;
+const m = { t: 12, r: 10, b: 26, l: 30 };
+const ih = H - m.t - m.b;
+const y = (v: number) => m.t + ih - ((Math.min(Math.max(v, y0), y1) - y0) / (y1 - y0)) * ih;
+
+const panels = ids.map((id) => {
+  const f = focus[id];
+  const t0 = Date.parse(f.utc_start);
+  const pts = f.points.filter((p) => p.med != null);
+  const mins = pts.map((p) => (Date.parse(p.t) - t0) / 60000);
+  const span = Math.max(60, Math.ceil(Math.max(...mins) / 60) * 60);
+  const x = (mn: number) => m.l + (mn / span) * (W - m.l - m.r);
+  const gap = (2.5 * f.bin_s) / 60;
+  let line = '';
+  let band = '';
+  let runs: { x: number; lo: number; hi: number }[][] = [[]];
+  pts.forEach((p, i) => {
+    const mn = mins[i];
+    const brk = i > 0 && mn - mins[i - 1] > gap;
+    line += `${i === 0 || brk ? 'M' : 'L'}${x(mn).toFixed(1)},${y(p.med as number).toFixed(1)}`;
+    if (brk) runs.push([]);
+    runs[runs.length - 1].push({ x: x(mn), lo: y((p.lo ?? p.med) as number), hi: y((p.hi ?? p.med) as number) });
+  });
+  for (const r of runs) {
+    if (r.length < 2) continue;
+    band += 'M' + r.map((q) => `${q.x.toFixed(1)},${q.hi.toFixed(1)}`).join('L') + 'L' + [...r].reverse().map((q) => `${q.x.toFixed(1)},${q.lo.toFixed(1)}`).join('L') + 'Z';
+  }
+  const hours: number[] = [];
+  for (let h = 0; h <= span / 60; h++) hours.push(h);
+  return { id, f, line, band, x, span, hours, first: pts[0], last: pts[pts.length - 1], mins };
+});
+---
+<figure class="chart chart-wide focus" aria-labelledby="fd-cap">
+  <div class="fd-panels">
+    {panels.map((p) => (
+      <div class="fd-panel">
+        <p class="fd-head log"><span>{label(p.id)}</span> <span class="fd-drift">{num(p.f.start_fwhm, 1)}″ → {num(p.f.end_fwhm, 1)}″</span></p>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${label(p.id)}: star size from ${num(p.f.start_fwhm, 1)} to ${num(p.f.end_fwhm, 1)} arcseconds over the night`} preserveAspectRatio="xMinYMin meet">
+          <g class="grid">
+            {yTicks.map((t) => (
+              <g>
+                <line x1={m.l} x2={W - m.r} y1={y(t)} y2={y(t)} />
+                <text x={m.l - 6} y={y(t)} dy="0.32em" text-anchor="end">{t}″</text>
+              </g>
+            ))}
+            {p.hours.map((h) => (
+              <text x={p.x(h * 60)} y={H - 6} text-anchor={h === 0 ? 'start' : 'middle'}>{h === 0 ? '0 h' : `${h}`}</text>
+            ))}
+            <line class="axis" x1={m.l} x2={W - m.r} y1={m.t + ih} y2={m.t + ih} />
+          </g>
+          <path class="fd-band" d={p.band} />
+          <path class="fd-line" d={p.line} />
+          {p.f.points.filter((q) => q.med != null).map((q, i) => (
+            <rect class="fd-hit" x={p.x(p.mins[i]) - 3} y={m.t} width="6" height={ih}>
+              <title>{`${q.t.slice(11, 16)} UTC: median ${num(q.med, 1)}″ over ${q.n} frame${q.n === 1 ? '' : 's'}${q.rej ? `, ${q.rej} rejected` : ''}`}</title>
+            </rect>
+          ))}
+        </svg>
+      </div>
+    ))}
+  </div>
+  <figcaption id="fd-cap">
+    Median star size (FWHM) through each night, from the frames QA kept, on one shared scale. Hours count from
+    the first frame. Lower is sharper. 7/8 Sep drifted {num(focus[ids[0]].drift, 1)}″ with the focuser never moving;
+    16/17 Oct held within {num(Math.abs(focus[ids[ids.length - 1]].drift), 1)}″.
+  </figcaption>
+  <div class="vh">
+    <table>
+      <caption>Star size at the start and end of each night</caption>
+      <thead><tr><th scope="col">Night</th><th scope="col">First 15 min</th><th scope="col">Last 15 min</th><th scope="col">Night median</th></tr></thead>
+      <tbody>
+        {panels.map((p) => (
+          <tr><th scope="row">{label(p.id)}</th><td>{num(p.f.start_fwhm, 1)}″</td><td>{num(p.f.end_fwhm, 1)}″</td><td>{num(p.f.median_kept, 1)}″</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</figure>

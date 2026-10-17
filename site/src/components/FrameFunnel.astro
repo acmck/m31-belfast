@@ -1,0 +1,133 @@
+---
+// Where each night's exposure slots went (the same states and tones as the story's tile wall), and the
+// hourly city-centre gusts against the scope's drop rate.
+import { num, type Night } from '../lib/journal';
+
+interface Funnel {
+  slots: number;
+  saved: number;
+  dropped_by_scope: number;
+  rejected_by_qa: number;
+  excluded_by_stacker: number;
+  stacked: number;
+}
+interface WindRow { hour_utc: string; gust_mph: number; slots: number; dropped: number; drop_rate: number }
+interface Props {
+  funnel: Record<string, Funnel>;
+  wind: Record<string, WindRow[]>;
+  corr: { pearson_r: number; n_hours: number; min_slots_per_hour: number };
+  nights: Night[];
+}
+
+const { funnel, wind, corr, nights } = Astro.props;
+const label = (id: string) => nights.find((n) => n.id === id)?.label ?? id;
+const ids = Object.keys(funnel).sort();
+
+// --- stacked bars: one per night, scaled to the largest night so lengths compare
+const maxSlots = Math.max(...ids.map((id) => funnel[id].slots));
+const bars = ids.map((id) => {
+  const f = funnel[id];
+  const rej = f.rejected_by_qa + f.excluded_by_stacker;
+  const segs = [
+    { cls: 'k', n: f.stacked, name: 'stacked' },
+    { cls: 'q', n: rej, name: 'rejected' },
+    { cls: 'd', n: f.dropped_by_scope, name: 'dropped by the scope' },
+  ];
+  return { id, f, rej, parts: segs };
+});
+
+// --- scatter: gusts vs drop rate, night-hours with enough slots to mean something
+const pts = ids.flatMap((id) =>
+  (wind[id] ?? []).filter((r) => r.slots >= corr.min_slots_per_hour).map((r) => ({ ...r, id })),
+);
+const SW = 300;
+const SH = 190;
+const m = { t: 14, r: 12, b: 34, l: 40 };
+const gx = [Math.floor(Math.min(...pts.map((p) => p.gust_mph)) / 5) * 5, Math.ceil(Math.max(...pts.map((p) => p.gust_mph)) / 5) * 5];
+const sxS = (v: number) => m.l + ((v - gx[0]) / (gx[1] - gx[0] || 1)) * (SW - m.l - m.r);
+const syS = (v: number) => m.t + (1 - v / 0.6) * (SH - m.t - m.b);
+const gxTicks: number[] = [];
+for (let v = gx[0]; v <= gx[1]; v += 5) gxTicks.push(v);
+const hhmm = (s: string) => s.slice(11, 16);
+---
+<div class="charts-pair">
+  <figure class="chart chart-wide funnel" aria-labelledby="fn-cap">
+    <div class="fn-rows" role="img" aria-label="Exposure slots per night: stacked, rejected, and dropped by the scope">
+      {bars.map((b) => (
+        <div class="fn-row">
+          <p class="fn-night log">{label(b.id)}</p>
+          <div class="fn-track">
+            <div class="fn-bar" style={`width:${((b.f.slots / maxSlots) * 100).toFixed(2)}%`}>
+              {b.parts.map((p) =>
+                p.n > 0 ? (
+                  <span class={`fn-seg fn-${p.cls}`} style={`flex:${p.n} 0 0`} title={`${label(b.id)}: ${num(p.n)} ${p.name} of ${num(b.f.slots)} slots`}>
+                    {p.cls === 'k' && <span class="fn-in">{num(p.n)}</span>}
+                  </span>
+                ) : null,
+              )}
+            </div>
+            <span class="fn-total log">{num(b.f.slots)}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <figcaption id="fn-cap">
+      One slot is one 10 s exposure the scope should have taken. Bar ends show the total slots.
+      <span class="cn-key log">
+        <span><i class="sw fn-k"></i>stacked</span>
+        <span><i class="sw fn-q"></i>rejected (QA, plus 1 the stacker left out)</span>
+        <span><i class="sw fn-d"></i>dropped by the scope</span>
+      </span>
+    </figcaption>
+    <div class="vh">
+      <table>
+        <caption>Exposure slots by night</caption>
+        <thead><tr><th scope="col">Night</th><th scope="col">Slots</th><th scope="col">Saved</th><th scope="col">Dropped by the scope</th><th scope="col">Rejected</th><th scope="col">Stacked</th></tr></thead>
+        <tbody>
+          {bars.map((b) => (
+            <tr><th scope="row">{label(b.id)}</th><td>{num(b.f.slots)}</td><td>{num(b.f.saved)}</td><td>{num(b.f.dropped_by_scope)}</td><td>{num(b.rej)}</td><td>{num(b.f.stacked)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </figure>
+
+  <figure class="chart wind" aria-labelledby="wd-cap">
+    <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-labelledby="wd-title" preserveAspectRatio="xMinYMin meet">
+      <title id="wd-title">Hourly gusts at Belfast city centre against the share of exposures the scope dropped that hour</title>
+      <g class="grid">
+        {[0, 0.2, 0.4, 0.6].map((v) => (
+          <g>
+            <line x1={m.l} x2={SW - m.r} y1={syS(v)} y2={syS(v)} />
+            <text x={m.l - 6} y={syS(v)} dy="0.32em" text-anchor="end">{Math.round(v * 100)} %</text>
+          </g>
+        ))}
+        {gxTicks.map((t) => <text x={sxS(t)} y={SH - m.b + 16} text-anchor="middle">{t}</text>)}
+        <line class="axis" x1={m.l} x2={SW - m.r} y1={syS(0)} y2={syS(0)} />
+      </g>
+      <text class="axis-label" x={SW - m.r} y={SH - 3} text-anchor="end">gusts, mph</text>
+      {pts.map((p) => (
+        <g class="pt">
+          <circle cx={sxS(p.gust_mph)} cy={syS(p.drop_rate)} r="4.5">
+            <title>{`${label(p.id)}, ${hhmm(p.hour_utc)} UTC: gusts ${num(p.gust_mph, 0)} mph, ${num(p.drop_rate * 100, 0)} % dropped (${num(p.dropped)} of ${num(p.slots)})`}</title>
+          </circle>
+        </g>
+      ))}
+    </svg>
+    <figcaption id="wd-cap">
+      Share dropped against city-centre gusts, one point per night-hour (r = {num(corr.pearson_r, 2)} over {corr.n_hours} hours).
+      No relationship: I don't know yet why the scope drops frames.
+    </figcaption>
+    <div class="vh">
+      <table>
+        <caption>Gusts against drop rate by hour</caption>
+        <thead><tr><th scope="col">Night, hour (UTC)</th><th scope="col">Gusts, mph</th><th scope="col">Dropped</th><th scope="col">Slots</th></tr></thead>
+        <tbody>
+          {pts.map((p) => (
+            <tr><th scope="row">{label(p.id)}, {hhmm(p.hour_utc)}</th><td>{num(p.gust_mph, 0)}</td><td>{num(p.drop_rate * 100, 0)} %</td><td>{num(p.slots)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </figure>
+</div>
