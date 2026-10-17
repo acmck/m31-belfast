@@ -5,9 +5,9 @@ a Bortle 6 back garden in rainy Belfast. It pulls the raw 10 s sub-frames off th
 frame, stacks them with Siril and finishes the image with GraXpert, Dark Star and a custom stretch. Every
 default was chosen by measuring it on this data, and the numbers are given below.
 
-**The journey, stage by stage, with before/after sliders: <https://m31-belfast.pages.dev>**
+**The journey, step by step, with before/after sliders: <https://m31-belfast.pages.dev>**
 
-![M31 from Belfast, all nights combined](site/public/img/07-latest/after-1200.webp)
+![M31 from Belfast, the latest stack (all nights combined)](site/public/img/hero/after-1200.webp)
 
 ## The nights
 
