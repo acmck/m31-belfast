@@ -15,7 +15,7 @@ One folder per night under `data/` (not in git), named by the evening the night 
 
 | session | conditions |
 |---|---|
-| `M31_2026-09-07` | dark sky, windy (the scope's live stacker dropped 22 % of exposures); 467 subs kept |
+| `M31_2026-09-07` | dark sky; the scope dropped 22 % of exposures (cause unknown; see [lab notes](docs/lab-notes.md)); 467 subs kept |
 | `M31_2026-09-25` | night of 25/26, near-full moon, sky 3.4x brighter than Sep 7, sharper stars |
 | `M31_2026-10-16` | 375 subs, the sharpest night (9.4" stars) |
 | `M31_combined_<date>` | every night's QA-selected frames stacked together |
@@ -103,7 +103,7 @@ USB mass storage enumerated but would not mount on this Mac; Wi-Fi is the reliab
 
 ## Capture lessons (no software recovers these)
 
-- **Refocus during the session.** On Sep 7 the focuser never moved while FWHM grew from 12.9" to 17.3".
+- **Refocus during the session.** On Sep 7 the focuser never moved while FWHM grew from about 13" to 17" (15-minute medians, `scripts/make_charts_data.py`).
 - **Consider 20 s subs on calm nights.** Read noise is 26-30 % of the per-pixel variance at 10 s, so 20 s
   gains about 8 % (green) to 18 % (blue) SNR per hour, at the cost of more wind rejections.
 - **Image each night over similar hours.** Field rotation follows the hours imaged; nights over different
