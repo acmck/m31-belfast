@@ -9,7 +9,7 @@ garden in Belfast, arm64 Mac.
 
 | session | what it was like |
 |---|---|
-| `M31_2026-09-07` | 479 subs saved, 467 kept; dark sky; windy (the scope's live stacker dropped 22 % of exposures); 16" stars |
+| `M31_2026-09-07` | 479 subs saved, 467 kept; dark sky; the scope dropped 22 % of exposures; 16" stars |
 | `M31_2026-09-25` | night of 25/26, crosses midnight (346 subs dated 09-25, 903 dated 09-26); near-full moon, sky 3.4x brighter; 11" stars |
 | `M31_2026-10-16` | 384 x 10 s, 20:45-22:23; stayed at 10 s all night; the sharpest night |
 | `M31_combined_2026-10-16` | Sep 7 + Sep 25/26 frames, 995 stacked, 166 min |
@@ -36,7 +36,7 @@ Measured on Sep 7 (details and sources in REVIEW.md):
 - 2x drizzle: +3 % FWHM only. Siril RL deconvolution: about 1 % FWHM, deep rings. Not worth it.
 - The stretch clipped the nucleus to a 2.1' white disc although the linear peak sat 3.6x above the clip
   level (now a soft highlight knee).
-- The focuser never moved all night while FWHM went from 12.9" to 17.3". Autofocus is the biggest
+- The focuser never moved all night while FWHM went from about 13" to 17" (15-minute medians of QA-passed frames; re-measured 2026-10-17). Autofocus is the biggest
   capture-side lever.
 
 ## Noise
@@ -136,7 +136,7 @@ never stacks of stacks.
 
 ## Capture plan
 
-- Refocus during the session (Sep 7 drifted 12.9" -> 17.3" with the focuser fixed).
+- Refocus during the session (Sep 7 drifted from about 13" to 17" with the focuser fixed; Oct 16 drifted only 0.2").
 - Dew heater on in a Belfast autumn (temperature-dew point spread around 3 C).
 - Pick the target from the app's catalogue so the framing repeats.
 - Windy evenings at 10 s, calm late nights at 20 s (read noise is about 27 % of the 10 s variance).
@@ -145,3 +145,15 @@ never stacks of stacks.
   the whole frame survives the crop; M31's disc (about 2.0 x 2.5 deg at PA 38) just fits north-up. Without
   rotation, enable dithering to avoid walking noise; then revisit 30-60 s subs. A mosaic is the only way to
   "zoom out".
+
+## Dropped frames are not (measurably) wind
+
+Checked 2026-10-17 with `scripts/make_charts_data.py`. Hourly gusts at Belfast city centre (ERA5) against the
+scope's per-hour drop rate give r = 0.15 over 13 night-hours, which is no relationship. 16/17 Oct dropped 27 % in
+10-13 mph gusts, and on 25/26 Sep drops rose to 51-59 % after 02:00 while the gusts fell. The cause is still
+unknown. City-centre gusts may not reflect the garden; Wi-Fi, the app and tracking are other candidates.
+
+## Clear nights
+
+From 1 Sep to 16 Oct, 9 of 46 nights had mean cloud cover of 30 % or less between 21:00 and 03:00 UTC at Belfast
+city centre. I imaged 3 of them.

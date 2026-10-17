@@ -1,0 +1,9 @@
+{
+ "generated": "2026-10-17T01:41:23Z",
+ "script": "scripts/make_charts_data.py",
+ "focus": "Per-frame star FWHM from the pipeline's frame QA (already in arcsec: px x 3.665\"/px plate scale). Time bins of 60 s (7/8 Sep, 16/17 Oct) or 120 s (25/26 Sep), at most 200 per night; med/lo/hi over QA-kept frames, rej/rej_med for QA-rejected frames. start/end = median of kept frames in the 15 min after the first / before the last kept frame; *_all_saved use the same windows but include rejected frames.",
+ "funnel": "Exposure slots from the cadence model used by the story tile wall (11 s cadence; a gap of n cadences = n-1 dropped exposures; gaps of 10 min or more are pauses). Rejected/excluded/stacked from the story's three-nights step (the 17 Oct combined stack). Reconciled: slots = saved + dropped, saved = rejected + excluded + stacked, stacked total = the hero's frame count.",
+ "wind": "Open-Meteo hourly wind_gusts_10m (mph, max of the preceding hour), Belfast city centre; sources: open-meteo archive (ERA5) (13 h). Drops per UTC hour from the slot model, dropped slots placed in their gap at the cadence.",
+ "clear_nights": "Open-Meteo hourly cloud_cover, Belfast city centre; sources: open-meteo archive (ERA5) (322 samples). Moon: astropy, illumination at 00:00 UTC and max altitude over 21:00-03:00 UTC, Belfast city centre.",
+ "first_light": "journal.json timeline step 1, before side (Seestar live stack)."
+}
