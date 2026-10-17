@@ -1,12 +1,15 @@
 ---
-import { isNum, num, type ChartPoint, type Stage } from '../lib/journal';
+import { chartId, isNum, num, type ChartPoint } from '../lib/journal';
 
 interface Props {
   points: ChartPoint[];
-  stages: Stage[];
+  /** id and index of whatever the points belong to (timeline steps or lessons). */
+  order: { id: string; index: number }[];
+  /** What one point is: 'step' on the timeline, 'stage' for lessons. */
+  noun?: string;
 }
 
-const { points, stages } = Astro.props;
+const { points, order, noun = 'stage' } = Astro.props;
 
 const W = 420;
 const H = 270;
@@ -17,12 +20,13 @@ const ih = H - m.t - m.b;
 const pts = points
   .filter((p) => isNum(p.minutes) && isNum(p.snr))
   .map((p) => {
-    const st = stages.find((s) => s.id === p.stage_id);
+    const id = chartId(p);
+    const st = order.find((s) => s.id === id);
     return {
       ...p,
       minutes: p.minutes as number,
       snr: p.snr as number,
-      no: st ? String(st.index).padStart(2, '0') : p.stage_id,
+      no: st ? String(st.index).padStart(2, '0') : id,
       order: st?.index ?? 99,
     };
   })
@@ -85,7 +89,7 @@ const path = marks.map((p, i) => `${i ? 'L' : 'M'}${p.cx.toFixed(1)},${p.cy.toFi
 ---
 <figure class="chart" aria-labelledby="chart-cap">
   <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="chart-title" preserveAspectRatio="xMinYMin meet">
-    <title id="chart-title">SNR against total integration minutes, one point per stage, with a square-root-of-time expectation curve</title>
+    <title id="chart-title">{`SNR against total integration minutes, one point per ${noun}, with a square-root-of-time expectation curve`}</title>
     <g class="grid">
       {yTicks.map((t) => (
         <g>
@@ -115,12 +119,12 @@ const path = marks.map((p, i) => `${i ? 'L' : 'M'}${p.cx.toFixed(1)},${p.cy.toFi
     ))}
   </svg>
   <figcaption id="chart-cap">
-    Filled points are at or above the √t line through stage {marks[0]?.no ?? '—'}; hollow ones fall more than 5 % short of it.
+    Filled points are at or above the √t line through {noun} {marks[0]?.no ?? '—'}; hollow ones fall more than 5 % short of it.
   </figcaption>
   <div class="vh">
   <table>
-    <caption>SNR by stage</caption>
-    <thead><tr><th scope="col">Stage</th><th scope="col">Minutes</th><th scope="col">SNR</th><th scope="col">√t expectation</th></tr></thead>
+    <caption>SNR by {noun}</caption>
+    <thead><tr><th scope="col">{noun === 'step' ? 'Step' : 'Stage'}</th><th scope="col">Minutes</th><th scope="col">SNR</th><th scope="col">√t expectation</th></tr></thead>
     <tbody>
       {marks.map((p) => (
         <tr><th scope="row">{p.no} {p.label}</th><td>{num(p.minutes, 0)}</td><td>{num(p.snr, 1)}</td><td>{k ? num(k * Math.sqrt(p.minutes), 1) : '—'}</td></tr>

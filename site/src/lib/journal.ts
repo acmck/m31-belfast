@@ -1,4 +1,11 @@
-import raw from '../data/journal.json';
+import bundled from '../data/journal.json';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+// JOURNAL_FIXTURE lets a build run against a test file without touching journal.json.
+const fixture = process.env.JOURNAL_FIXTURE;
+const raw: unknown = fixture ? JSON.parse(readFileSync(path.resolve(fixture), 'utf8')) : bundled;
+if (fixture) console.warn(`[m31-belfast] building against fixture ${fixture}`);
 
 export type Num = number | null | undefined;
 
@@ -58,8 +65,45 @@ export interface Stage {
   alignment?: { method: string | null; n_stars: Num; median_residual_px: Num } | null;
 }
 
+/** Anything a compare slider can show. */
+export interface Pair {
+  before: Side;
+  after: Side;
+  images: { before: Img; after: Img; placeholder?: string | null };
+  alignment?: { method: string | null; n_stars: Num; median_residual_px: Num } | null;
+}
+
+export interface SideNote {
+  label: string;
+  night_id?: string | null;
+  frames: Num;
+  minutes: Num;
+  fwhm_arcsec: Num;
+  snr_headline: Num;
+  text?: string | null;
+  image?: { webp_1200: string; avif_1200: string; width: number; height: number } | null;
+}
+
+export interface TimelineStep extends Pair {
+  id: string;
+  index: number;
+  date: string;
+  title: string;
+  kind?: string | null;
+  provenance?: string | null;
+  what_changed?: string | null;
+  what_it_did?: string | null;
+  side_notes?: SideNote[] | null;
+}
+
+export interface Hero extends Pair {
+  after_step_id?: string | null;
+}
+
 export interface ChartPoint {
-  stage_id: string;
+  stage_id?: string;
+  step_id?: string;
+  id?: string;
   label: string;
   minutes: Num;
   snr: Num;
@@ -71,6 +115,8 @@ export interface Journal {
   stages: Stage[];
   chart: ChartPoint[];
   hero_stage_id: string;
+  timeline?: TimelineStep[] | null;
+  hero?: Hero | null;
 }
 
 export const journal = raw as unknown as Journal;
@@ -139,13 +185,17 @@ export function snrHeadline(s: Side): Num {
   return null;
 }
 
-/** Short readout for the slider handle: frames, minutes, SNR. */
-export function readout(s: Side): string[] {
+/** Short readout for the slider handle: frames, minutes, SNR. Timeline sides are running totals. */
+export function readout(s: Side, cumulative = false): string[] {
   return [
     s.label || DASH,
-    `${num(s.frames)} fr · ${minutes(s.minutes)}`,
+    `${cumulative ? 'total ' : ''}${num(s.frames)} fr · ${minutes(s.minutes)}`,
     `${arcsec(s.fwhm_arcsec)} · SNR ${num(snrHeadline(s), 1)}`,
   ];
 }
 
 export { isNum };
+
+export function chartId(p: ChartPoint): string {
+  return p.step_id ?? p.stage_id ?? p.id ?? '';
+}

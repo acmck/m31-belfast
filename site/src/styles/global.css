@@ -293,7 +293,7 @@ main,
   gap: 0.35rem;
 }
 
-.stage h2 {
+.stage h3 {
   font-size: clamp(1.6rem, 4.6vw, 2.4rem);
 }
 
@@ -687,3 +687,71 @@ compare-slider[data-side='after'] .cs-cap-after {
   }
 }
 
+
+/* ---------- timeline ---------- */
+.lessons {
+  margin-top: 1rem;
+}
+
+.step .stage-head {
+  gap: 0.3rem;
+}
+
+.step-date {
+  color: var(--accent);
+}
+
+.provenance {
+  font-size: 0.6875rem;
+}
+
+.step-total {
+  color: var(--ink);
+}
+
+.side-notes {
+  display: grid;
+  gap: 0.75rem;
+  max-width: var(--prose);
+  padding-left: 12px;
+  border-left: 1px solid var(--rule);
+}
+
+.side-note {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.side-note img {
+  width: 96px;
+  height: auto;
+}
+
+.side-note-text {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9375rem;
+  min-width: 0;
+}
+
+.side-note-text .log {
+  overflow-wrap: anywhere;
+}
+
+.side-note-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+@media (min-width: 760px) {
+  .side-note {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .side-note img {
+    width: 160px;
+  }
+}

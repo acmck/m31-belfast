@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Compare from '../components/Compare.astro';
 import StageEntry from '../components/StageEntry.astro';
+import TimelineEntry from '../components/TimelineEntry.astro';
 import Conditions from '../components/Conditions.astro';
 import Chart from '../components/Chart.astro';
 import { journal, isPlaceholder } from '../lib/journal';
@@ -13,10 +14,25 @@ if (isPlaceholder) {
 }
 
 const stages = [...journal.stages].sort((a, b) => a.index - b.index);
-const hero = stages.find((s) => s.id === journal.hero_stage_id) ?? stages[stages.length - 1];
-// the hero is the first-light → latest pair, so it isn't repeated in the stage list
-const listed = stages.filter((s) => s !== hero);
-const firstNight = journal.nights.find((n) => n.id === hero?.night_ids[0]);
+const timeline = [...(journal.timeline ?? [])].sort((a, b) => a.index - b.index);
+const hasTimeline = timeline.length > 0;
+// Fallback hero: the lesson named by hero_stage_id, with first-light / latest labels.
+const heroById = stages.find((s) => s.id === journal.hero_stage_id);
+const heroStage = heroById ?? (journal.hero ? undefined : stages[stages.length - 1]);
+// the hero is the first-light → latest pair, so it isn't repeated in the lessons
+const listed = stages.filter((s) => s !== heroStage);
+const firstNight = journal.nights.find((n) => n.id === heroStage?.night_ids[0]);
+const heroPair = journal.hero ?? heroStage;
+const heroLabels = journal.hero
+  ? {}
+  : {
+      beforeLabel: `First light${firstNight ? `, ${firstNight.label}` : ''}`,
+      afterLabel: heroStage ? `Latest: ${heroStage.after.label}` : undefined,
+    };
+const heroNote = journal.hero ? null : heroStage?.what_it_did;
+const chartOrder = hasTimeline
+  ? timeline.map((t) => ({ id: t.id, index: t.index }))
+  : stages.map((s) => ({ id: s.id, index: s.index }));
 const title = 'M31 from Belfast';
 const description =
   'Learning how to capture M31 from rainy, Bortle 6 Belfast with a Seestar S30 Pro: every processing change, before and after.';
@@ -43,32 +59,52 @@ const description =
       <h1 id="h-hero">Learning how to capture M31 from rainy, Bortle&nbsp;6 Belfast</h1>
       <p class="lede">
         I pointed a Seestar S30 Pro at the Andromeda Galaxy from Belfast, where the sky is Bortle 6 and most nights
-        it rains. Below are the processing changes I made, one at a time, and what each one did to the picture.
+        it rains.{hasTimeline
+          ? ' Below is the best picture I had on each date since first light, then what each change did on its own.'
+          : ' Below are the processing changes I made, one at a time, and what each one did to the picture.'}
       </p>
-      {hero && (
+      {heroPair && (
         <figure class="hero-fig">
-          <Compare
-            stage={hero}
-            priority
-            sizes="(min-width: 1100px) 1040px, 100vw"
-            beforeLabel={`First light${firstNight ? `, ${firstNight.label}` : ''}`}
-            afterLabel={`Latest: ${hero.after.label}`}
-          />
+          <Compare stage={heroPair} priority sizes="(min-width: 1100px) 1040px, 100vw" {...heroLabels} />
         </figure>
       )}
-      {hero?.what_it_did && (
-        <p class="lede">{hero.what_it_did}</p>
-      )}
+      {heroNote && <p class="lede">{heroNote}</p>}
     </section>
 
-    <section class="journey" aria-labelledby="h-journey">
-      <h2 id="h-journey" class="section-title">Stages</h2>
-      <p class="lede">
-        Each stage changes one thing. Before is on the left and after is on the right, aligned on the same stars.
-        Drag the line, or tab to it and use the arrow keys.
-      </p>
-      {listed.map((s) => <StageEntry stage={s} nights={journal.nights} />)}
-    </section>
+    {hasTimeline && (
+      <section class="journey timeline" aria-labelledby="h-timeline">
+        <h2 id="h-timeline" class="section-title">Timeline</h2>
+        <p class="lede">
+          Each step is the best picture I had on that date, made with that date's frames and code. Before is the
+          previous step, and frames and minutes are running totals. Steps that came out worse stay in, with a note on
+          what went wrong. Drag the line, or tab to it and use the arrow keys.
+        </p>
+        {timeline.map((t) => <TimelineEntry step={t} />)}
+      </section>
+    )}
+
+    {listed.length > 0 && (
+      <section class="journey lessons" aria-labelledby="h-journey">
+        {hasTimeline ? (
+          <>
+            <h2 id="h-journey" class="section-title">What each change did</h2>
+            <p class="lede">
+              I reprocessed these today so each comparison isolates one change. Before is on the left and after is on
+              the right, aligned on the same stars.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 id="h-journey" class="section-title">Stages</h2>
+            <p class="lede">
+              Each stage changes one thing. Before is on the left and after is on the right, aligned on the same stars.
+              Drag the line, or tab to it and use the arrow keys.
+            </p>
+          </>
+        )}
+        {listed.map((s) => <StageEntry stage={s} nights={journal.nights} />)}
+      </section>
+    )}
 
     <Conditions nights={journal.nights} />
 
@@ -79,7 +115,7 @@ const description =
         Points under it lost something along the way. Points over it gained more from processing than the extra
         minutes alone would give.
       </p>
-      <Chart points={journal.chart} stages={stages} />
+      <Chart points={journal.chart} order={chartOrder} noun={hasTimeline ? 'step' : 'stage'} />
     </section>
   </main>
 

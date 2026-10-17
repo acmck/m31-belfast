@@ -22,7 +22,7 @@ const alignNote =
 <article class="stage" id={`stage-${stage.id}`} aria-labelledby={`h-${stage.id}`}>
   <p class="stage-no" aria-hidden="true">{nn}</p>
   <header class="stage-head">
-    <h2 id={`h-${stage.id}`}><span class="vh">Stage {nn}: </span>{stage.title}</h2>
+    <h3 id={`h-${stage.id}`}><span class="vh">Stage {nn}: </span>{stage.title}</h3>
     <p class="log">{dates}{nightLabels && nightLabels !== dates ? ` · nights ${nightLabels}` : ''}</p>
   </header>
   <Compare stage={stage} />

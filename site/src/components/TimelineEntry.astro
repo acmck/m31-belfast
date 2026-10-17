@@ -1,0 +1,77 @@
+---
+import Compare from './Compare.astro';
+import { versioned as v } from '../lib/version';
+import { arcsec, isNum, minutes, num, type TimelineStep } from '../lib/journal';
+
+interface Props {
+  step: TimelineStep;
+}
+
+const { step } = Astro.props;
+const nn = String(step.index).padStart(2, '0');
+const hid = `h-step-${step.id}`;
+const after = step.after;
+const total =
+  isNum(after.frames) || isNum(after.minutes)
+    ? `running total ${num(after.frames)} frames · ${minutes(after.minutes)}`
+    : null;
+const al = step.alignment;
+const alignNote =
+  al && isNum(al.median_residual_px)
+    ? `aligned on ${num(al.n_stars)} stars, median residual ${num(al.median_residual_px, 2)} px`
+    : null;
+const notes = (step.side_notes ?? []).filter(Boolean);
+---
+<article class="stage step" id={`step-${step.id}`} aria-labelledby={hid}>
+  <p class="stage-no" aria-hidden="true">{nn}</p>
+  <header class="stage-head">
+    <p class="log step-date">
+      <time datetime={step.date}>{step.date || '—'}</time>{step.kind && <span> · {step.kind}</span>}
+    </p>
+    <h3 id={hid}><span class="vh">Step {nn}: </span>{step.title}</h3>
+    {step.provenance && <p class="log provenance">{step.provenance}</p>}
+    {total && <p class="log step-total">{total}</p>}
+  </header>
+  <Compare stage={step} cumulative />
+  {(step.what_changed || step.what_it_did) && (
+    <dl class="stage-notes">
+      <div>
+        <dt>What changed</dt>
+        <dd>{step.what_changed || '—'}</dd>
+      </div>
+      <div>
+        <dt>What it did</dt>
+        <dd>{step.what_it_did || '—'}</dd>
+      </div>
+    </dl>
+  )}
+  {alignNote && <p class="log fine">{alignNote}</p>}
+  {notes.length > 0 && (
+    <aside class="side-notes" aria-label={`Side notes for step ${nn}`}>
+      {notes.map((n) => (
+        <div class="side-note">
+          {n.image && (
+            <picture>
+              <source type="image/avif" srcset={v(n.image.avif_1200)} />
+              <img
+                src={v(n.image.webp_1200)}
+                alt={`${n.label}, on its own`}
+                width={n.image.width}
+                height={n.image.height}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          )}
+          <div class="side-note-text">
+            <p class="log">
+              <span class="side-note-label">side note</span> · {n.label} · {num(n.frames)} fr · {minutes(n.minutes)} ·{' '}
+              {arcsec(n.fwhm_arcsec)} · SNR {num(n.snr_headline, 1)}
+            </p>
+            {n.text && <p>{n.text}</p>}
+          </div>
+        </div>
+      ))}
+    </aside>
+  )}
+</article>
