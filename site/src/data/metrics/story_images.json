@@ -1,0 +1,350 @@
+{
+ "_about": "Story images (site/public/img/story/<step>.*): one shared 4:3 window on the timeline's reference canvas (comb_1017, padded 8 %), cut from the registered intermediates the timeline sliders use (data/journal_pairs). Crop only: no re-warp, no reprocessing. residual = median distance of each image's stars to the reference image's stars at the same pixel (identity, 3 px tolerance).",
+ "reference_step": "three-nights",
+ "window_on_ref_canvas": {
+  "x": 384,
+  "y": 1280,
+  "width": 1339,
+  "height": 1004
+ },
+ "steps": {
+  "first-light": {
+   "render": "scope_0907",
+   "source": "data/journal_pairs/t1-first-pipeline/before.png",
+   "registration_residual_px": 0.176,
+   "story_residual_px": 0.162,
+   "n_stars_matched": 389,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "first-light.avif": {
+     "url": "/img/story/first-light.avif",
+     "bytes": 109419,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "first-light.webp": {
+     "url": "/img/story/first-light.webp",
+     "bytes": 99122,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "first-light-1200.avif": {
+     "url": "/img/story/first-light-1200.avif",
+     "bytes": 92350,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "first-light-1200.webp": {
+     "url": "/img/story/first-light-1200.webp",
+     "bytes": 83248,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "first-pipeline": {
+   "render": "first_0907",
+   "source": "data/journal_pairs/t1-first-pipeline/after.png",
+   "registration_residual_px": 0.205,
+   "story_residual_px": 0.144,
+   "n_stars_matched": 390,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "first-pipeline.avif": {
+     "url": "/img/story/first-pipeline.avif",
+     "bytes": 118998,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "first-pipeline.webp": {
+     "url": "/img/story/first-pipeline.webp",
+     "bytes": 115362,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "first-pipeline-1200.avif": {
+     "url": "/img/story/first-pipeline-1200.avif",
+     "bytes": 99962,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "first-pipeline-1200.webp": {
+     "url": "/img/story/first-pipeline-1200.webp",
+     "bytes": 99054,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "review": {
+   "render": "sep09_0907",
+   "source": "data/journal_pairs/t2-review/after.png",
+   "registration_residual_px": 0.196,
+   "story_residual_px": 0.173,
+   "n_stars_matched": 394,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "review.avif": {
+     "url": "/img/story/review.avif",
+     "bytes": 111557,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "review.webp": {
+     "url": "/img/story/review.webp",
+     "bytes": 104344,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "review-1200.avif": {
+     "url": "/img/story/review-1200.avif",
+     "bytes": 92498,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "review-1200.webp": {
+     "url": "/img/story/review-1200.webp",
+     "bytes": 84608,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "moon": {
+   "render": "cur_0925",
+   "source": "data/journal_pairs/t4-three-nights-note-cur_0925/image.png",
+   "registration_residual_px": 0.088,
+   "story_residual_px": 0.087,
+   "n_stars_matched": 394,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "moon.avif": {
+     "url": "/img/story/moon.avif",
+     "bytes": 96641,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "moon.webp": {
+     "url": "/img/story/moon.webp",
+     "bytes": 82948,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "moon-1200.avif": {
+     "url": "/img/story/moon-1200.avif",
+     "bytes": 81354,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "moon-1200.webp": {
+     "url": "/img/story/moon-1200.webp",
+     "bytes": 70496,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "two-nights": {
+   "render": "comb_1016_asof",
+   "source": "data/journal_pairs/t3-two-nights/after.png",
+   "registration_residual_px": 0.126,
+   "story_residual_px": 0.129,
+   "n_stars_matched": 396,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "two-nights.avif": {
+     "url": "/img/story/two-nights.avif",
+     "bytes": 102942,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "two-nights.webp": {
+     "url": "/img/story/two-nights.webp",
+     "bytes": 98336,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "two-nights-1200.avif": {
+     "url": "/img/story/two-nights-1200.avif",
+     "bytes": 86099,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "two-nights-1200.webp": {
+     "url": "/img/story/two-nights-1200.webp",
+     "bytes": 81214,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "sharp": {
+   "render": "cur_1016",
+   "source": "data/journal_pairs/t4-three-nights-note-cur_1016/image.png",
+   "registration_residual_px": 0.164,
+   "story_residual_px": 0.141,
+   "n_stars_matched": 397,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "sharp.avif": {
+     "url": "/img/story/sharp.avif",
+     "bytes": 134044,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "sharp.webp": {
+     "url": "/img/story/sharp.webp",
+     "bytes": 125002,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "sharp-1200.avif": {
+     "url": "/img/story/sharp-1200.avif",
+     "bytes": 110589,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "sharp-1200.webp": {
+     "url": "/img/story/sharp-1200.webp",
+     "bytes": 104322,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "three-nights": {
+   "render": "comb_1017",
+   "source": "data/journal_pairs/t4-three-nights/after.png",
+   "registration_residual_px": 0.0,
+   "story_residual_px": 0.0,
+   "n_stars_matched": 400,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "three-nights.avif": {
+     "url": "/img/story/three-nights.avif",
+     "bytes": 90651,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "three-nights.webp": {
+     "url": "/img/story/three-nights.webp",
+     "bytes": 82448,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "three-nights-1200.avif": {
+     "url": "/img/story/three-nights-1200.avif",
+     "bytes": 77003,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "three-nights-1200.webp": {
+     "url": "/img/story/three-nights-1200.webp",
+     "bytes": 69790,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  }
+ },
+ "worst_story_residual_px": 0.173,
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}

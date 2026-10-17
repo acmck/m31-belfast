@@ -1,0 +1,637 @@
+---
+// /story: "the stack grows", a step-by-step visual story of the M31 journal.
+// Every number comes from journal.json and the two story metrics files; the copy below is a set of
+// templates filled from them, and story-compute.js derives the rest (the same file runs in the page).
+// Never reads metrics/conditions.json.
+import journalRaw from '../data/journal.json';
+import framesRaw from '../data/metrics/story_frames.json';
+import imagesRaw from '../data/metrics/story_images.json';
+import computeSrc from '../lib/story-compute.js?raw';
+import engineSrc from '../lib/story-engine.js?raw';
+import { versioned } from '../lib/version';
+import { todo } from '../lib/todo';
+
+type AnyObj = Record<string, any>;
+const J = journalRaw as AnyObj;
+const FR = framesRaw as AnyObj;
+const IM = imagesRaw as AnyObj;
+
+// The compute module is a classic script that defines StoryCompute. Evaluate it here at build time.
+const StoryCompute = new Function(`${computeSrc}\nreturn StoryCompute;`)();
+
+function need<T>(v: T | undefined | null, what: string): T {
+  if (v === undefined || v === null) throw new Error(`[story] missing ${what}`);
+  return v;
+}
+
+// ---------- sources ----------
+const nights: AnyObj[] = [...J.nights].sort((a, b) => (a.id < b.id ? -1 : 1));
+const timeline: AnyObj[] = [...J.timeline].sort((a, b) => a.index - b.index);
+const step = (id: string) => need(timeline.find((t) => t.id === id), `timeline step ${id}`);
+const T1 = step('t1-first-pipeline');
+const T2 = step('t2-review');
+const T3 = step('t3-two-nights');
+const T4 = step('t4-three-nights');
+const [n0, n1, n2] = nights;
+const sideOf = (t: AnyObj, nid: string) => need(t.side_notes?.find((s: AnyObj) => s.night_id === nid), `side note ${nid}`);
+const sMoon = sideOf(T4, n1.id);
+const sSharp = sideOf(T4, n2.id);
+const s529 = sideOf(T3, n1.id);
+const hero = need(J.hero, 'hero');
+
+const side = (x: AnyObj, label: string) => ({
+  frames: x.frames,
+  minutes: x.minutes,
+  fwhm: x.fwhm_arcsec,
+  snr: x.snr_headline,
+  label,
+});
+const STEPS: Record<string, AnyObj> = {
+  'first-light': side(hero.before, T1.before.label),
+  'first-pipeline': side(T1.after, T1.after.label),
+  review: side(T2.after, T2.after.label),
+  moon: side(sMoon, sMoon.label),
+  'two-nights': side(T3.after, T3.after.label),
+  sharp: side(sSharp, sSharp.label),
+  'three-nights': side(T4.after, T4.after.label),
+};
+
+// strips: dedupe the run-length strings
+const rle: string[] = [];
+const stepStrips: Record<string, Record<string, number>> = {};
+for (const [st, v] of Object.entries(FR.steps as AnyObj)) {
+  stepStrips[st] = {};
+  for (const [nid, r] of Object.entries((v as AnyObj).rle as Record<string, string>)) {
+    let i = rle.indexOf(r);
+    if (i < 0) i = rle.push(r) - 1;
+    stepStrips[st][nid] = i;
+  }
+}
+
+const spanMin = (n: AnyObj) =>
+  n.utc_start && n.utc_end ? Math.round((Date.parse(n.utc_end) - Date.parse(n.utc_start)) / 60000) : null;
+const shortNight = (n: AnyObj) => String(n.label).replace(/\s+\d{4}$/, '');
+const moonUp = (n: AnyObj) => (n.moon?.alt_deg_max ?? -1) > 0;
+
+const input = {
+  nights: nights.map((n) => ({
+    id: n.id,
+    short: shortNight(n).toUpperCase() + (moonUp(n) ? ` · MOON ${Math.round(n.moon.illum_pct)} %` : ''),
+    moonUp: moonUp(n),
+    frames_total: n.frames_total,
+    frames_kept: n.frames_kept,
+    qa_rejected: n.qa_rejected,
+    scope_drop_rate: n.scope_drop_rate,
+    sky_adu: n.sky_adu,
+    span_min: spanMin(n),
+  })),
+  frames: Object.fromEntries(
+    Object.entries(FR.nights as AnyObj).map(([id, v]) => [
+      id,
+      { slots: (v as AnyObj).slots, saved: (v as AnyObj).saved, scope_dropped: (v as AnyObj).scope_dropped },
+    ]),
+  ),
+  rle,
+  stepStrips,
+  steps: Object.fromEntries(
+    Object.entries(STEPS).map(([k, v]) => [k, { frames: v.frames, minutes: v.minutes, fwhm: v.fwhm, snr: v.snr }]),
+  ),
+  anchor: { minutes: need(J.chart[0], 'chart').minutes, snr: J.chart[0].snr },
+  beats: [
+    { strip: null, img: 'three-nights', side: null, main: null },
+    { strip: 'first-light', img: 'first-light', side: null, main: 'first-light' },
+    { strip: 'first-pipeline', img: 'first-pipeline', side: null, main: 'first-pipeline' },
+    { strip: 'review', img: 'review', side: null, main: 'review' },
+    { strip: 'moon', img: 'moon', side: n1.id, main: 'review', sides: ['moon'] },
+    { strip: 'two-nights', img: 'two-nights', side: null, main: 'two-nights' },
+    { strip: 'sharp', img: 'sharp', side: n2.id, main: 'two-nights', sides: ['sharp'] },
+    { strip: 'three-nights', img: 'three-nights', side: null, main: 'three-nights' },
+    { strip: 'three-nights', img: 'three-nights', side: null, main: 'three-nights', placeholder: true },
+  ],
+};
+
+const C = StoryCompute.build(input);
+
+// ---------- formatting ----------
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const word = (n: number) => WORDS[n] ?? String(n);
+const Word = (n: number) => word(n).charAt(0).toUpperCase() + word(n).slice(1);
+const c = (n: number) => n.toLocaleString('en-US'); // prose: 1,841
+const f1 = (n: number) => n.toFixed(1);
+const f2 = (n: number) => n.toFixed(2);
+const pc = (x: number) => `${Math.round(x * 100)} %`; // fractions
+const ap = (p: number) => `${Math.round(Math.abs(p))} %`; // percent changes
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const dshort = (iso: string) => `${+iso.slice(8, 10)} ${MONTHS[+iso.slice(5, 7) - 1]}`;
+const lcfirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+const exp = n0.exposure_s as number; // 10
+const stackLine = (x: AnyObj) => `${x.frames} × ${exp} s · ${x.minutes} min · ${f1(x.fwhm)}″`;
+const capLine = (x: AnyObj, label: string) => `${label} · ${x.frames} × ${exp} s · ${f1(x.fwhm)}″`;
+const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+const S = STEPS;
+const FL = S['first-light'], FP = S['first-pipeline'], RV = S.review, MO = S.moon, TN = S['two-nights'];
+const SH = S.sharp, TH = S['three-nights'];
+const d = C.derived;
+const drops = (n: AnyObj) => FR.nights[n.id].scope_dropped as number;
+const zIn = (beat: number, nid: string) => C.beats[beat].nights[nid]?.z ?? 0;
+const emptyNote = (z: number) =>
+  `Includes ${z} ${plural(z, 'frame', 'frames')} that came out empty after registration, so the stacker left ${plural(z, 'it', 'them')} out.`;
+const curveNote = `Dashed curve: SNR growing with √minutes from my first pipeline (${input.anchor.minutes} min, ${f2(input.anchor.snr)}), as on the journal's chart.`;
+const nNights = nights.length;
+const hours = Math.floor((spanMin(n1) ?? 0) / 60);
+const reasons = FR['qa_reasons_' + n1.id] as AnyObj | undefined;
+const mostly = reasons && reasons.sky_or_cloud / reasons.rejected > 0.5 ? 'mostly' : 'some';
+const gusts = nights.map((n) => n.weather?.gust_mph_max ?? Infinity);
+const calmest = Math.min(...gusts) === n2.weather.gust_mph_max;
+const moonLog = (n: AnyObj) =>
+  moonUp(n)
+    ? `moon ${Math.round(n.moon.illum_pct)} % up to ${Math.round(n.moon.alt_deg_max)}°`
+    : 'moon below the horizon';
+const P = C.partial; // the 16 Oct partial copy
+const sharpest = Math.min(...Object.values(S).map((x) => x.fwhm)) === SH.fwhm;
+const flDate = n0.id;
+
+type Beat = AnyObj;
+const beats: Beat[] = [
+  {
+    n: 'Title',
+    eb: { date: '', kind: 'Belfast · Bortle 6' },
+    h: 'Learning to capture M31 from rainy Belfast',
+    lede: `I point a Seestar S30 Pro at the Andromeda Galaxy from Belfast, where most nights it rains. Each small square here is one ${exp}\u2011second exposure.`,
+    log: [`ZWO Seestar S30 Pro · ${exp} s exposures`, 'Bortle 6 · Belfast', `${nNights} nights so far`],
+    note: null,
+    foot: ["Each picture is the timeline's own image for its step, cut to one shared frame so the galaxy holds still."],
+    cap: capLine(TH, `${hero.after.label}, ${dshort(T4.date)}`),
+    cnt: 'Frames in the stack',
+    ro: null,
+  },
+  {
+    n: 'First light',
+    eb: { date: flDate, kind: 'First light' },
+    h: `The Seestar stacked ${FL.frames} frames on its own`,
+    lede: `On the first night the scope saved ${n0.frames_total} ${word(exp)}-second frames and stacked them itself. It dropped another ${drops(n0)} in gusts up to ${Math.round(n0.weather.gust_mph_max)} mph and never saved them.`,
+    log: [stackLine(FL), `SNR ${f2(FL.snr)} · Seestar live stack`, `${drops(n0)} dropped by the scope · ${pc(n0.scope_drop_rate)}`],
+    note: { label: n0.label, text: n0.note },
+    foot: ["Dropped frames are gaps in the scope's saved timestamps (the scope saves only frames its live stacker accepted)."],
+    cap: capLine(FL, FL.label),
+    cnt: 'Frames in the stack',
+    ro: { v: FL.snr, sub: 'first light' },
+  },
+  {
+    n: 'My first pipeline',
+    eb: { date: T1.date, kind: T1.kind },
+    h: FP.snr < FL.snr ? 'My first pipeline made it worse' : 'My first pipeline',
+    lede: `I copied the frames off and ran my own pipeline. It culled ${d.culled} frames, favored the sharpest and let an AI background model take part of the halo. SNR ${FP.snr < FL.snr ? 'fell' : 'went'} from ${f2(FL.snr)} to ${f2(FP.snr)}.`,
+    log: [stackLine(FP), `SNR ${f2(FP.snr)} · ${d.fpVsFl < 0 ? 'down' : 'up'} ${ap(d.fpVsFl)} on first light`, `${d.culled} frames culled by QA`],
+    note: null,
+    foot: [`SNR is the median of ${Object.keys(hero.before.snr).length} fixed test points in the disc.`, curveNote],
+    cap: capLine(FP, FP.label),
+    cnt: 'Frames in the stack',
+    ro: { v: FP.snr, sub: lcfirst(FP.label) },
+  },
+  {
+    n: 'After the review',
+    eb: { date: T2.date, kind: T2.kind },
+    h: `A review put ${d.restored} frames back`,
+    lede: `The next day I had the pipeline reviewed against this night. I stopped culling on trends, weighted frames by star count and fit the background with a plain plane. SNR rose to ${f2(RV.snr)}.`,
+    log: [stackLine(RV), `SNR ${f2(RV.snr)} · up ${ap(d.rvVsFp)}`, `${n0.qa_rejected} frames rejected by QA`],
+    note: null,
+    foot: d.reviewSubset ? [`The ${n0.qa_rejected} still rejected are among the ${d.culled} culled the day before.`] : [],
+    cap: capLine(RV, RV.label),
+    cnt: 'Frames in the stack',
+    ro: { v: RV.snr, sub: lcfirst(RV.label) },
+  },
+  {
+    n: 'The moonlit night',
+    eb: { date: n1.id, kind: 'New night' },
+    h: `${Word(hours)} hours under a ${Math.round(n1.moon.illum_pct)} % moon`,
+    lede: `Moonlight lifted the sky background to ${c(Math.round(n1.sky_adu))} ADU from ${c(Math.round(n0.sky_adu))}. The scope dropped ${drops(n1)} exposures, and my QA rejected ${n1.qa_rejected} of the ${c(n1.frames_total)} it saved, ${mostly} for cloud or jumps in sky brightness.`,
+    log: [
+      `${n1.frames_total} saved · ${n1.frames_kept} kept · ${n1.qa_rejected} rejected · ${pc(n1.scope_drop_rate)} dropped`,
+      `${moonLog(n1)} · cloud ${Math.round(n1.weather.cloud_pct_mean)} % · gusts ${Math.round(n1.weather.gust_mph_max)} mph`,
+      `alone: ${stackLine(MO)} · SNR ${f2(MO.snr)}`,
+    ],
+    note: { label: n1.label, text: n1.note },
+    foot: [
+      ...(zIn(4, n1.id) ? [emptyNote(zIn(4, n1.id))] : []),
+      `The night's image is from ${dshort(T4.date)}, when I had every frame. On ${dshort(T3.date)} I only had some of them (next step).`,
+    ],
+    cap: capLine(MO, `${shortNight(n1)} alone, reprocessed ${dshort(T4.date)}`),
+    cnt: `${shortNight(n1)} alone`,
+    ro: { v: MO.snr, sub: `${shortNight(n1)} alone` },
+  },
+  {
+    n: 'Two nights',
+    eb: { date: T3.date, kind: T3.kind },
+    h: 'Two nights, stacked frame by frame',
+    lede: `By ${dshort(T3.date)} I had copied ${P.copied} of the moonlit frames, and ${s529.frames} passed QA. Stacked with ${shortNight(n0)} and weighted by noise, they lifted SNR to ${f2(TN.snr)}${TN.snr < FL.snr ? ', still below first light' : ''}.`,
+    log: [stackLine(TN), `SNR ${f2(TN.snr)} · up ${ap(d.tnVsRv)}`, `${P.stillOnScope} frames still on the scope`],
+    note: null,
+    foot: [
+      ...(zIn(5, n1.id) ? [emptyNote(zIn(5, n1.id))] : []),
+      `On ${dshort(T3.date)} my QA rejected ${P.rejected} of the first ${P.copied} frames; today's QA rejects ${P.todayRejectsAmongCopied} of them.`,
+    ],
+    cap: capLine(TN, TN.label),
+    cnt: 'Frames in the stack',
+    ro: { v: TN.snr, sub: lcfirst(TN.label) },
+  },
+  {
+    n: 'The sharp night',
+    eb: { date: n2.id, kind: 'New night' },
+    h: sharpest ? 'My sharpest night so far' : 'A third night',
+    lede: `${calmest ? `It was the calmest of the ${word(nNights)} nights` : 'A calmer night'}, with gusts to ${Math.round(n2.weather.gust_mph_max)} mph. The scope saved ${n2.frames_total} frames and QA kept ${n2.frames_kept}. On its own the night gave ${f1(SH.fwhm)}″ stars and SNR ${f2(SH.snr)}.`,
+    log: [
+      `${n2.frames_total} saved · ${n2.frames_kept} kept · ${n2.qa_rejected} rejected · ${pc(n2.scope_drop_rate)} dropped`,
+      `${moonLog(n2)} · cloud ${Math.round(n2.weather.cloud_pct_mean)} %`,
+      `alone: ${stackLine(SH)} · SNR ${f2(SH.snr)}`,
+    ],
+    note: { label: n2.label, text: n2.note },
+    foot: zIn(6, n2.id) ? [emptyNote(zIn(6, n2.id))] : [],
+    cap: capLine(SH, `${shortNight(n2)} alone, reprocessed ${dshort(T4.date)}`),
+    cnt: `${shortNight(n2)} alone`,
+    ro: { v: SH.snr, sub: `${shortNight(n2)} alone` },
+  },
+  {
+    n: 'Three nights',
+    eb: { date: T4.date, kind: T4.kind },
+    h: TH.snr > FL.snr ? `${Word(nNights)} nights climb past first light` : `${Word(nNights)} nights`,
+    lede: `I copied the rest of ${shortNight(n1)}, added ${shortNight(n2)} and reprocessed all ${word(nNights)} nights with today's pipeline. ${c(TH.frames)} frames over ${TH.minutes} minutes took SNR to ${f2(TH.snr)}, ${ap(d.thVsFl)} ${d.thVsFl >= 0 ? 'above' : 'below'} first light.`,
+    log: [
+      stackLine(TH),
+      `SNR ${f2(TH.snr)} · up ${ap(d.thVsTn)} on two nights`,
+      `rejected ${C.totals.rejectedInclEmpty} · dropped ${C.totals.dropped}`,
+    ],
+    note: null,
+    foot: [
+      ...(C.totals.empties
+        ? [
+            `Rejected includes ${C.totals.empties} ${plural(C.totals.empties, 'frame', 'frames')} that came out empty after registration: ${c(C.totals.qaKept)} frames passed QA and ${c(TH.frames)} were stacked.`,
+          ]
+        : []),
+      'The color calibration also changed in this step.',
+    ],
+    cap: capLine(TH, TH.label),
+    cnt: 'Frames in the stack',
+    ro: { v: TH.snr, sub: `first light ${f2(FL.snr)}` },
+  },
+  {
+    n: "What's next",
+    eb: { date: '', kind: 'Next · To do' },
+    h: 'Next: more frames, steadier mount',
+    lede: "More frames first, when the Belfast weather allows. Then an EQ mount so the sky stops rotating, another pass at the pipeline, and some sessions with the Seestar's LP filter for hydrogen-alpha.",
+    log: todo,
+    note: null,
+    foot: ['The dashed outline on the wall marks the next clear night. Its size is a placeholder.', curveNote],
+    cap: capLine(TH, TH.label),
+    cnt: 'Frames in the stack',
+    ro: { v: TH.snr, sub: `first light ${f2(FL.snr)}` },
+  },
+];
+
+const N = beats.length;
+beats.forEach((b, i) => {
+  const cfg = input.beats[i];
+  const st = S[cfg.img];
+  b.alt = `M31, the Andromeda Galaxy: ${st.label}, ${c(st.frames)} frames of ${exp} s, stars ${f1(st.fwhm)}″.`;
+  const cnt = C.counters[i];
+  b.live = `Beat ${i + 1} of ${N}. ${b.h}.` + (cfg.strip ? ` ${c(cnt)} frames, SNR ${f2(b.ro.v)}.` : '');
+});
+
+// ---------- images ----------
+const order = ['three-nights', 'first-light', 'first-pipeline', 'review', 'moon', 'two-nights', 'sharp'];
+const images = Object.fromEntries(
+  order.map((k) => {
+    const f = need(IM.steps[k], `story image ${k}`).files as AnyObj;
+    return [
+      k,
+      {
+        avif: versioned(f[`${k}.avif`].url),
+        webp: versioned(f[`${k}.webp`].url),
+        avif1200: versioned(f[`${k}-1200.avif`].url),
+        webp1200: versioned(f[`${k}-1200.webp`].url),
+        w: IM.steps[k].width,
+        h: IM.steps[k].height,
+      },
+    ];
+  }),
+);
+const sizes = '(min-width:900px) 704px, calc(100vw - 32px)';
+const srcset = (im: AnyObj, kind: 'avif' | 'webp') =>
+  `${kind === 'avif' ? im.avif1200 : im.webp1200} 1200w, ${kind === 'avif' ? im.avif : im.webp} ${im.w}w`;
+
+const data = { input, beats, images, order, exp };
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+
+// ---------- static fallback wall (no JS or no canvas): final state, 1 square = 10 slots ----------
+const finalBeat = C.beats[N - 1];
+const fallback = finalBeat.present.map((nid: string) => {
+  const s: string = finalBeat.nights[nid].strip;
+  const cells: string[] = [];
+  for (let i = 0; i < s.length; i += 10) {
+    const part = s.slice(i, i + 10);
+    const k = StoryCompute.count(part, 'k'), q = StoryCompute.count(part, 'qz'), dd = StoryCompute.count(part, 'd');
+    cells.push(k >= q && k >= dd ? 'k' : q >= dd ? 'q' : 'd');
+  }
+  const n = input.nights.find((x) => x.id === nid)!;
+  return { label: n.short, moon: n.moonUp, cells };
+});
+
+const b0 = beats[0];
+const title = 'M31 from Belfast: the stack grows';
+const description = `How my M31 stack grew from first light to ${word(nNights)} nights over Belfast, one ${exp}-second frame at a time, and what each step did to the signal.`;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#211f1c" />
+    <meta name="color-scheme" content="dark" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/martian-mono-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <script is:inline>document.documentElement.className = 'js';</script>
+    <style is:inline>
+@font-face{font-family:'Newsreader';font-style:normal;font-display:swap;font-weight:200 800;
+  src:url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2-variations'),url('/fonts/newsreader-latin-wght-normal.woff2') format('woff2')}
+@font-face{font-family:'Martian Mono';font-style:normal;font-display:swap;font-weight:100 800;font-stretch:75% 112.5%;
+  src:url('/fonts/martian-mono-latin-standard-normal.woff2') format('woff2-variations'),url('/fonts/martian-mono-latin-standard-normal.woff2') format('woff2')}
+@font-face{font-family:'Newsreader Fallback';src:local('Georgia'),local('Times New Roman');size-adjust:94%;ascent-override:92%;descent-override:24%}
+@font-face{font-family:'Martian Fallback';src:local('Menlo'),local('Consolas'),local('DejaVu Sans Mono');size-adjust:104%}
+:root{
+  --ground:#211f1c;--frame:#0d0c0b;--ink:#e8e2d6;--ink-88:rgb(232 226 214/.88);--ink-2:#a39b8c;--rule:#4a453d;--accent:#d9a35b;
+  --tile-kept:#8c8476;--tile-moon:#7f8489;--tile-reject:#4f4a42;--tile-drop:#6b6458;
+  --serif:'Newsreader','Newsreader Fallback',Georgia,serif;
+  --mono:'Martian Mono','Martian Fallback',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.45,0,.2,1);
+  color-scheme:dark;
+  /* layout (phone first; JS may refine --imgW, --wallH, --trackH on phones) */
+  --g:16px;--imgTop:50px;--imgW:calc(100vw - 2*var(--g));--imgH:calc(var(--imgW)*.75);
+  --cntH:24px;--wallH:160px;--trackH:28px;--capH:26px;--railTop:calc(var(--imgTop) + var(--imgH) + var(--capH));
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#211f1c;color:#e8e2d6}
+body{font-family:var(--serif);font-variant-numeric:lining-nums tabular-nums;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button{font:inherit;color:inherit}
+a{color:inherit;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:.18em}
+a:hover{text-decoration-color:var(--accent);text-decoration-thickness:2px}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.mono{font-family:var(--mono);font-stretch:87.5%}
+
+#stage{position:fixed;inset:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;background:#211f1c}
+
+/* chrome */
+#brand{position:absolute;left:var(--g);top:14px;pointer-events:none}
+#brand .wm{margin:0;font:400 12px/1.3 var(--mono);font-stretch:87.5%;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+#brand .sub{display:none;margin:4px 0 0;font:400 15px/1.3 var(--serif);color:var(--ink-2)}
+#back{position:absolute;right:calc(var(--g) + 76px);top:3px;height:44px;display:flex;align-items:center;padding:0 4px;font:400 12px/1 var(--mono);font-stretch:87.5%;color:var(--ink)}
+#counter{position:absolute;right:var(--g);top:14px;font:400 12px/1.3 var(--mono);font-stretch:87.5%;color:var(--ink)}
+#counter .of{color:var(--ink-2)}
+#progress{position:absolute;left:var(--g);right:var(--g);bottom:56px;display:flex;gap:3px}
+#progress button{position:relative;flex:1;height:26px;border:0;padding:0;background:none;cursor:pointer}
+#progress button::before{content:"";position:absolute;left:0;right:0;top:12px;height:2px;background:var(--rule)}
+#progress button i{position:absolute;left:0;right:0;top:12px;height:2px;background:var(--ink);transform-origin:0 50%;transform:scaleX(0)}
+#progress button.done i{background:rgb(232 226 214/.3)}
+#navbtns{position:absolute;right:var(--g);bottom:12px;display:flex;align-items:center;gap:8px}
+#navbtns button{width:38px;height:38px;border:1px solid var(--rule);background:transparent;cursor:pointer;display:grid;place-items:center;padding:0;transition:border-color .2s}
+#navbtns button:hover{border-color:var(--ink)}
+#navbtns button:disabled{opacity:.35;cursor:default}
+#navbtns svg{width:14px;height:14px}
+#hint{font:400 11px/1 var(--mono);font-stretch:87.5%;letter-spacing:.04em;color:var(--ink-2);margin-right:8px;white-space:nowrap;transition:opacity .6s var(--ease)}
+#hint.gone{opacity:0}
+
+/* image well: the galaxy never moves; layers only cross-fade */
+#well{position:absolute;left:calc((100vw - var(--imgW)) / 2);top:var(--imgTop);width:var(--imgW);height:var(--imgH);background:var(--frame);overflow:hidden}
+#well picture,#well img{position:absolute;inset:0;width:100%;height:100%;display:block}
+#well img{object-fit:contain}
+#well picture{opacity:0;visibility:hidden}
+#well picture.on{opacity:1;visibility:visible}
+#cap{position:absolute;left:var(--g);right:var(--g);top:calc(var(--imgTop) + var(--imgH) + 6px);margin:0;font:400 11px/1.4 var(--mono);font-stretch:87.5%;color:var(--ink-2);white-space:normal;pointer-events:none}
+
+/* wall rail: counter on top, tiles below */
+#rail{position:absolute;left:var(--g);right:var(--g);top:var(--railTop);height:calc(var(--cntH) + var(--wallH))}
+#cnt{position:absolute;right:0;top:0;height:var(--cntH);display:flex;align-items:baseline;gap:8px;pointer-events:none}
+#cnt .v{font:300 20px/1 var(--serif);color:var(--ink)}
+#cnt .c{font:400 11px/1 var(--mono);font-stretch:87.5%;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+#wall{position:absolute;left:0;right:0;top:var(--cntH);bottom:0;width:100%;height:calc(100% - var(--cntH));display:block}
+#key{position:absolute;left:0;bottom:0;margin:0;padding:0;list-style:none;display:grid;gap:6px;font:400 11px/1.2 var(--mono);font-stretch:87.5%;color:var(--ink-2);pointer-events:none}
+#key li,.keyrow li{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.sq{display:inline-block;width:8px;height:8px;flex:none}
+.sq.k{background:var(--tile-kept)}.sq.m{background:var(--tile-moon)}.sq.q{background:var(--tile-reject)}.sq.d{border:1px solid var(--tile-drop)}.sq.n{background:var(--ink)}
+.keyrow{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 14px;font:400 11px/1.3 var(--mono);font-stretch:87.5%;color:var(--ink-2)}
+#key2{display:none;position:absolute;right:var(--g);top:calc(var(--imgTop) + var(--imgH) + 8px);pointer-events:none}
+
+/* SNR track */
+#trackbox{position:absolute;left:var(--g);right:var(--g);top:calc(var(--railTop) + var(--cntH) + var(--wallH) + 8px);height:var(--trackH)}
+#track{position:absolute;inset:0;width:100%;height:100%;display:block}
+#readout{position:absolute;right:0;top:0;display:flex;flex-direction:column;align-items:flex-end;text-align:right;pointer-events:none}
+#readout .l{display:none;font:400 11px/1 var(--mono);font-stretch:87.5%;color:var(--ink-2);letter-spacing:.04em}
+#readout .v{display:block;font:400 17px/1 var(--serif);color:var(--accent)}
+#readout .s{display:block;margin-top:3px;font:400 11px/1.2 var(--mono);font-stretch:87.5%;color:var(--ink-2);white-space:nowrap}
+
+/* copy: type on the ground, no panel */
+#copy{position:absolute;left:var(--g);right:var(--g);bottom:90px;display:flex;flex-direction:column}
+.eyebrow{margin:0 0 8px;font:400 11px/1.3 var(--mono);font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.eyebrow .num{color:var(--ink)}.eyebrow .date{color:var(--accent)}
+.hl{margin:0 0 8px;font:400 clamp(22px,6.4vw,27px)/1.08 var(--serif);letter-spacing:-.01em;color:var(--ink);text-wrap:balance;max-width:20ch}
+.lede{margin:0;font:400 15px/1.42 var(--serif);color:var(--ink-88);text-wrap:pretty;max-width:44ch}
+.more{display:none;order:-1;margin:0 0 12px;padding-top:10px;border-top:1px solid var(--rule);background:var(--ground)}
+#copy.open .more{display:block}
+.logl{margin:0;padding:0;list-style:none;font:400 11px/1.6 var(--mono);font-stretch:87.5%;color:var(--ink-2);overflow-wrap:anywhere}
+.note{margin:10px 0 0;font:italic 400 14.5px/1.4 var(--serif);color:var(--ink);max-width:40ch}
+.note .nl{display:block;font:normal 400 10px/1.4 var(--mono);font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+.foot{margin:10px 0 0;font:400 11px/1.5 var(--mono);font-stretch:87.5%;color:var(--ink-2);max-width:46ch}
+.foot p{margin:0 0 4px}
+.keym{margin-top:10px}
+.logbtn{align-self:flex-start;margin-top:4px;min-height:32px;padding:6px 0;background:none;border:0;cursor:pointer;font:400 11px/1 var(--mono);font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
+.copypart{will-change:opacity,transform}
+
+/* fallback: no JS or no canvas */
+#fallback{display:none;position:absolute;left:0;right:0;bottom:0;top:var(--cntH);overflow:hidden}
+.no-js #fallback,.no-canvas #fallback{display:flex;flex-direction:column-reverse;gap:6px}
+.no-js #wall,.no-canvas #wall,.no-js #track,.no-canvas #track,.no-js #readout,.no-canvas #readout{display:none}
+#fallback .blk{display:flex;flex-direction:column-reverse;gap:3px}
+#fallback .cells{display:flex;flex-wrap:wrap;gap:1px;flex-direction:row}
+#fallback i{display:block;width:5px;height:5px;background:var(--tile-kept)}
+#fallback .moon i{background:var(--tile-moon)}
+#fallback i.q,#fallback .moon i.q{background:var(--tile-reject)}
+#fallback i.d,#fallback .moon i.d{background:none;outline:1px solid var(--tile-drop);outline-offset:-1px}
+#fallback .lb,#fallback .each{font:400 11px/1.2 var(--mono);font-stretch:87.5%;color:var(--ink-2)}
+.no-js #tbl,.no-canvas #tbl{position:static!important;width:auto;height:auto;clip:auto;white-space:normal;margin:0;font:400 11px/1.4 var(--mono);font-stretch:87.5%;color:var(--ink-2)}
+.no-js #trackbox,.no-canvas #trackbox{overflow:auto}
+.no-js #key,.no-js #navbtns,.no-js #progress,.no-js #hint,.no-js .logbtn{display:none}
+.no-js .more{display:block}
+
+/* tablet portrait */
+@media (min-width:640px) and (max-width:899px){
+  :root{--g:24px;--imgW:min(calc(100vw - 48px),calc(60svh*4/3))}
+}
+/* desktop */
+@media (min-width:900px){
+  :root{
+    --g:5vw;--copyW:min(34vw,340px);--railMin:120px;--trackH:132px;--imgTop:88px;--cntH:56px;
+    --imgL:calc(var(--g) + var(--copyW) + 48px);
+    --imgH:min(58svh,calc((100vw - var(--g) - var(--imgL) - 24px - var(--railMin))*.75),calc(100svh - var(--imgTop) - 36px - var(--trackH) - 84px));
+    --imgW:calc(var(--imgH)*4/3);
+    --railW:min(calc(100vw - var(--g) - var(--imgL) - var(--imgW) - 24px),280px);
+  }
+  #brand{top:24px}
+  #brand .sub{display:block}
+  #back{top:16px;right:calc(var(--g) + 92px)}
+  #counter{top:28px;font-size:13px}
+  #well{left:var(--imgL)}
+  #cap{left:var(--imgL);right:auto;width:calc(var(--imgW) + 24px + var(--railW));top:calc(var(--imgTop) + var(--imgH) + 8px);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #key2{display:flex;right:auto;left:var(--imgL);top:calc(var(--imgTop) + var(--imgH) + 46px + var(--trackH))}
+  #rail{left:calc(var(--imgL) + var(--imgW) + 24px);right:auto;width:var(--railW);top:var(--imgTop);height:var(--imgH)}
+  #cnt{left:0;right:auto;display:block}
+  #cnt .v{display:block;font-size:34px}
+  #cnt .c{display:block;margin-top:6px;font-size:11px}
+  #key{font-size:11px}
+  #trackbox{left:var(--imgL);right:auto;width:calc(var(--imgW) + 24px + var(--railW));top:calc(var(--imgTop) + var(--imgH) + 36px);height:var(--trackH)}
+  #readout .l{display:block;margin-bottom:6px;text-align:right}
+  #readout .v{font-size:22px}
+  #readout .s{font-size:11px;margin-top:6px}
+  #copy{left:var(--g);right:auto;top:15svh;bottom:auto;width:var(--copyW)}
+  .eyebrow{margin-bottom:18px}
+  .hl{font-size:clamp(30px,3.1vw,46px);margin-bottom:20px;max-width:14ch}
+  .lede{font-size:clamp(17px,1.3vw,20px);line-height:1.5;max-width:36ch}
+  .more{display:block;order:0;margin:20px 0 0;padding-top:12px;background:none}
+  .logl{font-size:12px}
+  .note{font-size:16px;margin-top:14px}
+  .foot{font-size:11px;margin-top:14px}
+  .keym,.logbtn{display:none}
+  #progress{left:50%;right:auto;bottom:30px;transform:translateX(-50%);gap:6px}
+  #progress button{flex:none;width:28px;height:20px}
+  #progress button::before,#progress button i{top:9px}
+  #navbtns{bottom:20px;gap:10px}
+  #navbtns button{width:40px;height:40px}
+  #hint{font-size:11px;margin-right:10px}
+}
+@media (min-width:1200px){:root{--copyW:min(30vw,380px);--railMin:152px}}
+@media (min-width:900px) and (max-height:760px){
+  :root{--trackH:104px}
+  .hl{font-size:clamp(26px,2.6vw,38px);margin-bottom:12px}
+  .lede{font-size:16px}
+  .eyebrow{margin-bottom:10px}
+  .more{margin-top:12px}
+  #copy{top:12svh}
+}
+@media (max-width:899px) and (max-width:379px){#hint{display:none}}
+@media (max-width:899px){#hint{position:absolute;right:96px;bottom:14px;margin:0}}
+@media (prefers-reduced-motion:reduce){#hint,#navbtns button{transition:none}}
+@media (forced-colors:active){.sq.k,.sq.m,.sq.n{background:CanvasText}.sq.q{background:GrayText}}
+    </style>
+  </head>
+  <body>
+    <main id="stage" aria-roledescription="carousel" aria-label={title}>
+      <h1 class="vh">{title}</h1>
+
+      <div id="well" aria-live="off">
+        {order.map((k) => {
+          const im = images[k];
+          const first = k === input.beats[0].img;
+          return first ? (
+            <picture data-step={k} class="on">
+              <source type="image/avif" srcset={srcset(im, 'avif')} sizes={sizes} />
+              <img src={im.webp1200} srcset={srcset(im, 'webp')} sizes={sizes} width={im.w} height={im.h} alt={b0.alt} fetchpriority="high" decoding="async" />
+            </picture>
+          ) : (
+            <picture data-step={k}>
+              <source type="image/avif" data-srcset={srcset(im, 'avif')} sizes={sizes} />
+              <img data-src={im.webp1200} data-srcset={srcset(im, 'webp')} sizes={sizes} width={im.w} height={im.h} alt="" decoding="async" />
+            </picture>
+          );
+        })}
+      </div>
+      <p id="cap" aria-hidden="true">{b0.cap}</p>
+      <ul id="key2" class="keyrow" aria-hidden="true">
+        <li><span class="sq k"></span>in the stack</li>
+        <li><span class="sq m"></span>under the moon</li>
+        <li><span class="sq q"></span>rejected</li>
+        <li><span class="sq d"></span>dropped by the scope</li>
+        <li><span class="sq n"></span>new this step</li>
+      </ul>
+
+      <div id="rail">
+        <div id="cnt" aria-hidden="true"><span class="v" id="cntv">0</span><span class="c" id="cntc">{b0.cnt}</span></div>
+        <canvas id="wall" aria-hidden="true"></canvas>
+        <ul id="key" aria-hidden="true">
+          <li><span class="sq k"></span>in the stack</li>
+          <li><span class="sq m"></span>in the stack, moon up</li>
+          <li><span class="sq q"></span>rejected</li>
+          <li><span class="sq d"></span>dropped by the scope</li>
+          <li><span class="sq n"></span>new this step</li>
+        </ul>
+        <div id="fallback" aria-hidden="true">
+          <p class="each">Each square is 10 exposures ({hero.after.label.toLowerCase()}).</p>
+          {fallback.map((b: AnyObj) => (
+            <div class={b.moon ? 'blk moon' : 'blk'}>
+              <div class="cells">{b.cells.map((x: string) => <i class={x === 'k' ? undefined : x} />)}</div>
+              <span class="lb">{b.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div id="trackbox">
+        <canvas id="track" aria-hidden="true"></canvas>
+        <div id="readout" aria-hidden="true"><span class="l">SNR</span><span class="v" id="rov"></span><span class="s" id="ros"></span></div>
+        <table id="tbl" class="vh">
+          <caption>SNR at each step, with frames, minutes and star size</caption>
+          <thead><tr><th scope="col">Step</th><th scope="col">Frames</th><th scope="col">Minutes</th><th scope="col">FWHM</th><th scope="col">SNR</th></tr></thead>
+          <tbody>
+            {Object.values(S).map((x) => (
+              <tr><th scope="row">{x.label}</th><td>{x.frames}</td><td>{x.minutes}</td><td>{f1(x.fwhm)}″</td><td>{f2(x.snr)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <section id="copy" aria-roledescription="slide" aria-label={`Beat 1 of ${N}`}>
+        <p class="eyebrow copypart" id="eb"><span class="num">01</span> · {b0.eb.kind}</p>
+        <h2 class="hl copypart" id="hl">{b0.h}</h2>
+        <p class="lede copypart" id="ld">{b0.lede}</p>
+        <div class="more copypart" id="more">
+          <ul class="logl" id="logl">{b0.log.map((l: string) => <li>{l}</li>)}</ul>
+          <p class="note" id="note" hidden></p>
+          <div class="foot" id="foot">{b0.foot.map((f: string) => <p>{f}</p>)}</div>
+          <ul class="keyrow keym" aria-hidden="true">
+            <li><span class="sq k"></span>in the stack</li>
+            <li><span class="sq m"></span>moon up</li>
+            <li><span class="sq q"></span>rejected</li>
+            <li><span class="sq d"></span>dropped</li>
+            <li><span class="sq n"></span>new</li>
+          </ul>
+        </div>
+        <button class="logbtn" id="logbtn" type="button" aria-expanded="false" aria-controls="more">Log</button>
+      </section>
+
+      <div id="brand">
+        <p class="wm">M31 from Belfast</p>
+        <p class="sub">How the stack grew, {word(exp)} seconds at a time</p>
+      </div>
+      <a id="back" href="/#timeline">← Journal</a>
+      <div id="counter" aria-hidden="true"><span id="cur">01</span><span class="of"> / {pad(N)}</span></div>
+      <nav id="progress" aria-label="Steps"></nav>
+      <div id="navbtns">
+        <span id="hint" aria-hidden="true">← → to explore</span>
+        <button id="prev" type="button" aria-label="Previous step" disabled><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M8.5 2.5 4 7l4.5 4.5" fill="none" stroke="#e8e2d6" stroke-width="1.3" stroke-linecap="square" /></svg></button>
+        <button id="next" type="button" aria-label="Next step"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5.5 2.5 10 7l-4.5 4.5" fill="none" stroke="#e8e2d6" stroke-width="1.3" stroke-linecap="square" /></svg></button>
+      </div>
+      <div id="live" class="vh" aria-live="polite" aria-atomic="true"></div>
+    </main>
+
+    <script type="application/json" id="story-data" is:inline set:html={json}></script>
+    <script is:inline set:html={computeSrc}></script>
+    <script is:inline set:html={engineSrc}></script>
+  </body>
+</html>

@@ -765,3 +765,9 @@ compare-slider[data-side='after'] .cs-cap-after {
     width: 160px;
   }
 }
+
+/* link to /story under the timeline */
+.story-link {
+  padding: 1.5rem 0 2.5rem var(--margin);
+  border-top: 1px solid var(--rule);
+}

@@ -6,6 +6,7 @@ import TimelineEntry from '../components/TimelineEntry.astro';
 import Conditions from '../components/Conditions.astro';
 import Chart from '../components/Chart.astro';
 import { journal, isPlaceholder } from '../lib/journal';
+import { todo } from '../lib/todo';
 
 const REPO = 'https://github.com/acmck/m31-belfast';
 
@@ -46,10 +47,7 @@ const description =
     <section class="todo log" aria-labelledby="h-todo">
       <h2 id="h-todo" class="todo-title">To do</h2>
       <ol>
-        <li>Capture more frames (pending: Belfast weather)</li>
-        <li>Procure an EQ mount, so the sky stops rotating</li>
-        <li>Refine the pipeline (again)</li>
-        <li>Run some Seestar LP filter sessions for hydrogen-alpha pop</li>
+        {todo.map((t) => <li>{t}</li>)}
       </ol>
     </section>
   </header>
@@ -80,6 +78,7 @@ const description =
           what went wrong. Drag the line, or tab to it and use the arrow keys.
         </p>
         {timeline.map((t) => <TimelineEntry step={t} />)}
+        <p class="story-link"><a href="/story">Watch the stack grow, step by step →</a></p>
       </section>
     )}
 
