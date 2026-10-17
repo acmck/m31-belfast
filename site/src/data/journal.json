@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17T00:12:25Z",
+ "generated": "2026-10-17T00:17:48Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -138,18 +138,18 @@
      "webp": "/img/00-scope/before.webp",
      "avif_1200": "/img/00-scope/before-1200.avif",
      "webp_1200": "/img/00-scope/before-1200.webp",
-     "width": 2400,
-     "height": 1151
+     "width": 1612,
+     "height": 1209
     },
     "after": {
      "avif": "/img/00-scope/after.avif",
      "webp": "/img/00-scope/after.webp",
      "avif_1200": "/img/00-scope/after-1200.avif",
      "webp_1200": "/img/00-scope/after-1200.webp",
-     "width": 2400,
-     "height": 1151
+     "width": 1612,
+     "height": 1209
     },
-    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABQAwCdASoYAAwAPtFWo0uoJKMhsAgBABoJaQAAW+sv2dcHAAD+7oWYZsmmAhNpyrrxmWq9pBHY7lSBMymuW3j7iNwoAA=="
+    "placeholder": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAABQBACdASoYABIAPtFepk6oJSMiKAqpABoJZwDJTBEZfg42a/z0F2tddEZAAP7uhbHVZAL7AANT00mmc2DDGVz/08pNGU04xHPtMm9/nRpqSVZ4PJY7t5Hz2JttrIN7VbaY/8zC0aAAAA=="
    },
    "alignment": {
     "method": "astroalign similarity",
@@ -211,18 +211,18 @@
      "webp": "/img/01-measure/before.webp",
      "avif_1200": "/img/01-measure/before-1200.avif",
      "webp_1200": "/img/01-measure/before-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
     "after": {
      "avif": "/img/01-measure/after.avif",
      "webp": "/img/01-measure/after.webp",
      "avif_1200": "/img/01-measure/after-1200.avif",
      "webp_1200": "/img/01-measure/after-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
-    "placeholder": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAwCdASoYAAoAPtFapEwoJSOiMAgBABoJZwDLLCFSaNfe3WknwAD+7oevwLaz+MC/0k1BvRi6wcC/RhOaWcfAfc0ut9m1Y7KgAA=="
+    "placeholder": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADQBACdASoYABIAPs1OokunpCMht/VYAPAZiWcAygAQ1jiN9EwDvldmL38OfdOngAD+5ACIidLaZmDXiu7wG8KlTAoVUdDMu2+ueLr5WSVo0aTOiHSJad2fo3XUSMNDM66RekRgaRgAAA=="
    },
    "alignment": {
     "method": "astroalign similarity",
@@ -286,18 +286,18 @@
      "webp": "/img/02-moon/before.webp",
      "avif_1200": "/img/02-moon/before-1200.avif",
      "webp_1200": "/img/02-moon/before-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
     "after": {
      "avif": "/img/02-moon/after.avif",
      "webp": "/img/02-moon/after.webp",
      "avif_1200": "/img/02-moon/after-1200.avif",
      "webp_1200": "/img/02-moon/after-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
-    "placeholder": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABwAwCdASoYAAoAPtFUo0uoJKMhsAgBABoJaQAAWkfyqW+GOAAA/u6Y6VRBgAgVjxr/QecfIxN9RAGqJpK7S3k1BwAAAA=="
+    "placeholder": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAACwBACdASoYABIAPslQoUunpKMht/VYAPAZCWcAAC4BbehqkklhJ/+CWkrTVtiQAP7u2Ks6LxWODyit0ei+BZjkYSJiCY46jL6l+jlvnmtSH5RRqJDuhh3UtiZyGavEqBAAAA=="
    },
    "alignment": {
     "method": "astroalign similarity",
@@ -361,18 +361,18 @@
      "webp": "/img/04-stacking/before.webp",
      "avif_1200": "/img/04-stacking/before-1200.avif",
      "webp_1200": "/img/04-stacking/before-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
     "after": {
      "avif": "/img/04-stacking/after.avif",
      "webp": "/img/04-stacking/after.webp",
      "avif_1200": "/img/04-stacking/after-1200.avif",
      "webp_1200": "/img/04-stacking/after-1200.webp",
-     "width": 2400,
-     "height": 971
+     "width": 1304,
+     "height": 978
     },
-    "placeholder": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAACwAwCdASoYAAoAPtFUo0uoJKMhsAgBABoJZwAAWkgZqTbxYA6iAAD+7pjFs3U36R9jgPNsUB7AR+XQHBn+K2/qk8Iu0BioAAA="
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPs1QokunpKMht/VYAPAZiWcAzYQQ9DRR/mMxk1AIJzGdZ7eQQlAA/uk2Nf5QmPOUH1QhoHhcqcWmXvMjV2N/NcI+KjUSbM48HYV/QVvyjx5qEgdwa6RmEsL8Fd5hAAAA"
    },
    "alignment": {
     "method": "astroalign similarity",
@@ -436,18 +436,18 @@
      "webp": "/img/06-sharp/before.webp",
      "avif_1200": "/img/06-sharp/before-1200.avif",
      "webp_1200": "/img/06-sharp/before-1200.webp",
-     "width": 2400,
-     "height": 1196
+     "width": 1688,
+     "height": 1266
     },
     "after": {
      "avif": "/img/06-sharp/after.avif",
      "webp": "/img/06-sharp/after.webp",
      "avif_1200": "/img/06-sharp/after-1200.avif",
      "webp_1200": "/img/06-sharp/after-1200.webp",
-     "width": 2400,
-     "height": 1196
+     "width": 1688,
+     "height": 1266
     },
-    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoYAAwAPtFUpEuoJKOhsAgBABoJZwAAWsfVjOF/fdgNYAD+7ohgzz5HLe0N2yRj/TJr5mrd95/inMf9Zp50Rtw9HKn7RwAA"
+    "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQBACdASoYABIAPtFco00oJSMlsBgIAQAaCWcAyywREG6e07c4f3CRBZ5wxPxcAAD+7DkUk3/6vdBmZfBsho4258y62fm+dHR/RteTE6tVqINWSNwZpgSdQuNMg0n4wAA="
    },
    "alignment": {
     "method": "astroalign similarity",
@@ -511,18 +511,18 @@
      "webp": "/img/07-latest/before.webp",
      "avif_1200": "/img/07-latest/before-1200.avif",
      "webp_1200": "/img/07-latest/before-1200.webp",
-     "width": 2400,
-     "height": 1245
+     "width": 1784,
+     "height": 1338
     },
     "after": {
      "avif": "/img/07-latest/after.avif",
      "webp": "/img/07-latest/after.webp",
      "avif_1200": "/img/07-latest/after-1200.avif",
      "webp_1200": "/img/07-latest/after-1200.webp",
-     "width": 2400,
-     "height": 1245
+     "width": 1784,
+     "height": 1338
     },
-    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAABQAwCdASoYAAwAPtFUo0uoJKMhsAgBABoJZwDKACFSX83FAAD+7og3rs8KL04cVjs1Dgif3ZV0gHcTdR8s6oLk/D/x3ODgRGcYIAAA"
+    "placeholder": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAACQBACdASoYABIAPsVUoEunpSMhsAwA8BiJZwDMHCIjSnawD9wl91bmOlj+SgAA/u6Jl4yw868BnI3npTElcWOKTNqZ5efgAUBawZVU0eVBU1fcSENbfSW00PfzTdEzIDIDdQAA"
    },
    "alignment": {
     "method": "astroalign similarity",

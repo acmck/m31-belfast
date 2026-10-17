@@ -2,8 +2,8 @@
 """
 Export an aligned before/after pair (from align_pair.py) as web images for one journal stage.
 
-  export_web.py BEFORE.png AFTER.png --stage 03-ring [--out-root site/public/img] [--rotate 90]
-                [--long 2400] [--long-small 1200] [--manifest site/src/data/metrics/images_03-ring.json]
+  export_web.py BEFORE.png AFTER.png --stage 03-ring [--out-root site/public/img] [--rotate 0]
+                [--aspect 4:3 [--center-up 110]] [--long 2400] [--long-small 1200] [--manifest site/src/data/metrics/images_03-ring.json]
 
 Writes  <out-root>/<stage>/{before,after}.{avif,webp}  (long edge --long px)
         <out-root>/<stage>/{before,after}-1200.{avif,webp}  (long edge --long-small px)
@@ -11,7 +11,12 @@ and a manifest with the URLs, pixel sizes, byte sizes and a ~24 px blur-up WebP 
 
 The two inputs must have identical dimensions (align_pair.py guarantees it).  Images are built from bare pixel
 arrays, so they carry no EXIF, XMP, ICC profile or FITS header of any kind; --check re-reads every output and fails
-if any metadata block is present.  --rotate turns the Seestar's portrait frames to landscape for the page.
+if any metadata block is present.
+
+Framing (the site standard, see site/src/data/metrics/stages_spec.json "frame"): the Seestar shoots portrait frames
+in which M31's major axis already lies close to horizontal, so the pair is NOT rotated (--rotate 0); --aspect crops
+both images identically to a landscape window around M31's nucleus (found in AFTER), moved up by --center-up px
+so M110 stays in frame with M32 below the core.
 """
 import argparse, base64, io, json, sys
 from pathlib import Path
@@ -33,6 +38,20 @@ def load8(path, rotate):
     if rotate:
         im = np.rot90(im, k=-rotate // 90)  # clockwise
     return Image.fromarray(np.ascontiguousarray(im), "RGB")
+
+
+def frame(imgs, aspect, center_up):
+    """Crop both images to ASPECT ("4:3") around the nucleus of AFTER, shifted up by CENTER_UP px."""
+    aw, ah = (float(x) for x in aspect.split(":"))
+    W, H = imgs["after"].size
+    lum = np.asarray(imgs["after"].convert("L"), dtype=np.float32)
+    ny, nx = np.unravel_index(np.argmax(cv2.GaussianBlur(lum, (0, 0), 25)), lum.shape)
+    w, h = W, round(W * ah / aw)
+    if h > H:  # not tall enough: use the full height and narrow the window instead
+        w, h = round(H * aw / ah), H
+    x0 = int(np.clip(nx - w // 2, 0, W - w)); y0 = int(np.clip(ny - center_up - h // 2, 0, H - h))
+    box = (x0, y0, x0 + w, y0 + h)
+    return {k: v.crop(box) for k, v in imgs.items()}, dict(nucleus_xy=[int(nx), int(ny)], box=list(box))
 
 
 def resized(img, long_edge):
@@ -85,7 +104,9 @@ def main():
     ap.add_argument("--stage", required=True)
     ap.add_argument("--out-root", default="site/public/img")
     ap.add_argument("--url-root", default="/img")
-    ap.add_argument("--rotate", type=int, default=90, choices=[0, 90, 180, 270])
+    ap.add_argument("--rotate", type=int, default=0, choices=[0, 90, 180, 270])
+    ap.add_argument("--aspect", help="crop both images to this landscape aspect around M31, e.g. 4:3")
+    ap.add_argument("--center-up", type=int, default=0, help="with --aspect: move the window up by this many px")
     ap.add_argument("--long", type=int, default=2400); ap.add_argument("--long-small", type=int, default=1200)
     ap.add_argument("--max-kb", type=int, default=400, help="byte budget per full-size file (quality steps down to fit)")
     ap.add_argument("--max-kb-small", type=int, default=120, help="byte budget per 1200 px file")
@@ -98,6 +119,9 @@ def main():
         sys.exit(f"pair sizes differ: {imgs['before'].size} vs {imgs['after'].size}")
     out = Path(a.out_root) / a.stage
     man = {"stage": a.stage, "images": {}, "bytes": {}}
+    if a.aspect:
+        imgs, man["frame"] = frame(imgs, a.aspect, a.center_up)
+        man["frame"].update(aspect=a.aspect, center_up=a.center_up, rotate=a.rotate)
     for side, img in imgs.items():
         big, small = resized(img, a.long), resized(img, a.long_small)
         entry = {"width": big.size[0], "height": big.size[1], "width_1200": small.size[0], "height_1200": small.size[1]}
