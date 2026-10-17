@@ -573,7 +573,10 @@ compare-slider[data-side='after'] .cs-cap-after {
 .night-log {
   font-size: 0.9375rem;
   color: var(--ink-2);
-  max-width: var(--prose);
+}
+
+.night-log span {
+  white-space: nowrap;
 }
 
 .night-note {
