@@ -26,6 +26,7 @@ const rows = nights.map((n) => {
       ['QA out', num(n.qa_rejected)],
     ] as [string, string][],
     log: n.log_line,
+    note: n.note,
   };
 });
 ---
@@ -50,6 +51,7 @@ const rows = nights.map((n) => {
             </div>
           ))}
         </dl>
+        {r.note && <p class="night-note">{r.note}</p>}
         {r.log && <p class="night-log">{r.log}</p>}
       </li>
     ))}

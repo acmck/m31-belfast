@@ -576,6 +576,13 @@ compare-slider[data-side='after'] .cs-cap-after {
   max-width: var(--prose);
 }
 
+.night-note {
+  max-width: var(--prose);
+  color: var(--ink);
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+
 /* ---------- chart ---------- */
 .chart {
   margin: 0.5rem 0 0;

@@ -12,6 +12,7 @@ export type Num = number | null | undefined;
 export interface Night {
   id: string;
   label: string;
+  note?: string;
   utc_start: string | null;
   utc_end: string | null;
   exposure_s: Num;

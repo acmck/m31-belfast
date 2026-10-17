@@ -369,6 +369,10 @@ def cmd_build(spec, cond_path, out):
         nid = c["session"].replace("M31_", "")
         by_night[nid] = c
     nights = [night_entry(c, nid) for nid, c in by_night.items()]
+    notes = spec.get("night_notes", {})
+    for n in nights:  # personal notes, verbatim from the spec
+        if notes.get(n["id"]):
+            n["note"] = notes[n["id"]]
     rm = {rid: json.loads((METRICS / "renders" / f"{rid}.json").read_text()) for rid in spec["renders"]}
     RM.update(rm)  # templates can quote any render: {r[s0925_529_asof][frames]}
 
