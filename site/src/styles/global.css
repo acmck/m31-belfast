@@ -53,16 +53,6 @@
   color-scheme: dark;
 }
 
-:root[data-light='red'] {
-  /* Night-vision red: green and blue at exactly zero. One shade only. */
-  --ground: #000;
-  --ink: #f00;
-  --ink-2: #f00;
-  --rule: #f00;
-  --accent: #f00;
-  --banner: #000;
-}
-
 @media (min-width: 760px) {
   :root {
     --gutter: 32px;
@@ -125,10 +115,6 @@ a:hover {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-}
-
-:root[data-light='red'] a:hover {
-  text-decoration-thickness: 3px;
 }
 
 img {
@@ -197,47 +183,6 @@ img {
   text-transform: uppercase;
 }
 
-.red-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  min-height: 44px;
-  padding: 0 14px;
-  font: inherit;
-  font-family: var(--mono);
-  font-stretch: 87.5%;
-  font-size: 0.75rem;
-  color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 0;
-  cursor: pointer;
-}
-
-.red-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #c00;
-  box-shadow: 0 0 0 1px var(--ground), 0 0 0 2px #c00;
-}
-
-.red-toggle[aria-pressed='true'] {
-  background: #f00;
-  color: #000;
-  border-color: #f00;
-  font-weight: 700;
-}
-
-.red-toggle[aria-pressed='true'] .red-dot {
-  background: #000;
-  box-shadow: none;
-}
-
-.red-toggle:focus-visible {
-  outline-offset: 3px;
-}
-
 /* ---------- sections ---------- */
 main,
 .colophon {
@@ -266,19 +211,8 @@ main,
   margin: 0.75rem 0 0;
 }
 
-.hero-img {
-  background-size: cover;
-  background-position: center;
-}
-
 .hero-fig figcaption {
   margin-top: 0.5rem;
-}
-
-.red-note {
-  font-size: 0.9375rem;
-  color: var(--ink-2);
-  max-width: var(--prose);
 }
 
 .section-title {
@@ -540,51 +474,6 @@ compare-slider[data-side='after'] .cs-cap-after {
   padding-top: 5px;
 }
 
-/* ---------- red light ---------- */
-:root[data-light='red'] .cs-layer img,
-:root[data-light='red'] .hero-img img {
-  filter: grayscale(1) brightness(0.55);
-}
-
-:root[data-light='red'] .cs-frame::after,
-:root[data-light='red'] .hero-img::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #f00;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 2;
-}
-
-:root[data-light='red'] .hero-img {
-  position: relative;
-  background-image: none !important;
-}
-
-:root[data-light='red'] .cs-read {
-  background: #000;
-  color: #f00;
-  border: 1px solid #f00;
-}
-
-:root[data-light='red'] .cs-line {
-  box-shadow: -1px 0 0 #000, 1px 0 0 #000;
-}
-
-:root[data-light='red'] .cs-line::after {
-  background: #000;
-}
-
-:root[data-light='red'] compare-slider[data-side='before'] .cs-cap-before,
-:root[data-light='red'] compare-slider[data-side='after'] .cs-cap-after {
-  font-weight: 700;
-}
-
-:root[data-light='red'] .stage-no {
-  font-weight: 600;
-}
-
 /* ---------- conditions ---------- */
 .conditions,
 .integration {
@@ -733,10 +622,6 @@ compare-slider[data-side='after'] .cs-cap-after {
   max-width: var(--prose);
 }
 
-:root[data-light='red'] .chart .expect {
-  opacity: 1;
-}
-
 /* ---------- footer ---------- */
 .colophon {
   padding-top: 2rem;
@@ -774,7 +659,3 @@ compare-slider[data-side='after'] .cs-cap-after {
   }
 }
 
-:root[data-light='red'] .placeholder-banner {
-  color: #f00;
-  border-bottom: 1px solid #f00;
-}
