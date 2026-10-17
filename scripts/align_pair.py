@@ -17,8 +17,9 @@ same sky in two outputs.  For each image that has to move (BEFORE, plus AFTER wh
      target star within 3 px; the median distance of those matches is the residual reported (target pixels);
   4. the image is warped with Lanczos-4 resampling, and a validity mask is warped with it.
 
-Both outputs are then cropped to the largest axis-aligned rectangle where both are valid, so they have identical
-pixel dimensions.  The script exits non-zero if any residual is >= --max-residual (default 1 px).
+Both outputs are then cropped to the largest axis-aligned rectangle where both are valid (or, with --aspect, the
+largest window of that aspect placed as close as possible to M31's nucleus, --center-up px above it), so they have
+identical pixel dimensions.  The script exits non-zero if any residual is >= --max-residual (default 1 px).
 
 Inputs: 8- or 16-bit PNG/TIFF/JPEG (3-channel).  Outputs: 16-bit PNG (intermediate files; never published as is).
 """
@@ -67,10 +68,12 @@ def register(img, target_shape, target_xy):
     # Different renders reach different depths, so the brightest-N lists can overlap poorly; retry with other N
     # and keep the fit whose residual over all stars is smallest.
     best = None
-    for n_src, n_ctrl in ((400, 60), (200, 50), (800, 80), (120, 40)):
+    tries = [(400, 400, 60), (200, 200, 50), (800, 800, 80), (120, 200, 40), (300, 150, 50), (150, 300, 50),
+             (600, 300, 100), (300, 600, 100)]
+    for n_src, n_tgt, n_ctrl in tries:
         src_xy = stars(img, n_src)
         try:
-            T, (s_pts, d_pts) = aa.find_transform(src_xy, target_xy[:max(n_src, 200)], max_control_points=n_ctrl)
+            T, (s_pts, d_pts) = aa.find_transform(src_xy, target_xy[:n_tgt], max_control_points=n_ctrl)
         except Exception:
             continue
         med, n = residual(T, src_xy, target_xy)
@@ -94,9 +97,8 @@ def register(img, target_shape, target_xy):
 
 def largest_rectangle(mask, step=4):
     """Largest axis-aligned all-True rectangle (histogram method on a step-x downsampled mask)."""
-    m = mask[::step, ::step]
-    # shrink: a downsampled cell counts only if its whole block is valid
-    h, w = m.shape
+    # a downsampled cell counts only if its whole step x step block is valid
+    h, w = mask.shape[0] // step, mask.shape[1] // step
     blk = mask[: h * step, : w * step].reshape(h, step, w, step).all(axis=(1, 3))
     heights = np.zeros(w, int); best = (0, 0, 0, 0, 0)
     for r in range(h):
@@ -116,6 +118,40 @@ def largest_rectangle(mask, step=4):
     return int(r0 * step), int(c0 * step), int(hh * step), int(ww * step)
 
 
+def aspect_rectangle(mask, aspect, target_xy, step=4, slack=0.97):
+    """Largest all-valid rectangle of the given width/height aspect, placed as close as possible to TARGET_XY
+    (its centre).  Uses a summed-area table on a step-x downsampled mask; the size is backed off by SLACK from
+    the maximum so the window can move towards the target."""
+    h, w = mask.shape[0] // step, mask.shape[1] // step
+    blk = mask[: h * step, : w * step].reshape(h, step, w, step).all(axis=(1, 3)).astype(np.int32)
+    sat = np.pad(blk.cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+
+    def fits(ww):
+        hh = max(1, int(round(ww / aspect)))
+        if ww > w or hh > h:
+            return None
+        tot = sat[hh:, ww:] - sat[:-hh, ww:] - sat[hh:, :-ww] + sat[:-hh, :-ww]
+        return hh, tot == ww * hh
+
+    lo, hi = 1, w
+    while lo < hi:  # largest width that fits anywhere
+        mid = (lo + hi + 1) // 2
+        f = fits(mid)
+        lo, hi = (mid, hi) if f is not None and f[1].any() else (lo, mid - 1)
+    ww = max(1, int(lo * slack))
+    hh, ok = fits(ww)
+    ys, xs = np.nonzero(ok)
+    tx, ty = target_xy[0] / step - ww / 2, target_xy[1] / step - hh / 2
+    i = int(np.argmin((xs - tx) ** 2 + (ys - ty) ** 2))
+    return int(ys[i] * step), int(xs[i] * step), int(hh * step), int(ww * step)
+
+
+def nucleus(img):
+    lum = img.mean(axis=2).astype(np.float32)
+    y, x = np.unravel_index(np.argmax(cv2.GaussianBlur(lum, (0, 0), 25)), lum.shape)
+    return float(x), float(y)
+
+
 def save16(path, img):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(path), (np.clip(img, 0, 1) * 65535 + 0.5).astype(np.uint16)[..., ::-1])
@@ -129,21 +165,28 @@ def main():
     ap.add_argument("--pad", type=float, default=0.0, help="with --ref: enlarge the reference canvas by this fraction per side")
     ap.add_argument("--metrics", help="write alignment metrics JSON here")
     ap.add_argument("--max-residual", type=float, default=1.0)
+    ap.add_argument("--aspect", help="crop to the largest window of this aspect (e.g. 4:3) centred on M31's nucleus")
+    ap.add_argument("--center-up", type=float, default=0.0, help="with --aspect: aim the window this many px above the nucleus")
     a = ap.parse_args()
 
     before, after = load(a.before), load(a.after)
     if a.ref:
         ref = load(a.ref); H, W = ref.shape[:2]
         py, px = int(round(a.pad * H)), int(round(a.pad * W))
-        ref_xy = stars(ref) + np.array([px, py]); shape = (H + 2 * py, W + 2 * px)
+        ref_xy = stars(ref, 800) + np.array([px, py]); shape = (H + 2 * py, W + 2 * px)
         b_w, b_valid, b_info = register(before, shape, ref_xy)
         a_w, a_valid, a_info = register(after, shape, ref_xy)
     else:
         shape = after.shape[:2]
-        b_w, b_valid, b_info = register(before, shape, stars(after))
+        b_w, b_valid, b_info = register(before, shape, stars(after, 800))
         a_w, a_valid = after, np.ones(shape, bool)
         a_info = dict(method="identity (target geometry)", n_stars=None, median_residual_px=0.0)
-    r0, c0, hh, ww = largest_rectangle(b_valid & a_valid)
+    if a.aspect:
+        aw, ah = (float(v) for v in a.aspect.split(":"))
+        nx, ny = nucleus(a_w)
+        r0, c0, hh, ww = aspect_rectangle(b_valid & a_valid, aw / ah, (nx, ny - a.center_up))
+    else:
+        r0, c0, hh, ww = largest_rectangle(b_valid & a_valid)
     b_c, a_c = b_w[r0:r0 + hh, c0:c0 + ww], a_w[r0:r0 + hh, c0:c0 + ww]
     save16(a.out_before, b_c); save16(a.out_after, a_c)
 

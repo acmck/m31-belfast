@@ -1,0 +1,36 @@
+{
+ "id": "cur_0925",
+ "label": "25/26 Sep alone",
+ "nights": [
+  "2026-09-25"
+ ],
+ "frames": 998,
+ "minutes": 166.3,
+ "fwhm_arcsec": 10.6,
+ "stars": 3461,
+ "sky_noise_pct": 1.698,
+ "snr": {
+  "major 20′ NE": 28.95,
+  "major 40′ NE": 10.15,
+  "major 20′ SW": 25.16,
+  "major 40′ SW": 16.67,
+  "minor 10′ SE": 21.74,
+  "minor 20′ SE": 0.63,
+  "minor 10′ NW": 9.23,
+  "minor 20′ NW": 0.87
+ },
+ "snr_headline": 13.41,
+ "nucleus_wcs_vs_peak_px": 2.3,
+ "provenance": {
+  "snr": "data/M31_2026-09-25/final/03_cc.fit (WCS from data/M31_2026-09-25/final/03_cc.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "fwhm_arcsec": "scripts/measure_stack.py on data/M31_2026-09-25/stack/result.fit at 3.667\"/px (from the plate solution)",
+  "frames": "STACKCNT of data/M31_2026-09-25/stack/result.fit",
+  "minutes": "LIVETIME of data/M31_2026-09-25/stack/result.fit",
+  "image": "data/M31_2026-09-25/final/final.png"
+ },
+ "ring": {
+  "depth_pct": 1.6,
+  "radius_arcmin": 23.7,
+  "provenance": "data/M31_2026-09-25/final/05_starless.fits: median radial profile (3 px annuli to 400 px) around the WCS nucleus, minus the image median; depth = largest drop below the brightest point further out"
+ }
+}

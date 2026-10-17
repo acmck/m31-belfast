@@ -2,7 +2,7 @@
  "source": "open-meteo archive (ERA5)",
  "url": "https://archive-api.open-meteo.com/v1/archive?latitude=54.6&longitude=-5.93&hourly=cloud_cover%2Cwind_gusts_10m%2Crelative_humidity_2m%2Ctemperature_2m%2Cdew_point_2m&wind_speed_unit=mph&temperature_unit=celsius&timezone=UTC&start_date=2026-09-07&end_date=2026-09-08",
  "response": {
-  "generationtime_ms": 1.3480186462402344,
+  "generationtime_ms": 1.53350830078125,
   "utc_offset_seconds": 0,
   "timezone": "GMT",
   "timezone_abbreviation": "GMT",
@@ -316,6 +316,5 @@
     8.3
    ]
   }
- },
- "requested_point": "Belfast city centre 54.60,-5.93 (grid coordinates removed)"
+ }
 }

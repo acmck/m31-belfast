@@ -2,7 +2,7 @@
 """
 Export an aligned before/after pair (from align_pair.py) as web images for one journal stage.
 
-  export_web.py BEFORE.png AFTER.png --stage 03-ring [--out-root site/public/img] [--rotate 0]
+  export_web.py BEFORE.png AFTER.png --stage 03-ring [--single] [--out-root site/public/img] [--rotate 0]
                 [--aspect 4:3 [--center-up 110]] [--long 2400] [--long-small 1200] [--manifest site/src/data/metrics/images_03-ring.json]
 
 Writes  <out-root>/<stage>/{before,after}.{avif,webp}  (long edge --long px)
@@ -13,7 +13,7 @@ The two inputs must have identical dimensions (align_pair.py guarantees it).  Im
 arrays, so they carry no EXIF, XMP, ICC profile or FITS header of any kind; --check re-reads every output and fails
 if any metadata block is present.
 
-Framing (the site standard, see site/src/data/metrics/stages_spec.json "frame"): the Seestar shoots portrait frames
+Framing (the site standard, see site/src/data/metrics/journal_spec_v2.json "frame"): the Seestar shoots portrait frames
 in which M31's major axis already lies close to horizontal, so the pair is NOT rotated (--rotate 0); --aspect crops
 both images identically to a landscape window around M31's nucleus (found in AFTER), moved up by --center-up px
 so M110 stays in frame with M32 below the core.
@@ -112,9 +112,11 @@ def main():
     ap.add_argument("--max-kb-small", type=int, default=120, help="byte budget per 1200 px file")
     ap.add_argument("--manifest")
     ap.add_argument("--no-check", action="store_true")
+    ap.add_argument("--single", action="store_true",
+                    help="export only AFTER, as image*.{avif,webp} (side-note images); BEFORE is ignored")
     a = ap.parse_args()
 
-    imgs = {"before": load8(a.before, a.rotate), "after": load8(a.after, a.rotate)}
+    imgs = {"before": load8(a.after if a.single else a.before, a.rotate), "after": load8(a.after, a.rotate)}
     if imgs["before"].size != imgs["after"].size:
         sys.exit(f"pair sizes differ: {imgs['before'].size} vs {imgs['after'].size}")
     out = Path(a.out_root) / a.stage
@@ -122,13 +124,19 @@ def main():
     if a.aspect:
         imgs, man["frame"] = frame(imgs, a.aspect, a.center_up)
         man["frame"].update(aspect=a.aspect, center_up=a.center_up, rotate=a.rotate)
-    for side, img in imgs.items():
+    sides = {"image": imgs["after"]} if a.single else imgs
+    for side, img in sides.items():
         big, small = resized(img, a.long), resized(img, a.long_small)
         entry = {"width": big.size[0], "height": big.size[1], "width_1200": small.size[0], "height_1200": small.size[1]}
+        variants = [("", big, a.max_kb), ("-1200", small, a.max_kb_small)]
+        if a.single:  # side notes are shown as thumbnails: add a ~400 px variant
+            thumb = resized(img, 400)
+            variants.append(("-400", thumb, 25))
+            entry.update(width_400=thumb.size[0], height_400=thumb.size[1])
         for fmt in ("avif", "webp"):
-            for tag, im in (("", big), ("-1200", small)):
+            for tag, im, kb in variants:
                 p = out / f"{side}{tag}.{fmt}"
-                budget = (a.max_kb if tag == "" else a.max_kb_small) * 1024
+                budget = kb * 1024
                 man["bytes"][p.name], man.setdefault("quality", {})[p.name] = save(im, p, fmt, budget)
                 entry[f"{fmt}{tag.replace('-', '_')}"] = f"{a.url_root}/{a.stage}/{p.name}"
                 if not a.no_check:

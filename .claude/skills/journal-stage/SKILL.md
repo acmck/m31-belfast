@@ -1,11 +1,22 @@
 ---
 name: journal-stage
-description: Produce one before/after stage for the M31 journal site - star-align the two images, export metadata-free web images, measure the numbers (frames, minutes, FWHM, SNR at fixed M31 positions, night conditions) and write the "what changed / what it did" copy into site/src/data/journal.json. Use when a new night, a pipeline change, or a new combined stack should appear on the site as a comparison slider, or when a stage's images or numbers need regenerating.
+description: Add a timeline step (a new night or pipeline change, as produced on that date) or a one-change lesson to the M31 journal site - star-align the two images, export metadata-free web images, measure the numbers (frames, minutes, FWHM, SNR at fixed M31 positions, night conditions) and write the "what changed / what it did" copy into site/src/data/journal.json. Use when a new night, a pipeline change, or a new combined stack should appear on the site as a comparison slider, or when a stage's images or numbers need regenerating.
 ---
 
-# One journal stage
+# One journal step or lesson
 
-A stage shows **one change** as a before/after slider. Both images must show the same sky at the same scale
+The site has two kinds of slider, both driven by `site/src/data/metrics/journal_spec_v2.json`:
+
+- **Timeline steps** (`timeline`, the main story): the best image actually produced on a date, with cumulative
+  frames. `before` is the previous step's `after`. Never reprocess an earlier step with newer code. To add a
+  night: run it, re-combine all nights, then append one step whose `after` is the new combine's `final/history/`
+  output, with a `provenance` line (date + commit). Single nights that aren't the cumulative best go in that
+  step's `side_notes`. The hero (`hero`) is first light against the latest step. Steps that come out worse stay
+  in, with a line on what went wrong.
+- **Lessons** (`stages`, "What each change did"): one change as a before/after, reprocessed today, and the copy
+  says so.
+
+A slider shows the same sky at the same scale and rotation on both sides. Both images must show the same sky at the same scale
 and rotation, and every number in the copy must come from a metrics file, never from memory or estimation.
 
 The driver is `scripts/build_journal.py`; it calls `scripts/align_pair.py` and `scripts/export_web.py`.
@@ -13,7 +24,7 @@ Check `--help` on each before use, since the flags below may have moved on.
 
 ## 1. Describe the renders and the stage
 
-Edit `site/src/data/metrics/stages_spec.json`:
+Edit `site/src/data/metrics/journal_spec_v2.json`:
 
 - `renders`: one entry per image the stage needs, if not already there: `label`, `image` (stretched
   PNG/TIFF/JPEG, normally `data/<session>/final/final.png`), `linear` (last linear image before denoise, e.g.

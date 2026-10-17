@@ -1,0 +1,43 @@
+{
+ "before": {
+  "src": "/Users/andrew/src/seestar/data/M31_combined_2026-10-16/color_nomad/final.png",
+  "method": "astroalign similarity",
+  "n_stars": 337,
+  "n_control": 38,
+  "median_residual_px": 0.115,
+  "rotation_deg": 12.293,
+  "scale": 1.00006,
+  "shift_px": [
+   642.39,
+   76.79
+  ]
+ },
+ "after": {
+  "src": "/Users/andrew/src/seestar/data/M31_combined_2026-10-16/final/final.png",
+  "method": "astroalign similarity",
+  "n_stars": 343,
+  "n_control": 39,
+  "median_residual_px": 0.113,
+  "rotation_deg": 12.294,
+  "scale": 1.00006,
+  "shift_px": [
+   704.92,
+   90.42
+  ]
+ },
+ "ref": "/Users/andrew/src/seestar/data/M31_combined_2026-10-17/final/final.png",
+ "crop": {
+  "x": 444,
+  "y": 1304,
+  "width": 1288,
+  "height": 968
+ },
+ "output_size": [
+  1288,
+  968
+ ],
+ "worst_median_residual_px": 0.115,
+ "method": "astroalign similarity",
+ "n_stars": 337,
+ "median_residual_px": 0.115
+}

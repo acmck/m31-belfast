@@ -1,0 +1,43 @@
+{
+ "before": {
+  "src": "/Users/andrew/src/seestar/data/M31_2026-09-25/ring_old/final.png",
+  "method": "astroalign similarity",
+  "n_stars": 328,
+  "n_control": 17,
+  "median_residual_px": 0.114,
+  "rotation_deg": -2.993,
+  "scale": 0.99992,
+  "shift_px": [
+   20.01,
+   340.87
+  ]
+ },
+ "after": {
+  "src": "/Users/andrew/src/seestar/data/M31_2026-09-25/final/final.png",
+  "method": "astroalign similarity",
+  "n_stars": 365,
+  "n_control": 32,
+  "median_residual_px": 0.088,
+  "rotation_deg": -2.996,
+  "scale": 0.99998,
+  "shift_px": [
+   83.83,
+   337.48
+  ]
+ },
+ "ref": "/Users/andrew/src/seestar/data/M31_combined_2026-10-17/final/final.png",
+ "crop": {
+  "x": 232,
+  "y": 1176,
+  "width": 1592,
+  "height": 1192
+ },
+ "output_size": [
+  1592,
+  1192
+ ],
+ "worst_median_residual_px": 0.114,
+ "method": "astroalign similarity",
+ "n_stars": 328,
+ "median_residual_px": 0.114
+}

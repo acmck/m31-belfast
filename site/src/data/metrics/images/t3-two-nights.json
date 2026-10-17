@@ -1,0 +1,62 @@
+{
+ "stage": "t3-two-nights",
+ "images": {
+  "before": {
+   "width": 1339,
+   "height": 1004,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t3-two-nights/before.avif",
+   "avif_1200": "/img/t3-two-nights/before-1200.avif",
+   "webp": "/img/t3-two-nights/before.webp",
+   "webp_1200": "/img/t3-two-nights/before-1200.webp"
+  },
+  "after": {
+   "width": 1339,
+   "height": 1004,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t3-two-nights/after.avif",
+   "avif_1200": "/img/t3-two-nights/after-1200.avif",
+   "webp": "/img/t3-two-nights/after.webp",
+   "webp_1200": "/img/t3-two-nights/after-1200.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAADQBACdASoYABIAPslSoEunpKMht/VYAPAZCWcAAC2nlKUO7J3x4pscUBj68nUgAAD+zW/NvtlqhcqQk3KQmhUADTlyl+czHZ2I2bkNwsAZxzV3jhp0T1q/ssMNXT+BFCMVWHgAAAA="
+ },
+ "bytes": {
+  "before.avif": 111557,
+  "before-1200.avif": 92498,
+  "before.webp": 104344,
+  "before-1200.webp": 84608,
+  "after.avif": 102942,
+  "after-1200.avif": 86099,
+  "after.webp": 98336,
+  "after-1200.webp": 81214
+ },
+ "frame": {
+  "nucleus_xy": [
+   645,
+   601
+  ],
+  "box": [
+   0,
+   0,
+   1339,
+   1004
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "before.avif": 62,
+  "before-1200.avif": 62,
+  "before.webp": 80,
+  "before-1200.webp": 80,
+  "after.avif": 62,
+  "after-1200.avif": 62,
+  "after.webp": 80,
+  "after-1200.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}
