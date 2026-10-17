@@ -166,8 +166,9 @@ img {
 /* ---------- masthead ---------- */
 .masthead {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   max-width: var(--wide);
   margin: 0 auto;
@@ -181,6 +182,33 @@ img {
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* to-do list in the masthead: unticked boxes, observing-log type */
+.todo-title {
+  font: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  margin: 0 0 0.25rem;
+}
+
+.todo ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: todo;
+}
+
+.todo li {
+  counter-increment: todo;
+  padding-left: 7ch;
+  text-indent: -7ch;
+}
+
+.todo li::before {
+  content: counter(todo) '. [ ] ';
+  white-space: pre;
 }
 
 /* ---------- sections ---------- */
