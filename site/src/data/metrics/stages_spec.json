@@ -1,70 +1,220 @@
 {
  "_about": "Input to scripts/build_journal.py. renders = every image the site shows and the linear files its numbers are measured on; stages = the before/after pairs and their copy templates. Paths are relative to the repo root (data/ is never published).",
+ "frame": {
+  "_rule": "Site standard (2026-10-17): M31 shown horizontal, as the Seestar's portrait frames capture it (no rotation), cropped to a 4:3 landscape window around the nucleus, moved up so M110 is in frame and M32 sits below the core. Same crop for both sides of a pair.",
+  "rotate": 0,
+  "aspect": "4:3",
+  "center_up_px": 110
+ },
  "ref": "comb_1017",
  "pad": 0.08,
- "rotate": 90,
  "scratch": "data/journal_pairs",
  "hero_stage_id": "07-latest",
  "renders": {
-  "scope_0907": {"label": "Seestar live stack", "nights": ["2026-09-07"], "exposure_s": 10,
+  "scope_0907": {
+   "label": "Seestar live stack",
+   "nights": [
+    "2026-09-07"
+   ],
+   "exposure_s": 10,
    "image": "data/M31_2026-09-07/seestar_stack/Stacked_479_M 31_10.0s_IRCUT_20260908-021438.jpg",
-   "linear": "data/M31_2026-09-07/seestar_stack/Stacked_479_M 31_10.0s_IRCUT_20260908-021438.fit"},
-  "first_0907": {"label": "First pipeline (8 Sep)", "nights": ["2026-09-07"],
+   "linear": "data/M31_2026-09-07/seestar_stack/Stacked_479_M 31_10.0s_IRCUT_20260908-021438.fit"
+  },
+  "first_0907": {
+   "label": "First pipeline (8 Sep)",
+   "nights": [
+    "2026-09-07"
+   ],
    "image": "data/M31_2026-09-07/first_pipeline/final/final.png",
    "linear": "data/M31_2026-09-07/first_pipeline/final/03_bge.fits",
    "wcs": "data/M31_2026-09-07/first_pipeline/final/01_solved.fit",
-   "stack": "data/M31_2026-09-07/first_pipeline/stack/result.fit"},
-  "cur_0907": {"label": "7/8 Sep, current pipeline", "nights": ["2026-09-07"],
+   "stack": "data/M31_2026-09-07/first_pipeline/stack/result.fit"
+  },
+  "cur_0907": {
+   "label": "7/8 Sep, current pipeline",
+   "nights": [
+    "2026-09-07"
+   ],
    "image": "data/M31_2026-09-07/final/final.png",
    "linear": "data/M31_2026-09-07/final/03_cc.fit",
-   "stack": "data/M31_2026-09-07/stack/result.fit"},
-  "cur_0925": {"label": "25/26 Sep alone", "nights": ["2026-09-25"], "extra": ["ring"],
+   "stack": "data/M31_2026-09-07/stack/result.fit"
+  },
+  "cur_0925": {
+   "label": "25/26 Sep alone",
+   "nights": [
+    "2026-09-25"
+   ],
+   "extra": [
+    "ring"
+   ],
    "starless": "data/M31_2026-09-25/final/05_starless.fits",
    "image": "data/M31_2026-09-25/final/final.png",
    "linear": "data/M31_2026-09-25/final/03_cc.fit",
-   "stack": "data/M31_2026-09-25/stack/result.fit"},
-  "ring_old_0925": {"label": "25/26 Sep, old core protection", "nights": ["2026-09-25"], "extra": ["ring"],
+   "stack": "data/M31_2026-09-25/stack/result.fit"
+  },
+  "ring_old_0925": {
+   "label": "25/26 Sep, old core protection",
+   "nights": [
+    "2026-09-25"
+   ],
+   "extra": [
+    "ring"
+   ],
    "starless": "data/M31_2026-09-25/ring_old/05_starless.fits",
    "image": "data/M31_2026-09-25/ring_old/final.png",
    "linear": "data/M31_2026-09-25/final/03_cc.fit",
-   "stack": "data/M31_2026-09-25/stack/result.fit"},
-  "s0925_529": {"label": "25/26 Sep, first 529 frames", "nights": ["2026-09-25"],
+   "stack": "data/M31_2026-09-25/stack/result.fit"
+  },
+  "s0925_529": {
+   "label": "25/26 Sep, first 529 frames",
+   "nights": [
+    "2026-09-25"
+   ],
    "image": "data/M31_2026-09-25/run_529/post/final.png",
    "linear": "data/M31_2026-09-25/run_529/post/03_cc.fit",
-   "stack": "data/M31_2026-09-25/run_529/stack/result.fit"},
-  "comb_1016": {"label": "Two nights combined", "nights": ["2026-09-07", "2026-09-25"], "extra": ["color"],
+   "stack": "data/M31_2026-09-25/run_529/stack/result.fit"
+  },
+  "comb_1016": {
+   "label": "Two nights combined",
+   "nights": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "extra": [
+    "color"
+   ],
    "image": "data/M31_combined_2026-10-16/final/final.png",
    "linear": "data/M31_combined_2026-10-16/final/03_cc.fit",
-   "stack": "data/M31_combined_2026-10-16/stack/result.fit"},
-  "nomad_1016": {"label": "Two nights, NOMAD colour", "nights": ["2026-09-07", "2026-09-25"], "extra": ["color"],
+   "stack": "data/M31_combined_2026-10-16/stack/result.fit"
+  },
+  "nomad_1016": {
+   "label": "Two nights, NOMAD colour",
+   "nights": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "extra": [
+    "color"
+   ],
    "image": "data/M31_combined_2026-10-16/color_nomad/final.png",
    "linear": "data/M31_combined_2026-10-16/color_nomad/03_cc.fit",
-   "stack": "data/M31_combined_2026-10-16/stack/result.fit"},
-  "cur_1016": {"label": "16/17 Oct alone", "nights": ["2026-10-16"],
+   "stack": "data/M31_combined_2026-10-16/stack/result.fit"
+  },
+  "cur_1016": {
+   "label": "16/17 Oct alone",
+   "nights": [
+    "2026-10-16"
+   ],
    "image": "data/M31_2026-10-16/final/final.png",
    "linear": "data/M31_2026-10-16/final/03_cc.fit",
-   "stack": "data/M31_2026-10-16/stack/result.fit"},
-  "comb_1017": {"label": "Three nights combined", "nights": ["2026-09-07", "2026-09-25", "2026-10-16"],
+   "stack": "data/M31_2026-10-16/stack/result.fit"
+  },
+  "comb_1017": {
+   "label": "Three nights combined",
+   "nights": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16"
+   ],
    "image": "data/M31_combined_2026-10-17/final/final.png",
    "linear": "data/M31_combined_2026-10-17/final/03_cc.fit",
-   "stack": "data/M31_combined_2026-10-17/stack/result.fit"}
+   "stack": "data/M31_combined_2026-10-17/stack/result.fit"
+  }
  },
  "stages": [
-  {"id": "00-scope", "title": "What the scope gives you", "dates": ["2026-09-07"], "before": "scope_0907", "after": "first_0907",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "01-measure", "title": "Measure, don't guess", "dates": ["2026-09-07"], "before": "first_0907", "after": "cur_0907",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "02-moon", "title": "The full moon night", "dates": ["2026-09-07", "2026-09-25"], "before": "cur_0907", "after": "cur_0925",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "03-ring", "title": "A ring around the core", "dates": ["2026-09-25"], "before": "ring_old_0925", "after": "cur_0925",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "04-stacking", "title": "Stacking nights", "dates": ["2026-09-07", "2026-09-25"], "before": "s0925_529", "after": "comb_1016",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "05-color", "title": "Fixing the lavender", "dates": ["2026-09-07", "2026-09-25"], "before": "nomad_1016", "after": "comb_1016",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "06-sharp", "title": "The sharp night", "dates": ["2026-09-25", "2026-10-16"], "before": "cur_0925", "after": "cur_1016",
-   "what_changed": "", "what_it_did": ""},
-  {"id": "07-latest", "title": "Latest", "dates": ["2026-09-07", "2026-09-25", "2026-10-16"], "before": "comb_1016", "after": "comb_1017",
-   "what_changed": "", "what_it_did": ""}
+  {
+   "id": "00-scope",
+   "title": "What the scope gives you",
+   "dates": [
+    "2026-09-07"
+   ],
+   "before": "scope_0907",
+   "after": "first_0907",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "01-measure",
+   "title": "Measure, don't guess",
+   "dates": [
+    "2026-09-07"
+   ],
+   "before": "first_0907",
+   "after": "cur_0907",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "02-moon",
+   "title": "The full moon night",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": "cur_0907",
+   "after": "cur_0925",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "03-ring",
+   "title": "A ring around the core",
+   "dates": [
+    "2026-09-25"
+   ],
+   "before": "ring_old_0925",
+   "after": "cur_0925",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "04-stacking",
+   "title": "Stacking nights",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": "s0925_529",
+   "after": "comb_1016",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "05-color",
+   "title": "Fixing the lavender",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25"
+   ],
+   "before": "nomad_1016",
+   "after": "comb_1016",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "06-sharp",
+   "title": "The sharp night",
+   "dates": [
+    "2026-09-25",
+    "2026-10-16"
+   ],
+   "before": "cur_0925",
+   "after": "cur_1016",
+   "what_changed": "",
+   "what_it_did": ""
+  },
+  {
+   "id": "07-latest",
+   "title": "Latest",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16"
+   ],
+   "before": "comb_1016",
+   "after": "comb_1017",
+   "what_changed": "",
+   "what_it_did": ""
+  }
  ]
 }

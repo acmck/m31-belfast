@@ -46,6 +46,8 @@ and the moon from astropy; never the FITS coordinates.
 - Alignment is star matching (astroalign similarity) onto the spec's common `ref` geometry, cropped to the
   overlap. `align_pair.py` exits non-zero if the median star residual is >= 1 px: fix the input, don't
   raise `--max-residual`.
+- Framing is a site standard: no rotation, 4:3 landscape crop around M31's nucleus (moved up so M110 stays in),
+  from the spec's `frame` block. Check that M31 is horizontal and M110 is in frame before deploying.
 - `export_web.py` writes `site/public/img/<stage>/{before,after}{,-1200}.{avif,webp}` from bare pixels
   (no EXIF/XMP/ICC) and re-checks every output.
 - Intermediate PNGs stay out of the repo.

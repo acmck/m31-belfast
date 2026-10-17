@@ -1,8 +1,13 @@
 {
  "_about": "INTERIM input to scripts/build_journal.py (first deploy), built only from outputs that the running reprocessing does not overwrite. 03-ring and 05-color are left out until their renders exist; 02/06 use the first 529 frames of 25/26 Sep; 07 is 'latest so far'. Paths are relative to the repo root (data/ is never published).",
+ "frame": {
+  "_rule": "Site standard (2026-10-17): M31 shown horizontal, as the Seestar's portrait frames capture it (no rotation), cropped to a 4:3 landscape window around the nucleus, moved up so M110 is in frame and M32 sits below the core. Same crop for both sides of a pair.",
+  "rotate": 0,
+  "aspect": "4:3",
+  "center_up_px": 110
+ },
  "ref": "comb_1016",
  "pad": 0.08,
- "rotate": 90,
  "scratch": "data/journal_pairs",
  "hero_stage_id": "07-latest",
  "renders": {

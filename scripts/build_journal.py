@@ -238,6 +238,15 @@ def cmd_measure(spec, only, force):
               + (f"  color {m['color']['r_over_g']}/{m['color']['b_over_g']}" if 'color' in m else ""))
 
 
+def frame_args(spec):
+    """Site framing from the spec's "frame" block: M31 horizontal as captured, landscape crop around it."""
+    fr = spec.get("frame", {"rotate": spec.get("rotate", 0)})
+    args = ["--rotate", str(fr.get("rotate", 0))]
+    if fr.get("aspect"):
+        args += ["--aspect", fr["aspect"], "--center-up", str(fr.get("center_up_px", 0))]
+    return args
+
+
 def cmd_images(spec, only):
     scratch = ROOT / spec.get("scratch", "data/journal_pairs")
     for st in spec["stages"]:
@@ -254,7 +263,7 @@ def cmd_images(spec, only):
         subprocess.run(cmd, check=True)
         subprocess.run([sys.executable, str(ROOT / "scripts/export_web.py"), str(scratch / st["id"] / "before.png"),
                         str(scratch / st["id"] / "after.png"), "--stage", st["id"],
-                        "--out-root", str(ROOT / "site/public/img"), "--rotate", str(spec.get("rotate", 90)),
+                        "--out-root", str(ROOT / "site/public/img"), *frame_args(spec),
                         "--manifest", str(METRICS / "images" / f"{st['id']}.json")], check=True)
 
 

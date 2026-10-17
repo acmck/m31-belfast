@@ -2,36 +2,51 @@
  "stage": "01-measure",
  "images": {
   "before": {
-   "width": 2400,
-   "height": 971,
+   "width": 1304,
+   "height": 978,
    "width_1200": 1200,
-   "height_1200": 485,
+   "height_1200": 900,
    "avif": "/img/01-measure/before.avif",
    "avif_1200": "/img/01-measure/before-1200.avif",
    "webp": "/img/01-measure/before.webp",
    "webp_1200": "/img/01-measure/before-1200.webp"
   },
   "after": {
-   "width": 2400,
-   "height": 971,
+   "width": 1304,
+   "height": 978,
    "width_1200": 1200,
-   "height_1200": 485,
+   "height_1200": 900,
    "avif": "/img/01-measure/after.avif",
    "avif_1200": "/img/01-measure/after-1200.avif",
    "webp": "/img/01-measure/after.webp",
    "webp_1200": "/img/01-measure/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAwCdASoYAAoAPtFapEwoJSOiMAgBABoJZwDLLCFSaNfe3WknwAD+7oevwLaz+MC/0k1BvRi6wcC/RhOaWcfAfc0ut9m1Y7KgAA=="
+  "placeholder": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAADQBACdASoYABIAPs1OokunpCMht/VYAPAZiWcAygAQ1jiN9EwDvldmL38OfdOngAD+5ACIidLaZmDXiu7wG8KlTAoVUdDMu2+ueLr5WSVo0aTOiHSJad2fo3XUSMNDM66RekRgaRgAAA=="
  },
  "bytes": {
-  "before.avif": 226648,
-  "before-1200.avif": 85355,
-  "before.webp": 226464,
-  "before-1200.webp": 94870,
-  "after.avif": 212820,
-  "after-1200.avif": 73984,
-  "after.webp": 203524,
-  "after-1200.webp": 75530
+  "before.avif": 112495,
+  "before-1200.avif": 98586,
+  "before.webp": 111086,
+  "before-1200.webp": 96040,
+  "after.avif": 110502,
+  "after-1200.avif": 96047,
+  "after.webp": 106640,
+  "after-1200.webp": 91466
+ },
+ "frame": {
+  "nucleus_xy": [
+   673,
+   1540
+  ],
+  "box": [
+   0,
+   941,
+   1304,
+   1919
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
  },
  "quality": {
   "before.avif": 62,
