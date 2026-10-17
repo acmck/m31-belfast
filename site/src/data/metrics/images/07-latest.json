@@ -3,9 +3,9 @@
  "images": {
   "before": {
    "width": 2400,
-   "height": 1091,
+   "height": 1245,
    "width_1200": 1200,
-   "height_1200": 546,
+   "height_1200": 622,
    "avif": "/img/07-latest/before.avif",
    "avif_1200": "/img/07-latest/before-1200.avif",
    "webp": "/img/07-latest/before.webp",
@@ -13,25 +13,25 @@
   },
   "after": {
    "width": 2400,
-   "height": 1091,
+   "height": 1245,
    "width_1200": 1200,
-   "height_1200": 546,
+   "height_1200": 622,
    "avif": "/img/07-latest/after.avif",
    "avif_1200": "/img/07-latest/after-1200.avif",
    "webp": "/img/07-latest/after.webp",
    "webp_1200": "/img/07-latest/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoYAAsAPtFUo0uoJKMhsAgBABoJZwAAWnhK4JjJBDcogAD+7GvR1xGmCWuA83e5Qj7R4JOKrM28thCq1yf4EtZ4novMwAAA"
+  "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAABQAwCdASoYAAwAPtFUo0uoJKMhsAgBABoJZwDKACFSX83FAAD+7og3rs8KL04cVjs1Dgif3ZV0gHcTdR8s6oLk/D/x3ODgRGcYIAAA"
  },
  "bytes": {
-  "before.avif": 284135,
-  "before-1200.avif": 83387,
-  "before.webp": 272572,
-  "before-1200.webp": 82002,
-  "after.avif": 231370,
-  "after-1200.avif": 83399,
-  "after.webp": 217610,
-  "after-1200.webp": 80580
+  "before.avif": 328834,
+  "before-1200.avif": 95165,
+  "before.webp": 287886,
+  "before-1200.webp": 95458,
+  "after.avif": 339169,
+  "after-1200.avif": 107012,
+  "after.webp": 334214,
+  "after-1200.webp": 107320
  },
  "quality": {
   "before.avif": 62,
