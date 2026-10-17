@@ -25,7 +25,8 @@ const rows = nights.map((n) => {
       ['dropped', pct(n.scope_drop_rate)],
       ['QA out', num(n.qa_rejected)],
     ] as [string, string][],
-    log: n.log_line,
+    // break the log line only between its "·" items, never inside one ("34 % dropped")
+    log: n.log_line ? n.log_line.split(' · ') : [],
     note: n.note,
   };
 });
@@ -52,7 +53,16 @@ const rows = nights.map((n) => {
           ))}
         </dl>
         {r.note && <p class="night-note">{r.note}</p>}
-        {r.log && <p class="night-log">{r.log}</p>}
+        {r.log.length > 0 && (
+          <p class="night-log">
+            {r.log.map((item, i) => (
+              <>
+                {i > 0 && ' · '}
+                <span>{item}</span>
+              </>
+            ))}
+          </p>
+        )}
       </li>
     ))}
   </ol>
