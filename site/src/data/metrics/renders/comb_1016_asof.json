@@ -1,0 +1,32 @@
+{
+ "id": "comb_1016_asof",
+ "label": "Two nights, 16 Oct",
+ "nights": [
+  "2026-09-07",
+  "2026-09-25"
+ ],
+ "frames": 995,
+ "minutes": 165.8,
+ "fwhm_arcsec": 13.3,
+ "stars": 3216,
+ "sky_noise_pct": 0.905,
+ "snr": {
+  "major 20′ NE": 40.5,
+  "major 40′ NE": 15.03,
+  "major 20′ SW": 35.04,
+  "major 40′ SW": 22.9,
+  "minor 10′ SE": 30.75,
+  "minor 20′ SE": 1.4,
+  "minor 10′ NW": 13.51,
+  "minor 20′ NW": 1.49
+ },
+ "snr_headline": 18.96,
+ "nucleus_wcs_vs_peak_px": 1.7,
+ "provenance": {
+  "snr": "data/M31_combined_2026-10-16/snap_20261016/03_cc.fit (WCS from data/M31_combined_2026-10-16/snap_20261016/01_solved.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "fwhm_arcsec": "scripts/measure_stack.py on data/M31_combined_2026-10-16/stack/result.fit at 3.668\"/px (from the plate solution)",
+  "frames": "STACKCNT of data/M31_combined_2026-10-16/stack/result.fit",
+  "minutes": "LIVETIME of data/M31_combined_2026-10-16/stack/result.fit",
+  "image": "data/M31_combined_2026-10-16/final/history/20261016-220221.jpg"
+ }
+}

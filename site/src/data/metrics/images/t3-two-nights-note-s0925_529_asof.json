@@ -1,0 +1,52 @@
+{
+ "stage": "t3-two-nights-note-s0925_529_asof",
+ "images": {
+  "image": {
+   "width": 1653,
+   "height": 1240,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "width_400": 400,
+   "height_400": 300,
+   "avif": "/img/t3-two-nights-note-s0925_529_asof/image.avif",
+   "avif_1200": "/img/t3-two-nights-note-s0925_529_asof/image-1200.avif",
+   "avif_400": "/img/t3-two-nights-note-s0925_529_asof/image-400.avif",
+   "webp": "/img/t3-two-nights-note-s0925_529_asof/image.webp",
+   "webp_1200": "/img/t3-two-nights-note-s0925_529_asof/image-1200.webp",
+   "webp_400": "/img/t3-two-nights-note-s0925_529_asof/image-400.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAQBQCdASoYABIAPtFcqE2oJSQiKAqpABoJZwAALoRVkCoPMhw4q3y/XBEXnJLqBZAAAP7sOqHEyhJgq+U4Dh8fLNDqfuJMY0jH0tzm4gA2Svz8MkJZVwHUU9n809Gi1GAAAA=="
+ },
+ "bytes": {
+  "image.avif": 176787,
+  "image-1200.avif": 103318,
+  "image-400.avif": 15017,
+  "image.webp": 164546,
+  "image-1200.webp": 93338,
+  "image-400.webp": 13578
+ },
+ "frame": {
+  "nucleus_xy": [
+   837,
+   729
+  ],
+  "box": [
+   3,
+   0,
+   1656,
+   1240
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "image.avif": 62,
+  "image-1200.avif": 62,
+  "image-400.avif": 62,
+  "image.webp": 80,
+  "image-1200.webp": 80,
+  "image-400.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}

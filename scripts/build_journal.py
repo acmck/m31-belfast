@@ -8,7 +8,7 @@ site/src/data/journal.json.  Everything on the page comes from here, and every n
   build_journal.py build    [--spec SPEC] [--conditions site/src/data/metrics/conditions.json] [--out site/src/data/journal.json]
   build_journal.py all      (measure + images + build)
 
-SPEC (default site/src/data/metrics/stages_spec.json) lists
+SPEC (default site/src/data/metrics/journal_spec_v2.json) lists
   renders: id -> {label, image (stretched PNG/TIFF/JPEG), linear (last linear image before denoise), stack (linear
            stack for FWHM, defaults to linear), wcs (file whose header has the plate solution, default linear),
            nights [ids], frames / minutes (optional overrides; default STACKCNT and LIVETIME of the stack header),
@@ -213,6 +213,9 @@ def ring_depth(r, wcs_p, nuc):
                            "image median; depth = largest drop below the brightest point further out")
 
 
+RM = {}
+
+
 class A(dict):
     """dict with attribute access, for {before.snr_headline}-style copy templates"""
     __getattr__ = dict.__getitem__
@@ -247,24 +250,50 @@ def frame_args(spec):
     return args
 
 
+def pair_jobs(spec):
+    """(image id, before render, after render) for every slider: lessons (stages), timeline steps and the hero."""
+    jobs = [(st["id"], st["before"], st["after"]) for st in spec.get("stages", [])]
+    jobs += [(t["id"], t["before"], t["after"]) for t in spec.get("timeline", [])]
+    if spec.get("hero"):
+        jobs.append(("hero", spec["hero"]["before"], spec["hero"]["after"]))
+    return jobs
+
+
+def note_jobs(spec):
+    """(image id, render) for every single-image side note on the timeline"""
+    return [(f"{t['id']}-note-{n['render']}", n["render"]) for t in spec.get("timeline", []) for n in t.get("side_notes", [])]
+
+
 def cmd_images(spec, only):
     scratch = ROOT / spec.get("scratch", "data/journal_pairs")
-    for st in spec["stages"]:
-        if only and st["id"] not in only:
+    ip = lambda r: str(ROOT / r["image"]) if not str(r["image"]).startswith("/") else r["image"]
+    ref = spec["renders"][spec["ref"]] if spec.get("ref") else None
+    ref_args = ["--ref", ip(ref), "--pad", str(spec.get("pad", 0.0))] if ref else []
+    fr = spec.get("frame", {})
+    if fr.get("aspect"):  # pick the 4:3 window at alignment time, so a rotated pair keeps as much sky as it can
+        ref_args += ["--aspect", fr["aspect"], "--center-up", str(fr.get("center_up_px", 0))]
+    for jid, bid, aid in pair_jobs(spec):
+        if only and jid not in only:
             continue
-        b, a = spec["renders"][st["before"]], spec["renders"][st["after"]]
-        ip = lambda r: str(ROOT / r["image"]) if not str(r["image"]).startswith("/") else r["image"]
-        ref = spec["renders"][spec["ref"]] if spec.get("ref") else None
-        cmd = [sys.executable, str(ROOT / "scripts/align_pair.py"), ip(b), ip(a),
-               "--out-before", str(scratch / st["id"] / "before.png"), "--out-after", str(scratch / st["id"] / "after.png"),
-               "--metrics", str(METRICS / "alignment" / f"{st['id']}.json")]
-        if ref:
-            cmd += ["--ref", ip(ref), "--pad", str(spec.get("pad", 0.0))]
-        subprocess.run(cmd, check=True)
-        subprocess.run([sys.executable, str(ROOT / "scripts/export_web.py"), str(scratch / st["id"] / "before.png"),
-                        str(scratch / st["id"] / "after.png"), "--stage", st["id"],
+        b, a = spec["renders"][bid], spec["renders"][aid]
+        subprocess.run([sys.executable, str(ROOT / "scripts/align_pair.py"), ip(b), ip(a),
+                        "--out-before", str(scratch / jid / "before.png"), "--out-after", str(scratch / jid / "after.png"),
+                        "--metrics", str(METRICS / "alignment" / f"{jid}.json"), *ref_args], check=True)
+        subprocess.run([sys.executable, str(ROOT / "scripts/export_web.py"), str(scratch / jid / "before.png"),
+                        str(scratch / jid / "after.png"), "--stage", jid,
                         "--out-root", str(ROOT / "site/public/img"), *frame_args(spec),
-                        "--manifest", str(METRICS / "images" / f"{st['id']}.json")], check=True)
+                        "--manifest", str(METRICS / "images" / f"{jid}.json")], check=True)
+    for jid, rid in note_jobs(spec):
+        if only and jid not in only:
+            continue
+        # register the note's image onto the reference (as BEFORE against the reference itself), export it alone
+        subprocess.run([sys.executable, str(ROOT / "scripts/align_pair.py"), ip(spec["renders"][rid]), ip(ref),
+                        "--out-before", str(scratch / jid / "image.png"), "--out-after", str(scratch / jid / "ref.png"),
+                        "--metrics", str(METRICS / "alignment" / f"{jid}.json"), *ref_args], check=True)
+        subprocess.run([sys.executable, str(ROOT / "scripts/export_web.py"), str(scratch / jid / "image.png"),
+                        str(scratch / jid / "image.png"), "--single", "--stage", jid,
+                        "--out-root", str(ROOT / "site/public/img"), *frame_args(spec),
+                        "--manifest", str(METRICS / "images" / f"{jid}.json")], check=True)
 
 
 def side(m, cond_by_night):
@@ -309,6 +338,30 @@ def night_entry(c, nid):
     }
 
 
+def ctx_for(b, a, by_night):
+    return dict(before=A(b), after=A(a), n=by_night, r=RM, d=A(
+        snr_pct=pct(b["snr_headline"], a["snr_headline"]), fwhm_pct=pct(b["fwhm_arcsec"], a["fwhm_arcsec"]),
+        minutes_ratio=round(a["minutes"] / b["minutes"], 2) if a["minutes"] and b["minutes"] else None,
+        sqrt_t_pct=round(100 * ((a["minutes"] / b["minutes"]) ** 0.5 - 1)) if a["minutes"] and b["minutes"] else None))
+
+
+def pair_block(jid, b, a, by_night):
+    """before/after sides, images and alignment of one slider"""
+    al = json.loads((METRICS / "alignment" / f"{jid}.json").read_text())
+    im = json.loads((METRICS / "images" / f"{jid}.json").read_text())["images"]
+    img = {}
+    for k in ("before", "after"):
+        e = im[k]
+        img[k] = {"avif": e["avif"], "webp": e["webp"], "avif_1200": e["avif_1200"], "webp_1200": e["webp_1200"],
+                  "width": e["width"], "height": e["height"]}
+    img["placeholder"] = im["placeholder"]
+    worst = max(al["before"]["median_residual_px"], al["after"]["median_residual_px"])
+    return {"before": side(b, by_night), "after": side(a, by_night), "images": img,
+            "alignment": {"method": "astroalign similarity",
+                          "n_stars": min(x for x in (al["before"].get("n_stars"), al["after"].get("n_stars")) if x),
+                          "median_residual_px": round(worst, 3)}}
+
+
 def cmd_build(spec, cond_path, out):
     cond = json.loads(Path(cond_path).read_text())
     by_night = {}
@@ -317,48 +370,69 @@ def cmd_build(spec, cond_path, out):
         by_night[nid] = c
     nights = [night_entry(c, nid) for nid, c in by_night.items()]
     rm = {rid: json.loads((METRICS / "renders" / f"{rid}.json").read_text()) for rid in spec["renders"]}
-    stages, chart = [], []
-    for i, st in enumerate(spec["stages"]):
+    RM.update(rm)  # templates can quote any render: {r[s0925_529_asof][frames]}
+
+    stages = []
+    for i, st in enumerate(spec.get("stages", [])):
         b, a = rm[st["before"]], rm[st["after"]]
-        al = json.loads((METRICS / "alignment" / f"{st['id']}.json").read_text())
-        im = json.loads((METRICS / "images" / f"{st['id']}.json").read_text())["images"]
-        ctx = dict(before=A(b), after=A(a), n=by_night, d=A(
-            snr_pct=pct(b["snr_headline"], a["snr_headline"]), fwhm_pct=pct(b["fwhm_arcsec"], a["fwhm_arcsec"]),
-            minutes_ratio=round(a["minutes"] / b["minutes"], 2) if a["minutes"] and b["minutes"] else None,
-            sqrt_t_pct=round(100 * ((a["minutes"] / b["minutes"]) ** 0.5 - 1)) if a["minutes"] and b["minutes"] else None))
-        fill = lambda s: s.format(**ctx) if s else s
-        img = {}
-        for k in ("before", "after"):
-            e = im[k]
-            img[k] = {"avif": e["avif"], "webp": e["webp"], "avif_1200": e["avif_1200"], "webp_1200": e["webp_1200"],
-                      "width": e["width"], "height": e["height"]}
-        img["placeholder"] = im["placeholder"]
-        worst = max(al["before"]["median_residual_px"], al["after"]["median_residual_px"])
-        stages.append({
-            "id": st["id"], "index": i, "title": st["title"], "dates": st["dates"], "night_ids": st.get("night_ids", st["dates"]),
-            "before": side(b, by_night), "after": side(a, by_night),
-            "what_changed": fill(st["what_changed"]), "what_it_did": fill(st["what_it_did"]),
-            "images": img,
-            "alignment": {"method": "astroalign similarity",
-                          "n_stars": min(x for x in (al["before"].get("n_stars"), al["after"].get("n_stars")) if x),
-                          "median_residual_px": round(worst, 3)},
-        })
-        chart.append({"stage_id": st["id"], "label": a["label"], "minutes": round(a["minutes"]) if a["minutes"] else None,
+        ctx = ctx_for(b, a, by_night)
+        fill = lambda s_: s_.format(**ctx) if s_ else s_
+        pb = pair_block(st["id"], b, a, by_night)
+        stages.append({"id": st["id"], "index": i, "title": st["title"], "dates": st["dates"],
+                       "night_ids": st.get("night_ids", st["dates"]), "before": pb["before"], "after": pb["after"],
+                       "what_changed": fill(st["what_changed"]), "what_it_did": fill(st["what_it_did"]),
+                       "images": pb["images"], "alignment": pb["alignment"]})
+
+    timeline, chart = [], []
+    for i, t in enumerate(spec.get("timeline", []), start=1):
+        b, a = rm[t["before"]], rm[t["after"]]
+        ctx = ctx_for(b, a, by_night)
+        fill = lambda s_: s_.format(**ctx) if s_ else s_
+        pb = pair_block(t["id"], b, a, by_night)
+        notes = []
+        for n in t.get("side_notes", []):
+            m = rm[n["render"]]
+            jid = f"{t['id']}-note-{n['render']}"
+            im = json.loads((METRICS / "images" / f"{jid}.json").read_text())["images"]["image"]
+            nctx = dict(ctx, note=A(m))
+            notes.append({"label": n.get("label", m["label"]), "night_id": n.get("night_id"),
+                          "frames": m["frames"], "minutes": round(m["minutes"]) if m["minutes"] else None,
+                          "fwhm_arcsec": m["fwhm_arcsec"], "snr_headline": m["snr_headline"],
+                          "text": n["text"].format(**nctx) if n.get("text") else None,
+                          "image": {"webp_1200": im["webp_1200"], "avif_1200": im["avif_1200"],
+                                    "width": im["width_1200"], "height": im["height_1200"],
+                                    "webp_400": im["webp_400"], "avif_400": im["avif_400"],
+                                    "width_400": im["width_400"], "height_400": im["height_400"]}})
+        timeline.append({"id": t["id"], "index": i, "date": t["date"], "title": t["title"], "kind": t["kind"],
+                         "provenance": t["provenance"], **pb,
+                         "what_changed": fill(t["what_changed"]), "what_it_did": fill(t["what_it_did"]),
+                         "side_notes": notes})
+        chart.append({"step_id": t["id"], "label": a["label"], "minutes": round(a["minutes"]) if a["minutes"] else None,
                       "snr": a["snr_headline"]})
+
+    hero = None
+    if spec.get("hero"):
+        h = spec["hero"]
+        hero = {**pair_block("hero", rm[h["before"]], rm[h["after"]], by_night), "after_step_id": h["after_step_id"]}
+        hero["before"]["label"] = h.get("before_label", hero["before"]["label"])
+        hero["after"]["label"] = h.get("after_label", hero["after"]["label"])
+
     js = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "nights": nights, "stages": stages,
-          "chart": chart, "hero_stage_id": spec.get("hero_stage_id", stages[-1]["id"]),
+          "chart": chart, "timeline": timeline, "hero": hero,
           "method": {"snr": __doc__.split("What is measured")[1].split("Nothing from")[0].strip()}}
+    if not hero and spec.get("hero_stage_id"):  # v1 journals: the hero is one of the stages
+        js["hero_stage_id"] = spec["hero_stage_id"]
     Path(out).write_text(json.dumps(js, indent=1, ensure_ascii=False))
-    print(f"wrote {out}: {len(nights)} nights, {len(stages)} stages")
-    for s in stages:
-        print(f"  {s['id']:<11} SNR {s['before']['snr_headline']} -> {s['after']['snr_headline']}   "
-              f"FWHM {s['before']['fwhm_arcsec']} -> {s['after']['fwhm_arcsec']}   align {s['alignment']['median_residual_px']} px")
+    print(f"wrote {out}: {len(nights)} nights, {len(timeline)} timeline steps, {len(stages)} lessons, hero={'yes' if hero else 'no'}")
+    for s_ in timeline + stages + ([dict(hero, id="hero")] if hero else []):
+        print(f"  {s_['id']:<20} SNR {s_['before']['snr_headline']} -> {s_['after']['snr_headline']}   "
+              f"FWHM {s_['before']['fwhm_arcsec']} -> {s_['after']['fwhm_arcsec']}   align {s_['alignment']['median_residual_px']} px")
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cmd", choices=["measure", "images", "build", "all"])
-    ap.add_argument("--spec", default=str(METRICS / "stages_spec.json"))
+    ap.add_argument("--spec", default=str(METRICS / "journal_spec_v2.json"))
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--conditions", default=str(METRICS / "conditions.json"))

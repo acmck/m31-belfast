@@ -1,0 +1,52 @@
+{
+ "stage": "t4-three-nights-note-cur_0925",
+ "images": {
+  "image": {
+   "width": 1589,
+   "height": 1192,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "width_400": 400,
+   "height_400": 300,
+   "avif": "/img/t4-three-nights-note-cur_0925/image.avif",
+   "avif_1200": "/img/t4-three-nights-note-cur_0925/image-1200.avif",
+   "avif_400": "/img/t4-three-nights-note-cur_0925/image-400.avif",
+   "webp": "/img/t4-three-nights-note-cur_0925/image.webp",
+   "webp_1200": "/img/t4-three-nights-note-cur_0925/image-1200.webp",
+   "webp_400": "/img/t4-three-nights-note-cur_0925/image-400.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBQCdASoYABIAPtFcpk4oJSOiKAqpABoJZwDO7BEBQkL2MlapEA6hwoKxj2wpdS3AAP7sOTZ3t1v3Rm7tdeaY/rnmdWw6aLu+Pm7ikTUodALMkHMGQZgomJawuAAAAAA="
+ },
+ "bytes": {
+  "image.avif": 134385,
+  "image-1200.avif": 86699,
+  "image-400.avif": 14891,
+  "image.webp": 116822,
+  "image-1200.webp": 76372,
+  "image-400.webp": 13876
+ },
+ "frame": {
+  "nucleus_xy": [
+   797,
+   705
+  ],
+  "box": [
+   3,
+   0,
+   1592,
+   1192
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "image.avif": 62,
+  "image-1200.avif": 62,
+  "image-400.avif": 62,
+  "image.webp": 80,
+  "image-1200.webp": 80,
+  "image-400.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}

@@ -2,8 +2,8 @@
  "stage": "04-stacking",
  "images": {
   "before": {
-   "width": 1304,
-   "height": 978,
+   "width": 1653,
+   "height": 1240,
    "width_1200": 1200,
    "height_1200": 900,
    "avif": "/img/04-stacking/before.avif",
@@ -12,8 +12,8 @@
    "webp_1200": "/img/04-stacking/before-1200.webp"
   },
   "after": {
-   "width": 1304,
-   "height": 978,
+   "width": 1653,
+   "height": 1240,
    "width_1200": 1200,
    "height_1200": 900,
    "avif": "/img/04-stacking/after.avif",
@@ -21,28 +21,28 @@
    "webp": "/img/04-stacking/after.webp",
    "webp_1200": "/img/04-stacking/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPs1QokunpKMht/VYAPAZiWcAzYQQ9DRR/mMxk1AIJzGdZ7eQQlAA/uk2Nf5QmPOUH1QhoHhcqcWmXvMjV2N/NcI+KjUSbM48HYV/QVvyjx5qEgdwa6RmEsL8Fd5hAAAA"
+  "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAAAQBQCdASoYABIAPtFepU6oJSMiKAqpABoJZwDIXBEL0sSTVD4LcgwJ9efFIw6n0ceAAP7kWHzTiWJJ4TMCaIdkzYtYyfWMC0Dpt8EvRBV+br1dfWIgBJFFVmuw/DzXmhs4s8vCPD7mUiJwAAA="
  },
  "bytes": {
-  "before.avif": 110641,
-  "before-1200.avif": 95622,
-  "before.webp": 107382,
-  "before-1200.webp": 90688,
-  "after.avif": 95433,
-  "after-1200.avif": 84004,
-  "after.webp": 92720,
-  "after-1200.webp": 79398
+  "before.avif": 175456,
+  "before-1200.avif": 100867,
+  "before.webp": 169894,
+  "before-1200.webp": 97078,
+  "after.avif": 139423,
+  "after-1200.avif": 87470,
+  "after.webp": 128350,
+  "after-1200.webp": 78736
  },
  "frame": {
   "nucleus_xy": [
-   672,
-   1541
+   838,
+   729
   ],
   "box": [
+   3,
    0,
-   942,
-   1304,
-   1920
+   1656,
+   1240
   ],
   "aspect": "4:3",
   "center_up": 110,

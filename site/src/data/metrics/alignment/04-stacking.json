@@ -1,19 +1,19 @@
 {
  "before": {
-  "src": "/Users/andrew/src/seestar/data/M31_2026-09-07/final/history/20261017-004313.jpg",
+  "src": "/Users/andrew/src/seestar/data/M31_2026-09-07/final/final.png",
   "method": "astroalign similarity",
-  "n_stars": 285,
-  "n_control": 44,
-  "median_residual_px": 0.102,
-  "rotation_deg": -13.147,
-  "scale": 0.99942,
+  "n_stars": 292,
+  "n_control": 36,
+  "median_residual_px": 0.172,
+  "rotation_deg": -0.852,
+  "scale": 0.99951,
   "shift_px": [
-   -505.14,
-   570.17
+   -36.95,
+   229.69
   ]
  },
  "after": {
-  "src": "/Users/andrew/src/seestar/data/M31_combined_2026-10-16/snap_20261016/final.png",
+  "src": "/Users/andrew/src/seestar/data/M31_combined_2026-10-17/final/final.png",
   "method": "astroalign similarity",
   "n_stars": 400,
   "n_control": 60,
@@ -21,23 +21,23 @@
   "rotation_deg": -0.0,
   "scale": 1.0,
   "shift_px": [
-   126.0,
-   276.0
+   137.0,
+   256.0
   ]
  },
- "ref": "/Users/andrew/src/seestar/data/M31_combined_2026-10-16/snap_20261016/final.png",
+ "ref": "/Users/andrew/src/seestar/data/M31_combined_2026-10-17/final/final.png",
  "crop": {
-  "x": 216,
-  "y": 416,
-  "width": 1304,
-  "height": 3224
+  "x": 192,
+  "y": 1152,
+  "width": 1656,
+  "height": 1240
  },
  "output_size": [
-  1304,
-  3224
+  1656,
+  1240
  ],
- "worst_median_residual_px": 0.102,
+ "worst_median_residual_px": 0.172,
  "method": "astroalign similarity",
- "n_stars": 285,
- "median_residual_px": 0.102
+ "n_stars": 292,
+ "median_residual_px": 0.172
 }

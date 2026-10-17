@@ -1,6 +1,6 @@
 {
  "id": "cur_0907",
- "label": "7/8 Sep, current pipeline",
+ "label": "7/8 Sep, today's pipeline",
  "nights": [
   "2026-09-07"
  ],
@@ -22,10 +22,10 @@
  "snr_headline": 16.48,
  "nucleus_wcs_vs_peak_px": 2.6,
  "provenance": {
-  "snr": "data/M31_2026-09-07/final/03_cc.fit (WCS from data/M31_2026-09-07/final/01_solved.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "snr": "data/M31_2026-09-07/final/03_cc.fit (WCS from data/M31_2026-09-07/final/03_cc.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
   "fwhm_arcsec": "scripts/measure_stack.py on data/M31_2026-09-07/stack/result.fit at 3.666\"/px (from the plate solution)",
   "frames": "STACKCNT of data/M31_2026-09-07/stack/result.fit",
   "minutes": "LIVETIME of data/M31_2026-09-07/stack/result.fit",
-  "image": "data/M31_2026-09-07/final/history/20261017-004313.jpg"
+  "image": "data/M31_2026-09-07/final/final.png"
  }
 }

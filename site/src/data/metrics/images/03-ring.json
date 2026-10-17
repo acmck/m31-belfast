@@ -1,0 +1,62 @@
+{
+ "stage": "03-ring",
+ "images": {
+  "before": {
+   "width": 1589,
+   "height": 1192,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/03-ring/before.avif",
+   "avif_1200": "/img/03-ring/before-1200.avif",
+   "webp": "/img/03-ring/before.webp",
+   "webp_1200": "/img/03-ring/before-1200.webp"
+  },
+  "after": {
+   "width": 1589,
+   "height": 1192,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/03-ring/after.avif",
+   "avif_1200": "/img/03-ring/after-1200.avif",
+   "webp": "/img/03-ring/after.webp",
+   "webp_1200": "/img/03-ring/after-1200.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBQCdASoYABIAPtFcpk4oJSOiKAqpABoJZwDO7BEBQkL2MlapEA6hwoKxj2wpdS3AAP7sOTZ3t1v3Rm7tdeaY/rnmdWw6aLu+Pm7ikTUodALMkHMGQZgomJawuAAAAAA="
+ },
+ "bytes": {
+  "before.avif": 129663,
+  "before-1200.avif": 83957,
+  "before.webp": 110328,
+  "before-1200.webp": 73756,
+  "after.avif": 134385,
+  "after-1200.avif": 86699,
+  "after.webp": 116822,
+  "after-1200.webp": 76372
+ },
+ "frame": {
+  "nucleus_xy": [
+   797,
+   705
+  ],
+  "box": [
+   3,
+   0,
+   1592,
+   1192
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "before.avif": 62,
+  "before-1200.avif": 62,
+  "before.webp": 80,
+  "before-1200.webp": 80,
+  "after.avif": 62,
+  "after-1200.avif": 62,
+  "after.webp": 80,
+  "after-1200.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}

@@ -36,7 +36,7 @@ the progress stage by stage. Start with `README.md`; the measured history is in 
   (54.60, -5.93), never header values. Published images carry no metadata.
 - **Site framing:** M31 is shown horizontal, as the Seestar's portrait frames capture it (no rotation), cropped
   to 4:3 landscape around the nucleus with M110 in frame and M32 below the core. Both sides of a pair get the
-  same crop. Set in the `frame` block of `site/src/data/metrics/stages_spec.json`; don't rotate images 90°.
+  same crop. Set in the `frame` block of `site/src/data/metrics/journal_spec_v2.json`; don't rotate images 90°.
 - Don't write work, employer or private-network details into this repo; `make privacy-check` enforces it.
 - Use American English in prose and comments; don't rename existing identifiers for spelling.
 

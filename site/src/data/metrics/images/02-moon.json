@@ -2,8 +2,8 @@
  "stage": "02-moon",
  "images": {
   "before": {
-   "width": 1304,
-   "height": 978,
+   "width": 1589,
+   "height": 1192,
    "width_1200": 1200,
    "height_1200": 900,
    "avif": "/img/02-moon/before.avif",
@@ -12,8 +12,8 @@
    "webp_1200": "/img/02-moon/before-1200.webp"
   },
   "after": {
-   "width": 1304,
-   "height": 978,
+   "width": 1589,
+   "height": 1192,
    "width_1200": 1200,
    "height_1200": 900,
    "avif": "/img/02-moon/after.avif",
@@ -21,28 +21,28 @@
    "webp": "/img/02-moon/after.webp",
    "webp_1200": "/img/02-moon/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAACwBACdASoYABIAPslQoUunpKMht/VYAPAZCWcAAC4BbehqkklhJ/+CWkrTVtiQAP7u2Ks6LxWODyit0ei+BZjkYSJiCY46jL6l+jlvnmtSH5RRqJDuhh3UtiZyGavEqBAAAA=="
+  "placeholder": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBQCdASoYABIAPtFcpk4oJSOiKAqpABoJZwDO7BEBQkL2MlapEA6hwoKxj2wpdS3AAP7sOTZ3t1v3Rm7tdeaY/rnmdWw6aLu+Pm7ikTUodALMkHMGQZgomJawuAAAAAA="
  },
  "bytes": {
-  "before.avif": 110641,
-  "before-1200.avif": 95622,
-  "before.webp": 107382,
-  "before-1200.webp": 90688,
-  "after.avif": 113096,
-  "after-1200.avif": 98183,
-  "after.webp": 105448,
-  "after-1200.webp": 89034
+  "before.avif": 161721,
+  "before-1200.avif": 100050,
+  "before.webp": 157572,
+  "before-1200.webp": 98084,
+  "after.avif": 134385,
+  "after-1200.avif": 86699,
+  "after.webp": 116822,
+  "after-1200.webp": 76372
  },
  "frame": {
   "nucleus_xy": [
-   672,
-   1541
+   797,
+   705
   ],
   "box": [
+   3,
    0,
-   942,
-   1304,
-   1920
+   1592,
+   1192
   ],
   "aspect": "4:3",
   "center_up": 110,

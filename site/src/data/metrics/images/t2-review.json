@@ -1,0 +1,62 @@
+{
+ "stage": "t2-review",
+ "images": {
+  "before": {
+   "width": 1792,
+   "height": 1344,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t2-review/before.avif",
+   "avif_1200": "/img/t2-review/before-1200.avif",
+   "webp": "/img/t2-review/before.webp",
+   "webp_1200": "/img/t2-review/before-1200.webp"
+  },
+  "after": {
+   "width": 1792,
+   "height": 1344,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t2-review/after.avif",
+   "avif_1200": "/img/t2-review/after-1200.avif",
+   "webp": "/img/t2-review/after.webp",
+   "webp_1200": "/img/t2-review/after-1200.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAACQBACdASoYABIAPtFcpk4oJSOiKAqpABoJZwAALj5Vk+204XhtYT6sTMcscpgA/uQWez3l4nbWoLT2FlYTQ5+Ufjg57iT+xAI/p6xQSdknctlYIl231e6vWrw4da6CEC8IAA=="
+ },
+ "bytes": {
+  "before.avif": 206037,
+  "before-1200.avif": 112449,
+  "before.webp": 204766,
+  "before-1200.webp": 114512,
+  "after.avif": 200296,
+  "after-1200.avif": 102152,
+  "after.webp": 190696,
+  "after-1200.webp": 100890
+ },
+ "frame": {
+  "nucleus_xy": [
+   874,
+   781
+  ],
+  "box": [
+   0,
+   0,
+   1792,
+   1344
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "before.avif": 62,
+  "before-1200.avif": 62,
+  "before.webp": 80,
+  "before-1200.webp": 80,
+  "after.avif": 62,
+  "after-1200.avif": 62,
+  "after.webp": 80,
+  "after-1200.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}
