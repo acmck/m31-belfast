@@ -1,19 +1,21 @@
 ---
 import Picture from './Picture.astro';
-import { readout, type Stage } from '../lib/journal';
+import { readout, type Pair } from '../lib/journal';
 
 interface Props {
-  stage: Stage;
+  stage: Pair;
   priority?: boolean;
+  /** Sides are running totals (timeline steps). */
+  cumulative?: boolean;
   sizes?: string;
   beforeLabel?: string;
   afterLabel?: string;
 }
 
-const { stage, priority = false, sizes, beforeLabel, afterLabel } = Astro.props;
+const { stage, priority = false, cumulative = false, sizes, beforeLabel, afterLabel } = Astro.props;
 const { before, after, images } = stage;
-const rb = readout(beforeLabel ? { ...before, label: beforeLabel } : before);
-const ra = readout(afterLabel ? { ...after, label: afterLabel } : after);
+const rb = readout(beforeLabel ? { ...before, label: beforeLabel } : before, cumulative);
+const ra = readout(afterLabel ? { ...after, label: afterLabel } : after, cumulative);
 const ratio = `${images.after.width} / ${images.after.height}`;
 const beforeName = beforeLabel || before.label || 'before';
 const afterName = afterLabel || after.label || 'after';
