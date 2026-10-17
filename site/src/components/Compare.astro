@@ -4,15 +4,19 @@ import { readout, type Stage } from '../lib/journal';
 
 interface Props {
   stage: Stage;
+  priority?: boolean;
+  sizes?: string;
+  beforeLabel?: string;
+  afterLabel?: string;
 }
 
-const { stage } = Astro.props;
+const { stage, priority = false, sizes, beforeLabel, afterLabel } = Astro.props;
 const { before, after, images } = stage;
-const rb = readout(before);
-const ra = readout(after);
+const rb = readout(beforeLabel ? { ...before, label: beforeLabel } : before);
+const ra = readout(afterLabel ? { ...after, label: afterLabel } : after);
 const ratio = `${images.after.width} / ${images.after.height}`;
-const beforeName = before.label || 'before';
-const afterName = after.label || 'after';
+const beforeName = beforeLabel || before.label || 'before';
+const afterName = afterLabel || after.label || 'after';
 ---
 <compare-slider
   value="50"
@@ -20,12 +24,15 @@ const afterName = after.label || 'after';
   data-after={afterName}
   style={`--ratio: ${ratio}`}
 >
-  <div class="cs-frame">
+  <div
+    class="cs-frame"
+    style={priority && images.placeholder ? `background:center/cover url(${images.placeholder})` : undefined}
+  >
     <div class="cs-layer cs-after">
-      <Picture img={images.after} alt={`After: ${afterName}`} />
+      <Picture img={images.after} alt={`After: ${afterName}`} priority={priority} sizes={sizes} />
     </div>
     <div class="cs-layer cs-before">
-      <Picture img={images.before} alt={`Before: ${beforeName}`} />
+      <Picture img={images.before} alt={`Before: ${beforeName}`} priority={priority} sizes={sizes} />
     </div>
     <div
       class="cs-handle"
