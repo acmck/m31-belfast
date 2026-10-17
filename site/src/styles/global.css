@@ -184,6 +184,18 @@ img {
   text-transform: uppercase;
 }
 
+/* desktop only: a link to the story under the wordmark (phones get it under the Timeline) */
+.masthead-story {
+  display: none;
+  margin: 0.4rem 0 0;
+}
+
+@media (min-width: 900px) {
+  .masthead-story {
+    display: block;
+  }
+}
+
 /* to-do list in the masthead: unticked boxes, observing-log type */
 .todo-title {
   font: inherit;
