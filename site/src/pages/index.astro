@@ -5,6 +5,10 @@ import StageEntry from '../components/StageEntry.astro';
 import TimelineEntry from '../components/TimelineEntry.astro';
 import Conditions from '../components/Conditions.astro';
 import Chart from '../components/Chart.astro';
+import ClearNights from '../components/ClearNights.astro';
+import FrameFunnel from '../components/FrameFunnel.astro';
+import FocusDrift from '../components/FocusDrift.astro';
+import charts from '../data/charts.json';
 import { journal, isPlaceholder } from '../lib/journal';
 import { todo } from '../lib/todo';
 
@@ -107,6 +111,27 @@ const description =
 
     <Conditions nights={journal.nights} />
 
+    <section class="integration night-charts" aria-labelledby="h-clear">
+      <h2 id="h-clear">Clear nights</h2>
+      <p class="lede">Belfast's cloud for every night since I started. The dark squares are the clear ones.</p>
+      <ClearNights data={charts.clear_nights} />
+    </section>
+
+    <section class="integration night-charts" aria-labelledby="h-frames">
+      <h2 id="h-frames">Where the frames went</h2>
+      <p class="lede">
+        The scope skips some exposures and my QA throws out a few more. On the moonlit night a third of the slots
+        never became frames.
+      </p>
+      <FrameFunnel funnel={charts.funnel} wind={charts.wind} corr={charts.wind_correlation} nights={journal.nights} />
+    </section>
+
+    <section class="integration night-charts" aria-labelledby="h-focus">
+      <h2 id="h-focus">Focus through the night</h2>
+      <p class="lede">On 7/8 Sep the stars grew all night while the focuser never moved. Autofocus mid-session is the fix I haven't tried yet.</p>
+      <FocusDrift focus={charts.focus} nights={journal.nights} />
+    </section>
+
     <section class="integration" aria-labelledby="h-chart">
       <h2 id="h-chart">Signal against time</h2>
       <p class="lede">
@@ -114,7 +139,12 @@ const description =
         Points under it lost something along the way. Points over it gained more from processing than the extra
         minutes alone would give.
       </p>
-      <Chart points={journal.chart} order={chartOrder} noun={hasTimeline ? 'step' : 'stage'} />
+      <Chart
+        points={journal.chart}
+        order={chartOrder}
+        noun={hasTimeline ? 'step' : 'stage'}
+        firstLight={journal.hero?.before?.snr_headline != null ? { snr: journal.hero.before.snr_headline, label: journal.hero.before.label } : null}
+      />
     </section>
   </main>
 
