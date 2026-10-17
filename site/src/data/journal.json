@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17T00:58:13Z",
+ "generated": "2026-10-17T01:06:12Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -26,7 +26,8 @@
     "temp_minus_dew_c_min": 2.4
    },
    "weather_source": "open-meteo archive (ERA5)",
-   "log_line": "23:21–01:14 UTC · 479 × 10 s · moon 12 % below horizon · cloud 4 % · gusts 28 mph · 22 % dropped"
+   "log_line": "23:21–01:14 UTC · 479 × 10 s · moon 12 % below horizon · cloud 4 % · gusts 28 mph · 22 % dropped",
+   "note": "Evan and Andrew watched a movie but kept coming out to check the stacked image off the scope on the Seestar app."
   },
   {
    "id": "2026-09-25",
@@ -53,7 +54,8 @@
     "temp_minus_dew_c_min": 2.4
    },
    "weather_source": "open-meteo archive (ERA5)",
-   "log_line": "21:35–03:43 UTC · 1249 × 10 s · moon 99 % up to 34° · cloud 14 % · gusts 29 mph · 34 % dropped"
+   "log_line": "21:35–03:43 UTC · 1249 × 10 s · moon 99 % up to 34° · cloud 14 % · gusts 29 mph · 34 % dropped",
+   "note": "Session with Quinny and Erin."
   },
   {
    "id": "2026-10-16",
@@ -80,7 +82,8 @@
     "temp_minus_dew_c_min": 2.5
    },
    "weather_source": "open-meteo archive (ERA5)",
-   "log_line": "19:45–21:22 UTC · 384 × 10 s · moon 33 % below horizon · cloud 3 % · gusts 15 mph · 27 % dropped"
+   "log_line": "19:45–21:22 UTC · 384 × 10 s · moon 33 % below horizon · cloud 3 % · gusts 15 mph · 27 % dropped",
+   "note": "Evan and Dad watched half of Fall. 6/10."
   }
  ],
  "stages": [
