@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-16T23:51:59Z",
+ "generated": "2026-10-17T00:12:25Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -461,11 +461,11 @@
    "title": "Latest so far",
    "dates": [
     "2026-09-07",
-    "2026-09-25"
+    "2026-10-16"
    ],
    "night_ids": [
     "2026-09-07",
-    "2026-09-25"
+    "2026-10-16"
    ],
    "before": {
     "label": "Seestar live stack",
@@ -486,25 +486,25 @@
     "snr_headline": 19.41
    },
    "after": {
-    "label": "Two nights combined",
-    "frames": 995,
-    "minutes": 166,
-    "fwhm_arcsec": 13.3,
-    "sky": "dark + moon 99 %",
+    "label": "16/17 Oct alone",
+    "frames": 375,
+    "minutes": 62,
+    "fwhm_arcsec": 9.4,
+    "sky": "dark",
     "snr": {
-     "major 20′ NE": 40.5,
-     "major 40′ NE": 15.03,
-     "major 20′ SW": 35.04,
-     "major 40′ SW": 22.9,
-     "minor 10′ SE": 30.75,
-     "minor 20′ SE": 1.4,
-     "minor 10′ NW": 13.51,
-     "minor 20′ NW": 1.49
+     "major 20′ NE": 29.7,
+     "major 40′ NE": 10.78,
+     "major 20′ SW": 26.25,
+     "major 40′ SW": 16.94,
+     "minor 10′ SE": 22.29,
+     "minor 20′ SE": 0.93,
+     "minor 10′ NW": 9.98,
+     "minor 20′ NW": 0.85
     },
-    "snr_headline": 18.96
+    "snr_headline": 13.86
    },
-   "what_changed": "This is where things stand: the scope's own stack from my first night next to both nights through the current pipeline. The 16/17 Oct night is still being added.",
-   "what_it_did": "Stars tightened from 17.0″ to 13.3″ and SNR went from 19.41 to 18.96, with 166 minutes against 80.",
+   "what_changed": "This is where things stand: the scope's own stack from my first night next to my sharpest night, 16/17 Oct, through the current pipeline. The three-night stack is still being built.",
+   "what_it_did": "Stars tightened from 17.0″ to 9.4″. SNR went from 19.41 to 13.86, with 62 minutes against 80.",
    "images": {
     "before": {
      "avif": "/img/07-latest/before.avif",
@@ -512,7 +512,7 @@
      "avif_1200": "/img/07-latest/before-1200.avif",
      "webp_1200": "/img/07-latest/before-1200.webp",
      "width": 2400,
-     "height": 1091
+     "height": 1245
     },
     "after": {
      "avif": "/img/07-latest/after.avif",
@@ -520,13 +520,13 @@
      "avif_1200": "/img/07-latest/after-1200.avif",
      "webp_1200": "/img/07-latest/after-1200.webp",
      "width": 2400,
-     "height": 1091
+     "height": 1245
     },
-    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAACwAwCdASoYAAsAPtFUo0uoJKMhsAgBABoJZwAAWnhK4JjJBDcogAD+7GvR1xGmCWuA83e5Qj7R4JOKrM28thCq1yf4EtZ4novMwAAA"
+    "placeholder": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAABQAwCdASoYAAwAPtFUo0uoJKMhsAgBABoJZwDKACFSX83FAAD+7og3rs8KL04cVjs1Dgif3ZV0gHcTdR8s6oLk/D/x3ODgRGcYIAAA"
    },
    "alignment": {
     "method": "astroalign similarity",
-    "n_stars": 392,
+    "n_stars": 284,
     "median_residual_px": 0.233
    }
   }
@@ -561,12 +561,6 @@
    "label": "16/17 Oct alone",
    "minutes": 62,
    "snr": 13.86
-  },
-  {
-   "stage_id": "07-latest",
-   "label": "Two nights combined",
-   "minutes": 166,
-   "snr": 18.96
   }
  ],
  "hero_stage_id": "07-latest",
