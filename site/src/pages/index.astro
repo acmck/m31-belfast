@@ -27,9 +27,6 @@ const description =
   )}
   <header class="masthead">
     <p class="wordmark">M31 / Belfast</p>
-    <button type="button" class="red-toggle" data-red-toggle aria-pressed="false">
-      <span class="red-dot" aria-hidden="true"></span>Red light
-    </button>
   </header>
 
   <main id="top">
@@ -53,9 +50,6 @@ const description =
       {hero?.what_it_did && (
         <p class="lede">{hero.what_it_did}</p>
       )}
-      <p class="red-note">
-        The red light button turns the page red. I switch my phone to red in the garden so I keep my night vision.
-      </p>
     </section>
 
     <section class="journey" aria-labelledby="h-journey">
@@ -89,6 +83,5 @@ const description =
 
   <script>
     import '../scripts/compare-slider.ts';
-    import '../scripts/red-light.ts';
   </script>
 </Base>

@@ -9,7 +9,7 @@ interface Props {
 const { title, description } = Astro.props;
 ---
 <!doctype html>
-<html lang="en" data-light="normal">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,22 +22,6 @@ const { title, description } = Astro.props;
     <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
-    <script is:inline>
-      // Red light before first paint, so the page never flashes bright in the garden.
-      (function () {
-        var on = false;
-        try {
-          var q = new URLSearchParams(location.search);
-          if (q.has('red')) on = q.get('red') !== '0';
-          else on = localStorage.getItem('red-light') === '1';
-        } catch (e) {}
-        if (on) {
-          document.documentElement.dataset.light = 'red';
-          var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', '#000000');
-        }
-      })();
-    </script>
   </head>
   <body>
     <slot />
