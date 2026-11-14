@@ -14,6 +14,8 @@ if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION="$(cd "${1:?session dir}" && pwd)"
+# shellcheck source=scripts/platform.sh
+. "$ROOT/scripts/platform.sh"   # PY and link_dir, for macOS or Windows
 F="$SESSION/final"
 [ -f "$F/final.jpg" ] || { echo "record_result: no $F/final.jpg, nothing to record"; exit 0; }
 TS="$(date +%Y%m%d-%H%M%S)"
@@ -23,7 +25,7 @@ cp "$F/final.jpg" "$F/history/$TS.jpg"
 COMMIT="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 git -C "$ROOT" diff --quiet HEAD -- scripts run_pipeline.sh 2>/dev/null || COMMIT="$COMMIT+uncommitted"
 STACK_SETTINGS="$(cat "$SESSION/process/stack2.ssf" "$SESSION/process/stack.ssf" 2>/dev/null | grep -m1 -E "^stack " | sed -E 's/ -out=[^ ]+//' || true)"
-METRICS="$("$ROOT/.venv/bin/python" - "$SESSION/stack/result.fit" "$ROOT/scripts" <<'PY' 2>/dev/null || echo "metrics unavailable"
+METRICS="$("$PY" - "$SESSION/stack/result.fit" "$ROOT/scripts" <<'PY' 2>/dev/null || echo "metrics unavailable"
 import sys, warnings
 warnings.filterwarnings("ignore")
 sys.path.insert(0, sys.argv[2])
@@ -35,11 +37,16 @@ print(f"frames {h.get('STACKCNT', '?')}  {float(h.get('LIVETIME', 0)) / 60:.0f} 
       f"SNR {m['snr']:.2f}  FWHM {m['fwhm_arcsec']:.1f}\"  stars {m['nstars']}")
 PY
 )"
+METRICS="${METRICS//$'\r'/}"   # Python on Windows ends its lines with CR LF
 LINE="$TS  commit $COMMIT  $METRICS  history/$TS.jpg  [$STACK_SETTINGS]"
 echo "$LINE" >> "$F/history.log"
 echo "recorded: $LINE"
 
 NAME="$(basename "$SESSION")"; TARGET="${NAME%%_*}"
 DATA="$(dirname "$SESSION")"
-ln -sfn "$NAME" "$DATA/${TARGET}_latest"
+if [ "$PLATFORM" = windows ]; then
+  link_dir "$SESSION" "$DATA/${TARGET}_latest"   # a junction, which needs the full path
+else
+  link_dir "$NAME" "$DATA/${TARGET}_latest"      # a relative symlink, so data/ can be moved as a whole
+fi
 echo "$DATA/${TARGET}_latest -> $NAME"

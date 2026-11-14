@@ -285,7 +285,7 @@ def main():
     ap.add_argument("inp"); ap.add_argument("--out", required=True, help="output prefix")
     ap.add_argument("--model", default=str(Path(__file__).resolve().parent.parent / "tools/darkstar/darkstar_v2.1c.onnx"))
     ap.add_argument("--strength", type=float, default=1.0, help="1 = full removal; <1 blends some of the original back")
-    ap.add_argument("--cpu", action="store_true", help="force the CPU provider (CoreML is used when available)")
+    ap.add_argument("--cpu", action="store_true", help="force the CPU provider (otherwise CoreML on macOS, CUDA or DirectML on Windows, when available)")
     ap.add_argument("--norm", choices=["mtf", "minmax", "none"], default="mtf", help="per-tile normalisation: min-max then median->0.25 (default), plain min-max (Cosmic Clarity), or none")
     ap.add_argument("--bg-match", action="store_true", help="re-anchor each tile's output median to its input (only useful in colour mode; causes blocks in mono mode)")
     ap.add_argument("--mode", choices=["mono", "colour"], default="mono", help="per-channel mono passes (default, cleanest) or one colour pass")
@@ -301,7 +301,7 @@ def main():
     a = ap.parse_args()
 
     import onnxruntime as ort
-    prov = ["CPUExecutionProvider"] if a.cpu else [p for p in ("CoreMLExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider") if p in ort.get_available_providers()]
+    prov = ["CPUExecutionProvider"] if a.cpu else [p for p in ("CoreMLExecutionProvider", "CUDAExecutionProvider", "DmlExecutionProvider", "CPUExecutionProvider") if p in ort.get_available_providers()]
     so = ort.SessionOptions(); so.log_severity_level = 3
     sess = ort.InferenceSession(a.model, so, providers=prov)
     print(f"Dark Star model {os.path.basename(a.model)} on {sess.get_providers()[0]}")

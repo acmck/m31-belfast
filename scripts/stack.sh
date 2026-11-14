@@ -96,12 +96,15 @@ if [ -n "$FLAT" ]; then
   FLAT="$(cd "$(dirname "$FLAT")" && pwd)/$(basename "$FLAT")"
   [ -f "$FLAT" ] || { echo "no flat $FLAT"; exit 1; }
 fi
+# shellcheck source=scripts/platform.sh
+. "$ROOT/scripts/platform.sh"   # PY, SIRIL and native_path, for macOS or Windows
+# The flat's path is written into the Siril script, so it must be in the form Siril itself reads.
+[ -n "$FLAT" ] && FLAT="$(native_path "$FLAT")"
 if [ -z "$SUB" ]; then
   for c in lights_db lights_good lights; do [ -d "$SESSION/$c" ] && SUB=$c && break; done
 fi
 IN="$SESSION/$SUB"
 [ -d "$IN" ] || { echo "no input dir $IN"; exit 1; }
-SIRIL="${SIRIL:-/Applications/Siril.app/Contents/MacOS/siril-cli}"
 N=$(ls "$IN"/*.fit* | wc -l | tr -d ' ')
 echo "stacking $N frames from $SUB  (drizzle=$DRIZZLE scale=$SCALE pixfrac=$PIXFRAC framing=$FRAMING rej=$REJ weight=$WEIGHT ref=$REF flat=${FLAT:-none} maximize=$MAXIMIZE feather=$FEATHER fastnorm=$FASTNORM)"
 
@@ -179,7 +182,8 @@ t0=$(date +%s)
 echo "--- siril script (register):"; sed 's/^/    /' "$SCRIPT"
 "$SIRIL" -d "$SESSION" -s "$SCRIPT" 2>&1 | tee "$LOG" | grep -E -i 'error|warning|reference|frames|Total|Registration|drizzle|calibrat' | grep -v -i 'Not an image' || true
 echo "--- checking registered frames"
-FIX="$("$ROOT/.venv/bin/python" "$ROOT/scripts/check_registered.py" "$SESSION/process" "r_$SEQ" 2> >(sed 's/^/    /' >&2))" || FIX=""
+# tr: Python on Windows ends its lines with CR LF; the CR must not reach the Siril script.
+FIX="$("$PY" "$ROOT/scripts/check_registered.py" "$SESSION/process" "r_$SEQ" 2> >(sed 's/^/    /' >&2) | tr -d '\r')" || FIX=""
 FILTER=""; [ -n "$FIX" ] && FILTER="-filter-included"
 {
   echo "$HEADER"

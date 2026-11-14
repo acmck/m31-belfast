@@ -15,15 +15,24 @@ TARGET="${1:?target name as shown in MyWorks, e.g. \"M 31\"}"
 DATE="${2:?capture date YYYYMMDD as it appears in the filenames}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION="${3:-$ROOT/data/${TARGET// /}_${DATE}}"
-MNT="$HOME/mnt/seestar"
 HOST="${SEESTAR_HOST:-seestar.local}"
+# shellcheck source=scripts/platform.sh
+. "$ROOT/scripts/platform.sh"   # PLATFORM and file_size, for macOS or Windows
 
-mkdir -p "$MNT" "$SESSION/lights" "$SESSION/seestar_stack" "$ROOT/logs"
+mkdir -p "$SESSION/lights" "$SESSION/seestar_stack" "$ROOT/logs"
 LOG="$ROOT/logs/pull_${TARGET// /}_${DATE}.log"
 
-if ! mount | grep -q " $MNT "; then
-  echo "mounting //guest@$HOST/EMMC Images (read-only) ..."
-  mount_smbfs -o ro,soft -N "//guest@$HOST/EMMC%20Images" "$MNT"
+if [ "$PLATFORM" = windows ]; then
+  # Windows reads the share by its network path; there is nothing to mount, and nothing is written to it.
+  MNT="//$HOST/EMMC Images"
+  [ -d "$MNT/MyWorks" ] || { echo "cannot read $MNT - is the scope in Station mode, and does Windows allow guest SMB logons?"; exit 1; }
+else
+  MNT="$HOME/mnt/seestar"
+  mkdir -p "$MNT"
+  if ! mount | grep -q " $MNT "; then
+    echo "mounting //guest@$HOST/EMMC Images (read-only) ..."
+    mount_smbfs -o ro,soft -N "//guest@$HOST/EMMC%20Images" "$MNT"
+  fi
 fi
 
 SRC="$MNT/MyWorks/${TARGET}_sub"
@@ -38,7 +47,7 @@ n=0
 for f in "${files[@]}"; do
   b="$(basename "$f")"
   dst="$SESSION/lights/$b"
-  if [ -f "$dst" ] && [ "$(stat -f %z "$dst")" = "$(stat -f %z "$f")" ]; then
+  if [ -f "$dst" ] && [ "$(file_size "$dst")" = "$(file_size "$f")" ]; then
     continue
   fi
   # cp -p fails on chflags over SMB; copy contents only.
@@ -51,7 +60,7 @@ done
 bad=0
 for f in "${files[@]}"; do
   b="$(basename "$f")"
-  [ "$(stat -f %z "$SESSION/lights/$b" 2>/dev/null || echo 0)" = "$(stat -f %z "$f")" ] || { echo "SIZE MISMATCH $b" | tee -a "$LOG"; bad=$((bad+1)); }
+  [ "$(file_size "$SESSION/lights/$b" 2>/dev/null || echo 0)" = "$(file_size "$f")" ] || { echo "SIZE MISMATCH $b" | tee -a "$LOG"; bad=$((bad+1)); }
 done
 
 # reference stacks from the scope for the same night

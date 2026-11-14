@@ -32,11 +32,8 @@ if [ "${BASH_VERSINFO[0]}" -lt 4 ] && [ -x /opt/homebrew/bin/bash ]; then exec /
 set -euo pipefail
 SESSION="$(cd "${1:?session dir}" && pwd)"; shift
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SIRIL="${SIRIL:-/Applications/Siril.app/Contents/MacOS/siril-cli}"
-GRAX="${GRAX:-/Applications/GraXpert.app/Contents/MacOS/GraXpert}"
-ASTAP="${ASTAP:-$ROOT/tools/astap/cli/astap_cli}"
-ASTAP_DB="${ASTAP_DB:-$ROOT/tools/astap/db}"
-PY="$ROOT/.venv/bin/python"
+# shellcheck source=scripts/platform.sh
+. "$ROOT/scripts/platform.sh"   # PY, SIRIL, GRAX, ASTAP, ASTAP_DB, SIRIL_CFG, GRAX_PREFS, native_path
 DENOISE=1; CC=1; SPCC=0; PCC_CAT=auto; CC_CORRECT=1; BGE=subsky; SUBSKY_DEG=1; SMOOTH=0.5; DN_STRENGTH=0.8; DESTAR=1; PALETTE=""; STRETCH_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -64,7 +61,8 @@ F="$SESSION/final"; mkdir -p "$F"; LOG="$F/post_process.log"; : > "$LOG"
 cp "$IN" "$F/01_solved.fit"
 
 # Narrowband detection from the stack header (Seestar: FILTER='IRCUT' broadband, 'LP' dual-band Ha/OIII)
-FILTER="$("$PY" -c 'import sys; from astropy.io import fits; print(str(fits.getheader(sys.argv[1]).get("FILTER", "")).strip())' "$IN")"
+# tr: Python on Windows ends its lines with CR LF, and a trailing CR would defeat the comparison below.
+FILTER="$("$PY" -c 'import sys; from astropy.io import fits; print(str(fits.getheader(sys.argv[1]).get("FILTER", "")).strip())' "$IN" | tr -d '\r')"
 NARROWBAND=0; [ "$FILTER" = "LP" ] && NARROWBAND=1
 if [ -z "$PALETTE" ] && [ "$NARROWBAND" = 1 ]; then PALETTE=hoo; fi
 echo "filter: ${FILTER:-unknown}$([ "$NARROWBAND" = 1 ] && echo ' (dual-band Ha/OIII)')${PALETTE:+; palette $PALETTE}"
@@ -86,9 +84,9 @@ if [ "$BGE" = subsky ]; then
   rm -f "$F/02_bg.fit"
   cat > "$F/bg.ssf" <<SSF
 requires 1.4.0
-load $CUR
+load $(native_path "$CUR")
 subsky $SUBSKY_DEG
-save $F/02_bg
+save $(native_path "$F/02_bg")
 close
 SSF
   if "$SIRIL" -s "$F/bg.ssf" >>"$LOG" 2>&1 && [ -f "$F/02_bg.fit" ]; then
@@ -109,8 +107,7 @@ elif [ "$CC" = 1 ] && [ "$SOLVED" = 1 ]; then
   # PCC catalogue: local Gaia (offline) when Siril's preferences point at an installed copy, else NOMAD (VizieR).
   # PCC's white balance is then corrected to the SPCC balance by scripts/cc_correct.py (measured per catalogue;
   # headless SPCC segfaults in Siril 1.4.4).  --spcc still tries SPCC first; its result is used uncorrected.
-  SIRIL_CFG="$HOME/Library/Application Support/org.siril.Siril/siril/config.1.4.ini"
-  GAIA_ASTRO="$(sed -n 's/^catalogue_gaia_astro=//p' "$SIRIL_CFG" 2>/dev/null | head -1)"
+  GAIA_ASTRO="$(sed -n 's/^catalogue_gaia_astro=//p' "$SIRIL_CFG" 2>/dev/null | head -1 | tr -d '\r')"
   case "$PCC_CAT" in
     auto) if [ -n "$GAIA_ASTRO" ] && [ -s "$GAIA_ASTRO" ]; then CATS="localgaia nomad"; else CATS="nomad"; fi;;
     localgaia|nomad) CATS="$PCC_CAT";;
@@ -127,9 +124,9 @@ elif [ "$CC" = 1 ] && [ "$SOLVED" = 1 ]; then
     esac
     cat > "$F/cc.ssf" <<SSF
 requires 1.4.0
-load $CUR
+load $(native_path "$CUR")
 $SIRCMD
-save $F/03_cc
+save $(native_path "$F/03_cc")
 close
 SSF
     if "$SIRIL" -s "$F/cc.ssf" >>"$LOG" 2>&1 && [ -f "$F/03_cc.fit" ]; then
@@ -149,8 +146,7 @@ fi
 if [ "$DENOISE" = 1 ]; then
   echo "== 4/6 denoise (GraXpert AI, strength $DN_STRENGTH = linear blend with the fully denoised image)"
   # GraXpert's CLI takes the denoise strength from a preferences file, not a flag.
-  PREFS="$HOME/Library/Application Support/GraXpert/preferences.json"
-  "$PY" - "$PREFS" "$F/graxpert_prefs.json" "$DN_STRENGTH" <<'PY'
+  "$PY" - "$GRAX_PREFS" "$F/graxpert_prefs.json" "$DN_STRENGTH" <<'PY'
 import json, sys, os
 d = json.load(open(sys.argv[1])) if os.path.exists(sys.argv[1]) else {}
 d["denoise_strength"] = float(sys.argv[3])

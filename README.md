@@ -27,6 +27,9 @@ mis-parses `post_process.sh`), [uv](https://docs.astral.sh/uv/), Siril 1.4.4 and
 `/Applications`, and the ASTAP command-line solver with its D50 database in `tools/astap/cli` and
 `tools/astap/db` (not in git). The Dark Star model is in `tools/darkstar`. Node 25 for the site.
 
+On Windows the same scripts run under Git Bash (it ships with Git for Windows); see
+[Running on Windows](#running-on-windows).
+
 ```bash
 uv sync                                         # Python 3.12 venv in .venv
 scripts/pull_frames.sh "M 31" 20261016 data/M31_2026-10-16   # copy one night off the scope (see below)
@@ -100,6 +103,27 @@ data/M31_2026-09-07/
    `umount -f ~/mnt/seestar` and rerun. Expect about 10 frames a minute.
 
 USB mass storage enumerated but would not mount on this Mac; Wi-Fi is the reliable path.
+
+## Running on Windows
+
+The pipeline scripts are bash on every platform. On Windows, run them and `make` from Git Bash, not from
+PowerShell or WSL. `scripts/platform.sh` holds the differences: where the tools are, how paths are written
+into Siril scripts, and how `data/M31_latest` is linked.
+
+- **Tools:** uv, Node and GNU make (`winget install astral-sh.uv OpenJS.NodeJS.LTS ezwinports.make`),
+  Siril 1.4.4 and GraXpert 3.0.2 from their Windows installers, and the ASTAP command-line solver as
+  `tools/astap/cli/astap_cli.exe` with the D50 database in `tools/astap/db`. If Siril or GraXpert is not in
+  its default folder, set `SIRIL` or `GRAX` to the full path of `siril-cli.exe` or `GraXpert.exe`.
+- **Python:** `uv sync --python 3.12`; the interpreter is `.venv/Scripts/python.exe`. The scripts and the
+  Makefile set `PYTHONUTF8=1`; set it yourself when you call a Python script directly.
+- **Star removal on the GPU:** on Windows `uv sync` installs `onnxruntime-directml` in place of `onnxruntime`,
+  and `destar.py` uses the graphics card through DirectML. On a 39-frame test stack it took 47 s against
+  about 9 minutes on the CPU, and the output matched the CPU run to 2e-7.
+- **Disk:** `data/` must be on an NTFS volume, because QA and the combined stack use hard links. It can be
+  a junction to another drive: `mklink /J data D:\m31-belfast\data`.
+- **Line endings:** `.gitattributes` keeps LF everywhere; the shell scripts do not run with CR LF.
+- **Frames off the scope:** `pull_frames.sh` reads `\\seestar.local\EMMC Images` directly. Windows must
+  allow guest SMB logons for that; recent Windows 11 builds block them by default.
 
 ## Capture lessons (no software recovers these)
 

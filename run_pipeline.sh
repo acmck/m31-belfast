@@ -27,7 +27,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SESSION="$(cd "${1:?session dir}" && pwd)"; shift
 STAGES=("$@"); [ ${#STAGES[@]} -eq 0 ] && STAGES=(qa deband flat stack post)
-PY="$ROOT/.venv/bin/python"
+# shellcheck source=scripts/platform.sh
+. "$ROOT/scripts/platform.sh"   # PY and the tool paths, for macOS or Windows
 # Target defaults first, caller's overrides after them (last flag wins in every stage).
 CONFIG="${PIPELINE_CONFIG:-$ROOT/config/m31.env}"
 M31_QA_ARGS=""; M31_DEBAND_ARGS=""; M31_FLAT_ARGS=""; M31_STACK_ARGS=""; M31_POST_ARGS=""

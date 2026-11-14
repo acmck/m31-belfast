@@ -7,7 +7,13 @@
 #   make deploy                                                      site + site-check, then Cloudflare Pages
 #   make privacy-check                                               private terms, emails, coordinates, image metadata
 SHELL := /bin/bash
+# On Windows, run make from Git Bash; the venv keeps its interpreter in Scripts/ and Python needs UTF-8 mode.
+ifeq ($(OS),Windows_NT)
+PY := .venv/Scripts/python.exe
+export PYTHONUTF8 := 1
+else
 PY := .venv/bin/python
+endif
 SESSION ?=
 STAGES ?=
 NIGHTS ?= $(sort $(wildcard data/M31_20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]))

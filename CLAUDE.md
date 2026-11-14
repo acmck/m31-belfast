@@ -6,6 +6,10 @@ the progress stage by stage. Start with `README.md`; the measured history is in 
 ## How to run
 
 - Python: `.venv/bin/python` (uv, Python 3.12). Add dependencies with `uv add`, never pip.
+- On Windows: run the shell scripts and `make` from Git Bash (the Bash tool), never PowerShell or WSL. Python is
+  `.venv/Scripts/python.exe`; set `PYTHONUTF8=1` when calling a script directly. Platform differences live in
+  `scripts/platform.sh`; see "Running on Windows" in the README. `data/` and `tools/astap/db` may be junctions
+  to another drive: never `rm -r` them or run `git clean` over them.
 - One night: `make night SESSION=data/M31_YYYY-MM-DD` (or `./run_pipeline.sh SESSION [qa deband flat stack post]`).
 - All nights together: `make combine` (wraps `scripts/combine_sessions.sh data/M31_combined_<today> <every night>`).
 - Measure a stack: `.venv/bin/python scripts/measure_stack.py data/<session>/stack/result.fit`.
