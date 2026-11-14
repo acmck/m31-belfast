@@ -8,12 +8,12 @@ Data for three journal charts -> site/src/data/charts.json (+ site/src/data/metr
                 first and last 15 minutes of kept frames (25 Sep's last 23 minutes were all rejected: cloud).
   funnel        per night: exposure slots -> saved by the scope -> dropped by the scope -> rejected by QA ->
                 excluded by the stacker -> stacked, from the slot model of make_story_frames.py and the
-                "three-nights" step of story_frames.json (the current combined stack); checked to reconcile.
+                "four-nights" step of story_frames.json (the current combined stack); checked to reconcile.
   wind          per night and UTC hour: Open-Meteo hourly gust (max of the preceding hour, so the hour
                 [H, H+1) uses the value stamped H+1) at Belfast city centre, slots and scope drops in that hour
                 (dropped slots are placed in their cadence gap).  Pearson r of drop rate vs gust over the
                 night-hours with >= MIN_SLOTS slots.
-  clear_nights  one row per night (the evening's date) 2026-09-01 .. 2026-10-16: mean cloud cover over the hourly
+  clear_nights  one row per night (the evening's date) 2026-09-01 .. the latest imaging night: mean cloud cover over the hourly
                 samples 21:00 .. 03:00 UTC (7 samples), usable if <= 30 %, moon illumination at 00:00 UTC.
   first_light   snr / minutes / fwhm of the Seestar live stack (journal.json timeline step 1, "before").
 
@@ -43,7 +43,7 @@ JOURNAL = ROOT / "site/src/data/journal.json"
 MAX_POINTS = 200
 EDGE_MIN = 15          # start/end FWHM window
 MIN_SLOTS = 30         # night-hours with fewer slots (< ~5.5 min of imaging) are left out of the correlation
-CLEAR_FROM, CLEAR_TO = date(2026, 9, 1), date(2026, 10, 16)
+CLEAR_FROM, CLEAR_TO = date(2026, 9, 1), date(2026, 11, 13)
 WIN_START_H, WIN_END_H = 21, 3   # cloud window, UTC, hourly samples inclusive
 USABLE_CLOUD = 30.0
 FORECAST = ("open-meteo forecast (past_days)", "https://api.open-meteo.com/v1/forecast")
@@ -85,7 +85,19 @@ def focus(session):
         return r1(x.loc[x.t <= k0 + edge, "fwhm_arcsec"].median()), r1(x.loc[x.t >= k1 - edge, "fwhm_arcsec"].median())
     s, e = edges(kept)
     sa, ea = edges(allf)
-    return dict(utc_start=iso(t0), utc_end=iso(t1), bin_s=bin_s, frames=int(len(df)), kept=int(df.sel.sum()),
+    # Focuser moves: the focuser position recorded with each frame changes between two consecutive frames.
+    # Reported as minutes from the first frame and the median FWHM of the 10 kept frames either side; the
+    # positions themselves are not written out.
+    refocus = []
+    pos = df["focuspos"].to_numpy()
+    for i in range(1, len(df)):
+        if pd.notna(pos[i]) and pd.notna(pos[i - 1]) and pos[i] != pos[i - 1]:
+            before = kept.loc[kept.t < df.t[i], "fwhm_arcsec"].tail(10)
+            after = kept.loc[kept.t >= df.t[i], "fwhm_arcsec"].head(10)
+            if len(before) and len(after):
+                refocus.append(dict(t=iso(df.t[i]), min=int(round((df.t[i] - t0).total_seconds() / 60)),
+                                    before=r1(before.median()), after=r1(after.median())))
+    return dict(refocus=refocus,utc_start=iso(t0), utc_end=iso(t1), bin_s=bin_s, frames=int(len(df)), kept=int(df.sel.sum()),
                 rejected=int((~df.sel).sum()), median_kept=r1(kept.fwhm_arcsec.median()),
                 kept_utc_start=iso(k0), kept_utc_end=iso(k1), start_fwhm=s, end_fwhm=e, drift=r1(e - s), start_fwhm_all_saved=sa, end_fwhm_all_saved=ea,
                 points=pts)
@@ -144,7 +156,7 @@ def slot_times(session):
 def main():
     story = json.load(open(STORY))
     journal = json.load(open(JOURNAL))
-    stack = story["steps"]["three-nights"]["counts"]
+    stack = story["steps"]["four-nights"]["counts"]
     out = dict(generated=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), location="Belfast",
                focus={}, funnel={}, wind={}, clear_nights={}, first_light={})
 
@@ -240,13 +252,14 @@ def main():
     prov = dict(
         generated=out["generated"], script="scripts/make_charts_data.py",
         focus="Per-frame star FWHM from the pipeline's frame QA (already in arcsec: px x 3.665\"/px plate scale). "
-              f"Time bins of 60 s (7/8 Sep, 16/17 Oct) or 120 s (25/26 Sep), at most {MAX_POINTS} per night; "
+              f"Time bins of 60 s (7/8 Sep, 16/17 Oct, 13/14 Nov) or 120 s (25/26 Sep), at most {MAX_POINTS} per night; "
               "med/lo/hi over QA-kept frames, rej/rej_med for QA-rejected frames. start/end = median of kept frames "
               f"in the {EDGE_MIN} min after the first / before the last kept frame; *_all_saved use the same windows "
-              "but include rejected frames.",
+              "but include rejected frames. refocus = each change of the focuser position between consecutive "
+              "frames: minutes from the first frame, and the median FWHM of the 10 kept frames before and after.",
         funnel="Exposure slots from the cadence model used by the story tile wall (11 s cadence; a gap of n cadences "
                "= n-1 dropped exposures; gaps of 10 min or more are pauses). Rejected/excluded/stacked from the "
-               "story's three-nights step (the 17 Oct combined stack). Reconciled: slots = saved + dropped, "
+               "story's four-nights step (the 14 Nov combined stack). Reconciled: slots = saved + dropped, "
                "saved = rejected + excluded + stacked, stacked total = the hero's frame count.",
         wind="Open-Meteo hourly wind_gusts_10m (mph, max of the preceding hour), Belfast city centre; "
              f"sources: {', '.join(f'{k} ({v} h)' for k, v in gust_src.items())}. Drops per UTC hour from the slot "

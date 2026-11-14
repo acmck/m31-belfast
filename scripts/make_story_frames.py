@@ -17,7 +17,8 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]; D = ROOT / "data"
-NIGHTS = {"2026-09-07": "M31_2026-09-07", "2026-09-25": "M31_2026-09-25", "2026-10-16": "M31_2026-10-16"}
+NIGHTS = {"2026-09-07": "M31_2026-09-07", "2026-09-25": "M31_2026-09-25", "2026-10-16": "M31_2026-10-16",
+          "2026-11-13": "M31_2026-11-13"}
 
 
 def slots(session):
@@ -93,6 +94,9 @@ def main():
     c17_files, c17_zero = stack_files(D / "M31_combined_2026-10-17", None)
     n3_files, n3_zero = stack_files(D / "M31_2026-10-16", None)
     n2_files, n2_zero = stack_files(D / "M31_2026-09-25", None)
+    c1113_files, c1113_zero = stack_files(D / "M31_combined_2026-11-13", None)
+    n4_files, n4_zero = stack_files(D / "M31_2026-11-13", None)
+    three = ["2026-09-07", "2026-09-25", "2026-10-16"]
 
     steps = {
         # Seestar's live stack: every saved frame (it saves only frames it stacked)
@@ -108,7 +112,11 @@ def main():
         "sharp": {"2026-09-07": strip(S["2026-09-07"][0], sel_today["2026-09-07"] - c16_zero, sel_today["2026-09-07"], all_files["2026-09-07"], c16_zero),
                   "2026-09-25": strip(S["2026-09-25"][0], r529_sel - c16_zero, r529_sel, r529_copied, c16_zero),
                   "2026-10-16": strip(S["2026-10-16"][0], sel_today["2026-10-16"] - n3_zero, sel_today["2026-10-16"], all_files["2026-10-16"], n3_zero)},
-        "three-nights": {nid: strip(S[nid][0], sel_today[nid] - c17_zero, sel_today[nid], all_files[nid], c17_zero) for nid in NIGHTS},
+        "three-nights": {nid: strip(S[nid][0], sel_today[nid] - c17_zero, sel_today[nid], all_files[nid], c17_zero) for nid in three},
+        # 13/14 Nov stacked on its own (side note), shown over the three-night wall
+        "night4": {**{nid: strip(S[nid][0], sel_today[nid] - c17_zero, sel_today[nid], all_files[nid], c17_zero) for nid in three},
+                   "2026-11-13": strip(S["2026-11-13"][0], sel_today["2026-11-13"] - n4_zero, sel_today["2026-11-13"], all_files["2026-11-13"], n4_zero)},
+        "four-nights": {nid: strip(S[nid][0], sel_today[nid] - c1113_zero, sel_today[nid], all_files[nid], c1113_zero) for nid in NIGHTS},
     }
     # consistency with the published numbers
     out = {"_about": __doc__.strip(), "nights": {}, "steps": {}}

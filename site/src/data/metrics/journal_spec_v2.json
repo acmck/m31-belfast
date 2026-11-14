@@ -142,6 +142,27 @@
    "linear": "data/M31_combined_2026-10-16/color_nomad/03_cc.fit",
    "wcs": "data/M31_combined_2026-10-16/final/01_solved.fit",
    "stack": "data/M31_combined_2026-10-16/stack/result.fit"
+  },
+  "cur_1113": {
+   "label": "13/14 Nov alone",
+   "nights": [
+    "2026-11-13"
+   ],
+   "image": "data/M31_2026-11-13/final/final.png",
+   "linear": "data/M31_2026-11-13/final/03_cc.fit",
+   "stack": "data/M31_2026-11-13/stack/result.fit"
+  },
+  "comb_1113": {
+   "label": "Four nights, 13 Nov",
+   "nights": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16",
+    "2026-11-13"
+   ],
+   "image": "data/M31_combined_2026-11-13/final/final.png",
+   "linear": "data/M31_combined_2026-11-13/final/03_cc.fit",
+   "stack": "data/M31_combined_2026-11-13/stack/result.fit"
   }
  },
  "timeline": [
@@ -150,7 +171,7 @@
    "date": "2026-09-08",
    "title": "My first pipeline",
    "kind": "processing",
-   "provenance": "regenerated from the 8 Sep code (commit 0aaa0ac)",
+   "provenance": "regenerated from the 8 Sep code (commit 4fa39f9)",
    "before": "scope_0907",
    "after": "first_0907",
    "what_changed": "I copied the 7/8 Sep subs off the scope and ran my own first pipeline on them: frame QA, Siril drizzle stacking weighted towards the sharpest frames, and GraXpert's AI background removal.",
@@ -161,7 +182,7 @@
    "date": "2026-09-09",
    "title": "After the review",
    "kind": "processing",
-   "provenance": "regenerated from the 9 Sep code (commit 9f622a1)",
+   "provenance": "regenerated from the 9 Sep code (commit ed6c725)",
    "before": "first_0907",
    "after": "sep09_0907",
    "what_changed": "The next day I had the pipeline reviewed against this night's data and acted on what it measured: no trend-based frame culling, weighting by star count instead of sharpness, a plain plane fit for the background, and star removal with Dark Star, including a fix for the dark ring it left around the core.",
@@ -172,7 +193,7 @@
    "date": "2026-10-16",
    "title": "A second night, under a full moon",
    "kind": "processing + new night",
-   "provenance": "saved run history, 16 Oct (commit 63e7708 + uncommitted changes)",
+   "provenance": "saved run history, 16 Oct",
    "before": "sep09_0907",
    "after": "comb_1016_asof",
    "what_changed": "I added {r[s0925_529_asof][frames]} frames from 25/26 Sep, shot under a {n[2026-09-25][moon][illum_pct]:.0f} % moon while the rest were still on the scope, and stacked both nights frame by frame with noise weighting.",
@@ -191,7 +212,7 @@
    "date": "2026-10-17",
    "title": "Three nights",
    "kind": "processing + new night",
-   "provenance": "today's pipeline, 17 Oct (commit 6d0dcc5)",
+   "provenance": "today's pipeline, 17 Oct (commit 7dc9f6e)",
    "before": "comb_1016_asof",
    "after": "comb_1017",
    "what_changed": "I added 16/17 Oct and the rest of 25/26 Sep, then reprocessed all three nights with today's pipeline, which also changed the colour calibration.",
@@ -208,6 +229,25 @@
      "label": "25/26 Sep alone, all frames",
      "night_id": "2026-09-25",
      "text": "With every frame copied, the moonlit night alone kept {note.frames} frames and reached SNR {note.snr_headline}, stars {note.fwhm_arcsec}″."
+    }
+   ]
+  },
+  {
+   "id": "t5-four-nights",
+   "date": "2026-11-13",
+   "title": "Four nights",
+   "kind": "new night",
+   "provenance": "today's pipeline, 14 Nov (commit 364084c)",
+   "before": "comb_1017",
+   "after": "comb_1113",
+   "what_changed": "I added 13/14 Nov, another {r[cur_1113][frames]} frames, and restacked all four nights with the same pipeline.",
+   "what_it_did": "{after.frames} frames and {after.minutes:.0f} minutes took SNR from {before.snr_headline} to {after.snr_headline} and stars from {before.fwhm_arcsec}″ to {after.fwhm_arcsec}″.",
+   "side_notes": [
+    {
+     "render": "cur_1113",
+     "label": "13/14 Nov alone",
+     "night_id": "2026-11-13",
+     "text": "On its own, 13/14 Nov kept {note.frames} frames over {note.minutes:.0f} minutes: SNR {note.snr_headline}, stars {note.fwhm_arcsec}″."
     }
    ]
   }
@@ -275,15 +315,16 @@
  ],
  "hero": {
   "before": "scope_0907",
-  "after": "comb_1017",
-  "after_step_id": "t4-three-nights",
+  "after": "comb_1113",
+  "after_step_id": "t5-four-nights",
   "before_label": "First light",
-  "after_label": "Latest: three nights"
+  "after_label": "Latest: four nights"
  },
  "night_notes": {
   "_about": "Personal notes per night (session id = the evening the night started), shown in 'The nights'. Written by Andrew.",
   "2026-09-07": "Evan and Dad watched a movie but kept coming out to check the stacked image off the scope on the Seestar app.",
   "2026-09-25": "Session with Quinny and Erin.",
-  "2026-10-16": "Evan and Dad watched half of Fall. 6/10."
+  "2026-10-16": "Evan and Dad watched half of Fall. 6/10.",
+  "2026-11-13": "Evan and Dad after the appointment."
  }
 }

@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17T01:08:48Z",
+ "generated": "2026-11-14T23:50:13Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -76,14 +76,42 @@
     "alt_deg_mean": -5.2
    },
    "weather": {
-    "cloud_pct_mean": 3.3,
+    "cloud_pct_mean": 5.3,
     "gust_mph_max": 15.0,
-    "humidity_pct_mean": 82.3,
-    "temp_minus_dew_c_min": 2.5
+    "humidity_pct_mean": 82.7,
+    "temp_minus_dew_c_min": 2.6
    },
    "weather_source": "open-meteo archive (ERA5)",
-   "log_line": "19:45–21:22 UTC · 384 × 10 s · moon 33 % below horizon · cloud 3 % · gusts 15 mph · 27 % dropped",
+   "log_line": "19:45–21:22 UTC · 384 × 10 s · moon 33 % below horizon · cloud 5 % · gusts 15 mph · 27 % dropped",
    "note": "Evan and Dad watched half of Fall. 6/10."
+  },
+  {
+   "id": "2026-11-13",
+   "label": "13/14 Nov 2026",
+   "utc_start": "2026-11-13T20:46:57Z",
+   "utc_end": "2026-11-13T23:19:52Z",
+   "exposure_s": 10.0,
+   "frames_total": 603,
+   "frames_kept": 595,
+   "qa_rejected": 8,
+   "scope_drop_rate": 0.272,
+   "minutes": 99,
+   "fwhm_arcsec": 11.1,
+   "sky_adu": 1440.2,
+   "moon": {
+    "illum_pct": 18.7,
+    "alt_deg_max": -14.2,
+    "alt_deg_mean": -24.2
+   },
+   "weather": {
+    "cloud_pct_mean": 78.5,
+    "gust_mph_max": 13.6,
+    "humidity_pct_mean": 89.2,
+    "temp_minus_dew_c_min": 1.4
+   },
+   "weather_source": "open-meteo archive (ERA5)",
+   "log_line": "20:46–23:19 UTC · 603 × 10 s · moon 19 % below horizon · cloud 78 % · gusts 14 mph · 27 % dropped",
+   "note": "Evan and Dad after the appointment."
   }
  ],
  "stages": [
@@ -485,6 +513,12 @@
    "label": "Three nights, 17 Oct",
    "minutes": 307,
    "snr": 23.37
+  },
+  {
+   "step_id": "t5-four-nights",
+   "label": "Four nights, 13 Nov",
+   "minutes": 406,
+   "snr": 26.54
   }
  ],
  "timeline": [
@@ -494,7 +528,7 @@
    "date": "2026-09-08",
    "title": "My first pipeline",
    "kind": "processing",
-   "provenance": "regenerated from the 8 Sep code (commit 0aaa0ac)",
+   "provenance": "regenerated from the 8 Sep code (commit 4fa39f9)",
    "before": {
     "label": "First light: Seestar live stack",
     "frames": 479,
@@ -565,7 +599,7 @@
    "date": "2026-09-09",
    "title": "After the review",
    "kind": "processing",
-   "provenance": "regenerated from the 9 Sep code (commit 9f622a1)",
+   "provenance": "regenerated from the 9 Sep code (commit ed6c725)",
    "before": {
     "label": "First pipeline, 8 Sep",
     "frames": 427,
@@ -636,7 +670,7 @@
    "date": "2026-10-16",
    "title": "A second night, under a full moon",
    "kind": "processing + new night",
-   "provenance": "saved run history, 16 Oct (commit 63e7708 + uncommitted changes)",
+   "provenance": "saved run history, 16 Oct",
    "before": {
     "label": "After the review, 9 Sep",
     "frames": 467,
@@ -727,7 +761,7 @@
    "date": "2026-10-17",
    "title": "Three nights",
    "kind": "processing + new night",
-   "provenance": "today's pipeline, 17 Oct (commit 6d0dcc5)",
+   "provenance": "today's pipeline, 17 Oct (commit 7dc9f6e)",
    "before": {
     "label": "Two nights, 16 Oct",
     "frames": 995,
@@ -830,6 +864,97 @@
      }
     }
    ]
+  },
+  {
+   "id": "t5-four-nights",
+   "index": 5,
+   "date": "2026-11-13",
+   "title": "Four nights",
+   "kind": "new night",
+   "provenance": "today's pipeline, 14 Nov (commit 364084c)",
+   "before": {
+    "label": "Three nights, 17 Oct",
+    "frames": 1841,
+    "minutes": 307,
+    "fwhm_arcsec": 11.9,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 49.72,
+     "major 40′ NE": 17.79,
+     "major 20′ SW": 43.18,
+     "major 40′ SW": 28.95,
+     "minor 10′ SE": 37.58,
+     "minor 20′ SE": 1.35,
+     "minor 10′ NW": 16.71,
+     "minor 20′ NW": 1.64
+    },
+    "snr_headline": 23.37
+   },
+   "after": {
+    "label": "Four nights, 13 Nov",
+    "frames": 2436,
+    "minutes": 406,
+    "fwhm_arcsec": 11.6,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 56.84,
+     "major 40′ NE": 20.33,
+     "major 20′ SW": 49.4,
+     "major 40′ SW": 32.65,
+     "minor 10′ SE": 43.62,
+     "minor 20′ SE": 1.9,
+     "minor 10′ NW": 20.43,
+     "minor 20′ NW": 2.43
+    },
+    "snr_headline": 26.54
+   },
+   "images": {
+    "before": {
+     "avif": "/img/t5-four-nights/before.avif",
+     "webp": "/img/t5-four-nights/before.webp",
+     "avif_1200": "/img/t5-four-nights/before-1200.avif",
+     "webp_1200": "/img/t5-four-nights/before-1200.webp",
+     "width": 1589,
+     "height": 1192
+    },
+    "after": {
+     "avif": "/img/t5-four-nights/after.avif",
+     "webp": "/img/t5-four-nights/after.webp",
+     "avif_1200": "/img/t5-four-nights/after-1200.avif",
+     "webp_1200": "/img/t5-four-nights/after-1200.webp",
+     "width": 1589,
+     "height": 1192
+    },
+    "placeholder": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAADwBACdASoYABIAPtFepU6oJSMiKAqpABoJZwDH5BEDU5HAyQbRZVpDNAt7Mu03z9AA/uQFAAS2xEQq9NNZBUkOeg3/5Tp0Xdr0StpNG4mD3Or+yToA6lkwa/7OJfH9GWnYqzLqRselCC0gIQQAAA=="
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 396,
+    "median_residual_px": 0.038
+   },
+   "what_changed": "I added 13/14 Nov, another 594 frames, and restacked all four nights with the same pipeline.",
+   "what_it_did": "2436 frames and 406 minutes took SNR from 23.37 to 26.54 and stars from 11.9″ to 11.6″.",
+   "side_notes": [
+    {
+     "label": "13/14 Nov alone",
+     "night_id": "2026-11-13",
+     "frames": 594,
+     "minutes": 99,
+     "fwhm_arcsec": 10.3,
+     "snr_headline": 14.43,
+     "text": "On its own, 13/14 Nov kept 594 frames over 99 minutes: SNR 14.43, stars 10.3″.",
+     "image": {
+      "webp_1200": "/img/t5-four-nights-note-cur_1113/image-1200.webp",
+      "avif_1200": "/img/t5-four-nights-note-cur_1113/image-1200.avif",
+      "width": 1200,
+      "height": 900,
+      "webp_400": "/img/t5-four-nights-note-cur_1113/image-400.webp",
+      "avif_400": "/img/t5-four-nights-note-cur_1113/image-400.avif",
+      "width_400": 400,
+      "height_400": 300
+     }
+    }
+   ]
   }
  ],
  "hero": {
@@ -852,22 +977,22 @@
    "snr_headline": 19.41
   },
   "after": {
-   "label": "Latest: three nights",
-   "frames": 1841,
-   "minutes": 307,
-   "fwhm_arcsec": 11.9,
+   "label": "Latest: four nights",
+   "frames": 2436,
+   "minutes": 406,
+   "fwhm_arcsec": 11.6,
    "sky": "dark + moon 99 %",
    "snr": {
-    "major 20′ NE": 49.72,
-    "major 40′ NE": 17.79,
-    "major 20′ SW": 43.18,
-    "major 40′ SW": 28.95,
-    "minor 10′ SE": 37.58,
-    "minor 20′ SE": 1.35,
-    "minor 10′ NW": 16.71,
-    "minor 20′ NW": 1.64
+    "major 20′ NE": 56.84,
+    "major 40′ NE": 20.33,
+    "major 20′ SW": 49.4,
+    "major 40′ SW": 32.65,
+    "minor 10′ SE": 43.62,
+    "minor 20′ SE": 1.9,
+    "minor 10′ NW": 20.43,
+    "minor 20′ NW": 2.43
    },
-   "snr_headline": 23.37
+   "snr_headline": 26.54
   },
   "images": {
    "before": {
@@ -886,14 +1011,14 @@
     "width": 1653,
     "height": 1240
    },
-   "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAAAQBQCdASoYABIAPtFepU6oJSMiKAqpABoJZwDIXBEL0sSTVD4LcgwJ9efFIw6n0ceAAP7kWHzTiWJJ4TMCaIdkzYtYyfWMC0Dpt8EvRBV+br1dfWIgBJFFVmuw/DzXmhs4s8vCPD7mUiJwAAA="
+   "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAADwBACdASoYABIAPtFepE6oJSMiKAqpABoJZwDH5BEBQxDcvCrdG+SfftDey4Ri0oAA/uQFAFJR/Lck6hJ+CW+RvUFe14btsq5QOXUsc7PV+RVm+mqZn2PCxI8hM2KrPCVPaMjqPyiFolw0AAA="
   },
   "alignment": {
    "method": "astroalign similarity",
-   "n_stars": 365,
-   "median_residual_px": 0.176
+   "n_stars": 366,
+   "median_residual_px": 0.177
   },
-  "after_step_id": "t4-three-nights"
+  "after_step_id": "t5-four-nights"
  },
  "method": {
   "snr": "(per render, written to site/src/data/metrics/renders/<id>.json):\n  SNR at fixed M31 positions.  The image's own plate solution (WCS) places eight points at fixed offsets from\n  M31's nucleus (RA 00h42m44.3s, Dec +41d16m07s) along the major axis (PA 38 deg: 20' and 40' each way) and the\n  minor axis (10' and 20' each way), clear of M32 and NGC 205.  Binned 4x4 (14.7\"; removes the different\n  pixel-to-pixel correlation of drizzle and of the scope's own debayering), per channel: a plane is fitted to sky\n  pixels and subtracted; signal = median within 1.2' of each point; noise = 1.4826 x MAD of the sky after a 9-px\n  median high-pass.  The three channel SNRs are added in quadrature (the SNR of the optimally weighted channel\n  sum), which makes the figure independent of colour-calibration factors.  Headline = median of the eight points.\n  FWHM, sky noise, frame count and minutes: scripts/measure_stack.py on the linear stack, and its FITS header.\n  ring (stage 03): radial profile of the starless linear image around the nucleus; ring depth = the largest dip\n  of the profile below the brightest point further out, in % of that point.\n  color (stage 05): per-channel signal at the eight points; disk colour as R/G and B/G ratios."

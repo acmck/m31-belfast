@@ -32,11 +32,13 @@ const T1 = step('t1-first-pipeline');
 const T2 = step('t2-review');
 const T3 = step('t3-two-nights');
 const T4 = step('t4-three-nights');
-const [n0, n1, n2] = nights;
+const T5 = step('t5-four-nights');
+const [n0, n1, n2, n3] = nights;
 const sideOf = (t: AnyObj, nid: string) => need(t.side_notes?.find((s: AnyObj) => s.night_id === nid), `side note ${nid}`);
 const sMoon = sideOf(T4, n1.id);
 const sSharp = sideOf(T4, n2.id);
 const s529 = sideOf(T3, n1.id);
+const sN4 = sideOf(T5, n3.id);
 const hero = need(J.hero, 'hero');
 
 const side = (x: AnyObj, label: string) => ({
@@ -54,6 +56,8 @@ const STEPS: Record<string, AnyObj> = {
   'two-nights': side(T3.after, T3.after.label),
   sharp: side(sSharp, sSharp.label),
   'three-nights': side(T4.after, T4.after.label),
+  night4: side(sN4, sN4.label),
+  'four-nights': side(T5.after, T5.after.label),
 };
 
 // strips: dedupe the run-length strings
@@ -98,7 +102,7 @@ const input = {
   ),
   anchor: { minutes: need(J.chart[0], 'chart').minutes, snr: J.chart[0].snr },
   beats: [
-    { strip: null, img: 'three-nights', side: null, main: null },
+    { strip: null, img: 'four-nights', side: null, main: null },
     { strip: 'first-light', img: 'first-light', side: null, main: 'first-light' },
     { strip: 'first-pipeline', img: 'first-pipeline', side: null, main: 'first-pipeline' },
     { strip: 'review', img: 'review', side: null, main: 'review' },
@@ -106,7 +110,9 @@ const input = {
     { strip: 'two-nights', img: 'two-nights', side: null, main: 'two-nights' },
     { strip: 'sharp', img: 'sharp', side: n2.id, main: 'two-nights', sides: ['sharp'] },
     { strip: 'three-nights', img: 'three-nights', side: null, main: 'three-nights' },
-    { strip: 'three-nights', img: 'three-nights', side: null, main: 'three-nights', placeholder: true },
+    { strip: 'night4', img: 'night4', side: n3.id, main: 'three-nights', sides: ['night4'] },
+    { strip: 'four-nights', img: 'four-nights', side: null, main: 'four-nights' },
+    { strip: 'four-nights', img: 'four-nights', side: null, main: 'four-nights', placeholder: true },
   ],
 };
 
@@ -132,9 +138,16 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 const S = STEPS;
 const FL = S['first-light'], FP = S['first-pipeline'], RV = S.review, MO = S.moon, TN = S['two-nights'];
 const SH = S.sharp, TH = S['three-nights'];
+const N4 = S.night4, FN = S['four-nights'];
 const d = C.derived;
 const drops = (n: AnyObj) => FR.nights[n.id].scope_dropped as number;
 const zIn = (beat: number, nid: string) => C.beats[beat].nights[nid]?.z ?? 0;
+// the three-night beat quotes its own totals (the compute module's totals cover the final beat)
+const three = [n0, n1, n2];
+const zSum = (beat: number) => three.reduce((a, n) => a + zIn(beat, n.id), 0);
+const thRejected = three.reduce((a, n) => a + n.qa_rejected, 0) + zSum(7);
+const thDropped = three.reduce((a, n) => a + drops(n), 0);
+const thQaKept = three.reduce((a, n) => a + n.frames_kept, 0);
 const emptyNote = (z: number) =>
   `Includes ${z} ${plural(z, 'frame', 'frames')} that came out empty after registration, so the stacker left ${plural(z, 'it', 'them')} out.`;
 const curveNote = `Dashed curve: SNR growing with √minutes from my first pipeline (${input.anchor.minutes} min, ${f2(input.anchor.snr)}), as on the journal's chart.`;
@@ -162,7 +175,7 @@ const beats: Beat[] = [
     log: [`ZWO Seestar S30 Pro · ${exp} s exposures`, 'Bortle 6 · Belfast', `${nNights} nights so far`],
     note: null,
     foot: ["Each picture is the timeline's own image for its step, cut to one shared frame so the galaxy holds still."],
-    cap: capLine(TH, `${hero.after.label}, ${dshort(T4.date)}`),
+    cap: capLine(FN, `${hero.after.label}, ${dshort(T5.date)}`),
     cnt: 'Frames in the stack',
     ro: null,
   },
@@ -255,18 +268,18 @@ const beats: Beat[] = [
   {
     n: 'Three nights',
     eb: { date: T4.date, kind: T4.kind },
-    h: TH.snr > FL.snr ? `${Word(nNights)} nights climb past first light` : `${Word(nNights)} nights`,
-    lede: `I copied the rest of ${shortNight(n1)}, added ${shortNight(n2)} and reprocessed all ${word(nNights)} nights with today's pipeline. ${c(TH.frames)} frames over ${TH.minutes} minutes took SNR to ${f2(TH.snr)}, ${ap(d.thVsFl)} ${d.thVsFl >= 0 ? 'above' : 'below'} first light.`,
+    h: TH.snr > FL.snr ? 'Three nights climb past first light' : 'Three nights',
+    lede: `I copied the rest of ${shortNight(n1)}, added ${shortNight(n2)} and reprocessed all three nights with the pipeline of ${dshort(T4.date)}. ${c(TH.frames)} frames over ${TH.minutes} minutes took SNR to ${f2(TH.snr)}, ${ap(d.thVsFl)} ${d.thVsFl >= 0 ? 'above' : 'below'} first light.`,
     log: [
       stackLine(TH),
       `SNR ${f2(TH.snr)} · up ${ap(d.thVsTn)} on two nights`,
-      `rejected ${C.totals.rejectedInclEmpty} · dropped ${C.totals.dropped}`,
+      `rejected ${thRejected} · dropped ${thDropped}`,
     ],
     note: null,
     foot: [
-      ...(C.totals.empties
+      ...(zSum(7)
         ? [
-            `Rejected includes ${C.totals.empties} ${plural(C.totals.empties, 'frame', 'frames')} that came out empty after registration: ${c(C.totals.qaKept)} frames passed QA and ${c(TH.frames)} were stacked.`,
+            `Rejected includes ${zSum(7)} ${plural(zSum(7), 'frame', 'frames')} that came out empty after registration: ${c(thQaKept)} frames passed QA and ${c(TH.frames)} were stacked.`,
           ]
         : []),
       'The color calibration also changed in this step.',
@@ -276,6 +289,42 @@ const beats: Beat[] = [
     ro: { v: TH.snr, sub: `first light ${f2(FL.snr)}` },
   },
   {
+    n: 'The fourth night',
+    eb: { date: n3.id, kind: 'New night' },
+    h: N4.fwhm < SH.fwhm ? 'A fourth night, sharper still' : 'A fourth night',
+    lede: `On ${shortNight(n3)} the scope saved ${n3.frames_total} frames and dropped ${drops(n3)}. QA kept ${n3.frames_kept}. On its own the night gave ${f1(N4.fwhm)}″ stars and SNR ${f2(N4.snr)}.`,
+    log: [
+      `${n3.frames_total} saved · ${n3.frames_kept} kept · ${n3.qa_rejected} rejected · ${pc(n3.scope_drop_rate)} dropped`,
+      `${moonLog(n3)} · cloud ${Math.round(n3.weather.cloud_pct_mean)} % · gusts ${Math.round(n3.weather.gust_mph_max)} mph`,
+      `alone: ${stackLine(N4)} · SNR ${f2(N4.snr)}`,
+    ],
+    note: { label: n3.label, text: n3.note },
+    foot: zIn(8, n3.id) ? [emptyNote(zIn(8, n3.id))] : [],
+    cap: capLine(N4, `${shortNight(n3)} alone`),
+    cnt: `${shortNight(n3)} alone`,
+    ro: { v: N4.snr, sub: `${shortNight(n3)} alone` },
+  },
+  {
+    n: 'Four nights',
+    eb: { date: T5.date, kind: T5.kind },
+    h: `Four nights, ${c(FN.frames)} frames`,
+    lede: `I added ${shortNight(n3)} and restacked all four nights with the same pipeline. ${c(FN.frames)} frames over ${FN.minutes} minutes took SNR to ${f2(FN.snr)}, ${ap(d.fnVsFl)} ${d.fnVsFl >= 0 ? 'above' : 'below'} first light.`,
+    log: [
+      stackLine(FN),
+      `SNR ${f2(FN.snr)} · ${d.fnVsTh >= 0 ? 'up' : 'down'} ${ap(d.fnVsTh)} on three nights`,
+      `rejected ${C.totals.rejectedInclEmpty} · dropped ${C.totals.dropped}`,
+    ],
+    note: null,
+    foot: C.totals.empties
+      ? [
+          `Rejected includes ${C.totals.empties} ${plural(C.totals.empties, 'frame', 'frames')} that came out empty after registration: ${c(C.totals.qaKept)} frames passed QA and ${c(FN.frames)} were stacked.`,
+        ]
+      : [],
+    cap: capLine(FN, FN.label),
+    cnt: 'Frames in the stack',
+    ro: { v: FN.snr, sub: `first light ${f2(FL.snr)}` },
+  },
+  {
     n: "What's next",
     eb: { date: '', kind: 'Next · To do' },
     h: 'Next: more frames, steadier mount',
@@ -283,9 +332,9 @@ const beats: Beat[] = [
     log: todo,
     note: null,
     foot: ['The dashed outline on the wall marks the next clear night. Its size is a placeholder.', curveNote],
-    cap: capLine(TH, TH.label),
+    cap: capLine(FN, FN.label),
     cnt: 'Frames in the stack',
-    ro: { v: TH.snr, sub: `first light ${f2(FL.snr)}` },
+    ro: { v: FN.snr, sub: `first light ${f2(FL.snr)}` },
   },
 ];
 
@@ -299,7 +348,7 @@ beats.forEach((b, i) => {
 });
 
 // ---------- images ----------
-const order = ['three-nights', 'first-light', 'first-pipeline', 'review', 'moon', 'two-nights', 'sharp'];
+const order = ['four-nights', 'first-light', 'first-pipeline', 'review', 'moon', 'two-nights', 'sharp', 'three-nights', 'night4'];
 const images = Object.fromEntries(
   order.map((k) => {
     const f = need(IM.steps[k], `story image ${k}`).files as AnyObj;

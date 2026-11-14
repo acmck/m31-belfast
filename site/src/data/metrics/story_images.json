@@ -61,7 +61,7 @@
    "source": "data/journal_pairs/t1-first-pipeline/after.png",
    "registration_residual_px": 0.205,
    "story_residual_px": 0.144,
-   "n_stars_matched": 390,
+   "n_stars_matched": 391,
    "zero_pixel_fraction": 0.0,
    "width": 1339,
    "height": 1004,
@@ -157,7 +157,7 @@
    "source": "data/journal_pairs/t4-three-nights-note-cur_0925/image.png",
    "registration_residual_px": 0.088,
    "story_residual_px": 0.087,
-   "n_stars_matched": 394,
+   "n_stars_matched": 395,
    "zero_pixel_fraction": 0.0,
    "width": 1339,
    "height": 1004,
@@ -301,7 +301,7 @@
    "source": "data/journal_pairs/t4-three-nights/after.png",
    "registration_residual_px": 0.0,
    "story_residual_px": 0.0,
-   "n_stars_matched": 400,
+   "n_stars_matched": 399,
    "zero_pixel_fraction": 0.0,
    "width": 1339,
    "height": 1004,
@@ -343,8 +343,104 @@
      ]
     }
    }
+  },
+  "night4": {
+   "render": "cur_1113",
+   "source": "data/journal_pairs/t5-four-nights-note-cur_1113/image.png",
+   "registration_residual_px": 0.19,
+   "story_residual_px": 0.179,
+   "n_stars_matched": 396,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "night4.avif": {
+     "url": "/img/story/night4.avif",
+     "bytes": 104422,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "night4.webp": {
+     "url": "/img/story/night4.webp",
+     "bytes": 90810,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "night4-1200.avif": {
+     "url": "/img/story/night4-1200.avif",
+     "bytes": 87445,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "night4-1200.webp": {
+     "url": "/img/story/night4-1200.webp",
+     "bytes": 76770,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
+  },
+  "four-nights": {
+   "render": "comb_1113",
+   "source": "data/journal_pairs/t5-four-nights/after.png",
+   "registration_residual_px": 0.038,
+   "story_residual_px": 0.037,
+   "n_stars_matched": 398,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "four-nights.avif": {
+     "url": "/img/story/four-nights.avif",
+     "bytes": 82310,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "four-nights.webp": {
+     "url": "/img/story/four-nights.webp",
+     "bytes": 73970,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "four-nights-1200.avif": {
+     "url": "/img/story/four-nights-1200.avif",
+     "bytes": 70503,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "four-nights-1200.webp": {
+     "url": "/img/story/four-nights-1200.webp",
+     "bytes": 63470,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
   }
  },
- "worst_story_residual_px": 0.173,
+ "worst_story_residual_px": 0.179,
  "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
 }

@@ -1,0 +1,43 @@
+{
+ "before": {
+  "src": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-10-17\\final\\final.png",
+  "method": "astroalign similarity",
+  "n_stars": 400,
+  "n_control": 60,
+  "median_residual_px": 0.0,
+  "rotation_deg": 0.0,
+  "scale": 1.0,
+  "shift_px": [
+   137.0,
+   256.0
+  ]
+ },
+ "after": {
+  "src": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-11-13\\final\\final.png",
+  "method": "astroalign similarity",
+  "n_stars": 396,
+  "n_control": 53,
+  "median_residual_px": 0.038,
+  "rotation_deg": -0.0,
+  "scale": 1.00001,
+  "shift_px": [
+   200.98,
+   256.0
+  ]
+ },
+ "ref": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-10-17\\final\\final.png",
+ "crop": {
+  "x": 232,
+  "y": 1176,
+  "width": 1592,
+  "height": 1192
+ },
+ "output_size": [
+  1592,
+  1192
+ ],
+ "worst_median_residual_px": 0.038,
+ "method": "astroalign similarity",
+ "n_stars": 396,
+ "median_residual_px": 0.038
+}

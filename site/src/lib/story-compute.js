@@ -152,6 +152,8 @@ var StoryCompute = (function () {
       tnVsRv: pct(S['two-nights'].snr, S['review'].snr),
       thVsTn: pct(S['three-nights'].snr, S['two-nights'].snr),
       thVsFl: pct(S['three-nights'].snr, S['first-light'].snr),
+      fnVsTh: S['four-nights'] ? pct(S['four-nights'].snr, S['three-nights'].snr) : null,
+      fnVsFl: S['four-nights'] ? pct(S['four-nights'].snr, S['first-light'].snr) : null,
       culled: S['first-light'].frames - S['first-pipeline'].frames,
       restored: S['review'].frames - S['first-pipeline'].frames,
       reviewSubset: subsetOf('review', 'first-pipeline', ids[0])

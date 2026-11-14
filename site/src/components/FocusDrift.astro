@@ -11,6 +11,7 @@ interface Focus {
   end_fwhm: number;
   drift: number;
   median_kept: number;
+  refocus?: { min: number; before: number; after: number }[];
   points: Pt[];
 }
 interface Props {
@@ -21,6 +22,11 @@ interface Props {
 const { focus, nights } = Astro.props;
 const label = (id: string) => nights.find((n) => n.id === id)?.label ?? id;
 const ids = Object.keys(focus).sort();
+const short = (id: string) => label(id).replace(/\s+\d{4}$/, '');
+// the caption names two nights by id, and adds a sentence for each night the scope refocused itself
+const DRIFTED = '2026-09-07';
+const HELD = '2026-10-16';
+const refocused = ids.flatMap((id) => (focus[id].refocus ?? []).map((r) => ({ id, ...r })));
 
 // shared y domain from the medians, padded to whole arcseconds
 const meds = ids.flatMap((id) => focus[id].points.map((p) => p.med).filter((v): v is number => v != null));
@@ -93,8 +99,11 @@ const panels = ids.map((id) => {
   </div>
   <figcaption id="fd-cap">
     Median star size (FWHM) through each night, from the frames QA kept, on one shared scale. Hours count from
-    the first frame. Lower is sharper. 7/8 Sep drifted {num(focus[ids[0]].drift, 1)}″ with the focuser never moving;
-    16/17 Oct held within {num(Math.abs(focus[ids[ids.length - 1]].drift), 1)}″.
+    the first frame. Lower is sharper. {short(DRIFTED)} drifted {num(focus[DRIFTED].drift, 1)}″ with the focuser never moving;
+    {short(HELD)} held within {num(Math.abs(focus[HELD].drift), 1)}″.
+    {refocused.map((r) => (
+      <Fragment> On {short(r.id)} the scope refocused itself {r.min} minutes in, and stars went from {num(r.before, 1)}″ back to {num(r.after, 1)}″.</Fragment>
+    ))}
   </figcaption>
   <div class="vh">
     <table>

@@ -18,6 +18,7 @@ One folder per night under `data/` (not in git), named by the evening the night 
 | `M31_2026-09-07` | dark sky; the scope dropped 22 % of exposures (cause unknown; see [lab notes](docs/lab-notes.md)); 467 subs kept |
 | `M31_2026-09-25` | night of 25/26, near-full moon, sky 3.4x brighter than Sep 7, sharper stars |
 | `M31_2026-10-16` | 375 subs, the sharpest night (9.4" stars) |
+| `M31_2026-11-13` | 595 subs kept under 74 % mean cloud cover; the scope refocused itself 67 minutes in (stars 14.7" back to 10.3") |
 | `M31_combined_<date>` | every night's QA-selected frames stacked together |
 
 ## Quick start

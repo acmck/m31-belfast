@@ -21,27 +21,27 @@
    "webp": "/img/hero/after.webp",
    "webp_1200": "/img/hero/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAAAQBQCdASoYABIAPtFepU6oJSMiKAqpABoJZwDIXBEL0sSTVD4LcgwJ9efFIw6n0ceAAP7kWHzTiWJJ4TMCaIdkzYtYyfWMC0Dpt8EvRBV+br1dfWIgBJFFVmuw/DzXmhs4s8vCPD7mUiJwAAA="
+  "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAADwBACdASoYABIAPtFepE6oJSMiKAqpABoJZwDH5BEBQxDcvCrdG+SfftDey4Ri0oAA/uQFAFJR/Lck6hJ+CW+RvUFe14btsq5QOXUsc7PV+RVm+mqZn2PCxI8hM2KrPCVPaMjqPyiFolw0AAA="
  },
  "bytes": {
-  "before.avif": 175174,
-  "before-1200.avif": 103564,
-  "before.webp": 159132,
-  "before-1200.webp": 98348,
-  "after.avif": 139423,
-  "after-1200.avif": 87470,
-  "after.webp": 128350,
-  "after-1200.webp": 78736
+  "before.avif": 175405,
+  "before-1200.avif": 103865,
+  "before.webp": 158852,
+  "before-1200.webp": 97500,
+  "after.avif": 126032,
+  "after-1200.avif": 80866,
+  "after.webp": 112522,
+  "after-1200.webp": 72236
  },
  "frame": {
   "nucleus_xy": [
-   838,
+   826,
    729
   ],
   "box": [
-   3,
    0,
-   1656,
+   0,
+   1653,
    1240
   ],
   "aspect": "4:3",

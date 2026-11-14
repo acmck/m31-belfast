@@ -35,6 +35,8 @@ STEPS = [
     ("two-nights", "comb_1016_asof", "t3-two-nights", "after"),
     ("sharp", "cur_1016", "t4-three-nights-note-cur_1016", "image"),
     ("three-nights", "comb_1017", "t4-three-nights", "after"),
+    ("night4", "cur_1113", "t5-four-nights-note-cur_1113", "image"),
+    ("four-nights", "comb_1113", "t5-four-nights", "after"),
 ]
 REF_STEP = "three-nights"
 
