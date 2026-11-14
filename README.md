@@ -49,6 +49,10 @@ POST_ARGS="--target-bg 0.12 --rotate 90" ./run_pipeline.sh data/M31_2026-09-07 p
 scripts/combine_sessions.sh data/M31_combined_2026-10-17 data/M31_2026-09-07 data/M31_2026-09-25 data/M31_2026-10-16
 ```
 
+`make privacy-check` reads its list of private terms from `config/private_terms.txt`, which is not in git.
+Create it from [`config/private_terms.example.txt`](config/private_terms.example.txt) on each machine; the check
+fails without it.
+
 The M31 defaults are collected in [`config/m31.env`](config/m31.env) with the reason for each one.
 `run_pipeline.sh` passes them to each stage ahead of `QA_ARGS`, `DEBAND_ARGS`, `FLAT_ARGS`, `STACK_ARGS`
 and `POST_ARGS`, so anything you set in the environment wins.

@@ -17,7 +17,10 @@ the progress stage by stage. Start with `README.md`; the measured history is in 
   project `m31-belfast` via the project-local wrangler: `npm --prefix site exec wrangler -- ...`, never a global install).
   The Pages project already exists; only ever run `pages deploy`. Other wrangler commands run inside `site/` (e.g.
   `pages project create`) may auto-convert the site to a Workers app (adapter, `wrangler.jsonc`) and deploy it; undo that.
-- Privacy: `make privacy-check` before any push and before any deploy. It must pass.
+- Privacy: `make privacy-check` before any push and before any deploy. It must pass. The private terms it looks
+  for are in `config/private_terms.txt`, a local file that git ignores (format: `config/private_terms.example.txt`).
+  Without that file the check fails. Never commit the file, and never write a term from it into the repo, a commit
+  message or the check's output.
 - Skills: `.claude/skills/new-night` (pull a night end to end), `journal-stage` (one before/after stage
   for the site), `deploy-site`.
 
