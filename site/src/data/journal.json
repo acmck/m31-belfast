@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-15T00:26:48Z",
+ "generated": "2026-11-15T00:56:11Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -486,6 +486,85 @@
     "method": "astroalign similarity",
     "n_stars": 337,
     "median_residual_px": 0.115
+   }
+  },
+  {
+   "id": "06-m110",
+   "index": 5,
+   "title": "M110's dumbbell",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16",
+    "2026-11-13"
+   ],
+   "night_ids": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16",
+    "2026-11-13"
+   ],
+   "before": {
+    "label": "Four nights, 14 Nov",
+    "frames": 2436,
+    "minutes": 406,
+    "fwhm_arcsec": 11.6,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 56.84,
+     "major 40′ NE": 20.33,
+     "major 20′ SW": 49.4,
+     "major 40′ SW": 32.65,
+     "minor 10′ SE": 43.62,
+     "minor 20′ SE": 1.9,
+     "minor 10′ NW": 20.43,
+     "minor 20′ NW": 2.43
+    },
+    "snr_headline": 26.54
+   },
+   "after": {
+    "label": "Four nights, 15 Nov",
+    "frames": 2436,
+    "minutes": 406,
+    "fwhm_arcsec": 11.6,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 56.84,
+     "major 40′ NE": 20.33,
+     "major 20′ SW": 49.4,
+     "major 40′ SW": 32.65,
+     "minor 10′ SE": 43.62,
+     "minor 20′ SE": 1.9,
+     "minor 10′ NW": 20.43,
+     "minor 20′ NW": 2.43
+    },
+    "snr_headline": 26.54
+   },
+   "what_changed": "On the four-night stack: star removal that protects only M31's nucleus, against star removal that also protects the cores of companion galaxies.",
+   "what_it_did": "Unprotected, M110 kept 58 % of the light at its centre and the brightness beside it dipped 11.1 %, which made it look like a dumbbell. Protected, it keeps 100 % and the dip is 0.0 %.",
+   "images": {
+    "before": {
+     "avif": "/img/06-m110/before.avif",
+     "webp": "/img/06-m110/before.webp",
+     "avif_1200": "/img/06-m110/before-1200.avif",
+     "webp_1200": "/img/06-m110/before-1200.webp",
+     "width": 1653,
+     "height": 1240
+    },
+    "after": {
+     "avif": "/img/06-m110/after.avif",
+     "webp": "/img/06-m110/after.webp",
+     "avif_1200": "/img/06-m110/after-1200.avif",
+     "webp_1200": "/img/06-m110/after-1200.webp",
+     "width": 1653,
+     "height": 1240
+    },
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPtFepU8oJSMiKAqpABoJZwDH5BEBQxDYtgNuB3PGOeRtqzKN/gAA/uQFAFKxvYDUAp+uH8mbFr6Hz32Xp0XA7BQnDHjtoqEwYLaNLPYlijbYQmhIXR2c0el8INRswAAA"
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 396,
+    "median_residual_px": 0.041
    }
   }
  ],

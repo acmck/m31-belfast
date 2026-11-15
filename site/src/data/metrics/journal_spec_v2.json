@@ -344,6 +344,20 @@
    "after": "comb_1016",
    "what_changed": "Reprocessed today on the two-night stack: Siril's photometric calibration against the NOMAD catalogue, as I first ran it, against local Gaia with a correction to the spectrophotometric balance.",
    "what_it_did": "The disc's blue-to-green ratio went from {before[color][b_over_g]} to {after[color][b_over_g]} and red-to-green from {before[color][r_over_g]} to {after[color][r_over_g]}, which takes out the lavender cast."
+  },
+  {
+   "id": "06-m110",
+   "title": "M110's dumbbell",
+   "dates": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16",
+    "2026-11-13"
+   ],
+   "before": "comb_1113",
+   "after": "comb_1113_m110",
+   "what_changed": "On the four-night stack: star removal that protects only M31's nucleus, against star removal that also protects the cores of companion galaxies.",
+   "what_it_did": "Unprotected, M110 kept {before[m110][core_kept_pct]} % of the light at its centre and the brightness beside it dipped {before[m110][dip_pct]} %, which made it look like a dumbbell. Protected, it keeps {after[m110][core_kept_pct]} % and the dip is {after[m110][dip_pct]} %."
   }
  ],
  "hero": {
