@@ -1,6 +1,8 @@
 ---
 // Every night from the start of the record, shaded by Belfast city-centre cloud cover (one gray ramp:
 // dark = clear, light = cloud). Usable nights get an outline; nights I imaged get an amber dot.
+// One calendar month per panel. With JavaScript the latest month shows and two text buttons step through
+// the others; without it every month is listed, oldest first. The caption's totals cover the whole record.
 import { num } from '../lib/journal';
 
 interface Row {
@@ -17,18 +19,34 @@ interface Props {
 const { data } = Astro.props;
 const rows = data.rows;
 
-// Monday-first calendar: pad the first week so columns are weekdays.
-const first = new Date(rows[0].night + 'T12:00:00Z');
-const lead = (first.getUTCDay() + 6) % 7;
-const cells: (Row | null)[] = [...Array(lead).fill(null), ...rows];
-const weeks: (Row | null)[][] = [];
-for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
-
 const C = 44; // cell pitch in viewBox units
 const G = 4;
 const top = 22;
 const W = 7 * C;
-const H = top + weeks.length * C;
+const H = top + 6 * C; // six week rows fit any month, so the panel keeps its height from month to month
+
+const date = (night: string) => new Date(night + 'T12:00:00Z');
+const label = (r: Row) => date(r.night).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const monthName = (key: string, year = true) =>
+  date(key + '-01').toLocaleDateString('en-GB', { month: 'long', ...(year ? { year: 'numeric' } : {}), timeZone: 'UTC' });
+const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+// Group the nights by calendar month; each cell sits at its weekday column (Monday first) and week row.
+const keys = [...new Set(rows.map((r) => r.night.slice(0, 7)))].sort();
+const months = keys.map((key) => {
+  const nights = rows.filter((r) => r.night.startsWith(key));
+  const lead = (date(key + '-01').getUTCDay() + 6) % 7;
+  const cells = nights.map((r) => {
+    const slot = lead + Number(r.night.slice(8)) - 1;
+    return { r, col: slot % 7, row: Math.floor(slot / 7) };
+  });
+  const usable = nights.filter((r) => r.usable).length;
+  const imaged = nights.filter((r) => r.imaged).length;
+  const head =
+    `${monthName(key)} · ${usable} of ${nights.length} ${plural(nights.length, 'night', 'nights')} usable` +
+    (imaged ? ` · ${imaged} imaged` : '');
+  return { key, name: monthName(key, false), cells, head, first: nights[0], last: nights[nights.length - 1] };
+});
 
 // One-hue ramp between the page ground (clear) and a cloud gray, in sRGB; lightness rises with cloud.
 const clear = [0x21, 0x1f, 0x1c];
@@ -39,43 +57,42 @@ function fill(p: number) {
   return `rgb(${c.join(',')})`;
 }
 const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const label = (r: Row) => {
-  const d = new Date(r.night + 'T12:00:00Z');
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-};
+// "of them" must count only imaging nights that were usable; nights imaged through cloud are named apart
+const imagedUsable = rows.filter((r) => r.imaged && r.usable).length;
+const imagedOther = rows.filter((r) => r.imaged && !r.usable).length;
 ---
-<figure class="chart chart-wide clear-nights" aria-labelledby="cn-cap">
-  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="cn-title" preserveAspectRatio="xMinYMin meet">
-    <title id="cn-title">Mean cloud cover each night from {label(rows[0])} to {label(rows[rows.length - 1])}, with the nights I imaged marked</title>
-    {dayName.map((d, i) => (
-      <text class="cn-dow" x={i * C + (C - G) / 2} y={top - 8} text-anchor="middle">{d}</text>
-    ))}
-    {weeks.map((wk, wi) =>
-      wk.map((r, di) =>
-        r ? (
-          <g class={`cn-cell${r.usable ? ' usable' : ''}${r.imaged ? ' imaged' : ''}`}>
-            <rect x={di * C} y={top + wi * C} width={C - G} height={C - G} fill={fill(r.cloud_pct_mean)}>
-              <title>{`${label(r)}: cloud ${num(r.cloud_pct_mean, 0)} %${r.usable ? ', usable' : ''}${r.imaged ? ', imaged' : ''}`}</title>
-            </rect>
-            <text
-              x={di * C + 5}
-              y={top + wi * C + 14}
-              class={r.cloud_pct_mean > 55 ? 'cn-day on-light' : 'cn-day'}
-            >{r.night.slice(8).replace(/^0/, '')}</text>
-            {(r.night.endsWith('-01') || r === rows[0]) && (
-              <text x={di * C + 5} y={top + wi * C + 27} class={r.cloud_pct_mean > 55 ? 'cn-day on-light' : 'cn-day'}>
-                {label(r).split(' ')[1]}
+<figure class="chart chart-wide clear-nights" aria-labelledby="cn-cap" data-clear-nights>
+  <div class="cn-nav log" hidden>
+    <button type="button" class="cn-prev"></button>
+    <button type="button" class="cn-next"></button>
+  </div>
+  <p class="vh" aria-live="polite" data-cn-live></p>
+  <div class="cn-months">
+    {months.map((m) => (
+      <section class="cn-month" data-month={m.key} data-name={m.name} data-head={m.head} aria-label={monthName(m.key)}>
+        <p class="cn-mhead log">{m.head}</p>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Mean cloud cover each night from ${label(m.first)} to ${label(m.last)}, with the nights I imaged marked`} preserveAspectRatio="xMinYMin meet">
+          {dayName.map((d, i) => (
+            <text class="cn-dow" x={i * C + (C - G) / 2} y={top - 8} text-anchor="middle">{d}</text>
+          ))}
+          {m.cells.map(({ r, col, row }) => (
+            <g class={`cn-cell${r.usable ? ' usable' : ''}${r.imaged ? ' imaged' : ''}`}>
+              <rect x={col * C} y={top + row * C} width={C - G} height={C - G} fill={fill(r.cloud_pct_mean)}>
+                <title>{`${label(r)}: cloud ${num(r.cloud_pct_mean, 0)} %${r.usable ? ', usable' : ''}${r.imaged ? ', imaged' : ''}`}</title>
+              </rect>
+              <text x={col * C + 5} y={top + row * C + 14} class={r.cloud_pct_mean > 55 ? 'cn-day on-light' : 'cn-day'}>
+                {r.night.slice(8).replace(/^0/, '')}
               </text>
-            )}
-            {r.imaged && <circle cx={di * C + C - G - 9} cy={top + wi * C + C - G - 9} r="4.5" />}
-          </g>
-        ) : null,
-      ),
-    )}
-  </svg>
+              {r.imaged && <circle cx={col * C + C - G - 9} cy={top + row * C + C - G - 9} r="4.5" />}
+            </g>
+          ))}
+        </svg>
+      </section>
+    ))}
+  </div>
   <figcaption id="cn-cap">
-    {data.usable} of {data.total} nights were usable (mean cloud {data.usable_rule.replace('mean cloud cover ', '')} between
-    {data.window_utc.split(' ')[0]} UTC), and I imaged {rows.filter((r) => r.imaged).length} of them.
+    Since {label(rows[0])}, {data.usable} of {data.total} nights were usable (mean cloud {data.usable_rule.replace('mean cloud cover ', '')} between
+    {data.window_utc.split(' ')[0]} UTC), and I imaged on {imagedUsable} of them{imagedOther ? `, plus ${imagedOther} ${plural(imagedOther, 'night', 'nights')} that ${plural(imagedOther, "wasn't", "weren't")}` : ''}.
     <span class="cn-key log">
       <span><i class="sw" style={`background:${fill(0)}`}></i>0 %</span>
       <span><i class="sw" style={`background:${fill(50)}`}></i>50 %</span>
@@ -96,3 +113,48 @@ const label = (r: Row) => {
     </table>
   </div>
 </figure>
+
+<script>
+  // Show one month at a time, starting on the latest. Without this script every month stays visible.
+  document.querySelectorAll<HTMLElement>('[data-clear-nights]').forEach((root) => {
+    const months = [...root.querySelectorAll<HTMLElement>('.cn-month')];
+    const nav = root.querySelector<HTMLElement>('.cn-nav');
+    const prev = root.querySelector<HTMLButtonElement>('.cn-prev');
+    const next = root.querySelector<HTMLButtonElement>('.cn-next');
+    const live = root.querySelector<HTMLElement>('[data-cn-live]');
+    if (months.length < 2 || !nav || !prev || !next) return;
+    let at = months.length - 1;
+
+    const show = (i: number, announce: boolean) => {
+      at = Math.max(0, Math.min(months.length - 1, i));
+      months.forEach((m, k) => (m.hidden = k !== at));
+      const older = months[at - 1];
+      const newer = months[at + 1];
+      prev.disabled = !older;
+      next.disabled = !newer;
+      prev.textContent = older ? `‹ ${older.dataset.name}` : '';
+      next.textContent = newer ? `${newer.dataset.name} ›` : '';
+      if (older) prev.setAttribute('aria-label', `Show ${older.dataset.name}, the month before`);
+      if (newer) next.setAttribute('aria-label', `Show ${newer.dataset.name}, the month after`);
+      if (announce && live) live.textContent = months[at].dataset.head ?? '';
+    };
+
+    // Stepping off the first or last month disables the button that has focus; hand focus to the other one.
+    const step = (by: number) => {
+      show(at + by, true);
+      if (document.activeElement === prev && prev.disabled) next.focus();
+      if (document.activeElement === next && next.disabled) prev.focus();
+    };
+    prev.addEventListener('click', () => step(-1));
+    next.addEventListener('click', () => step(1));
+    nav.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') step(-1);
+      else if (e.key === 'ArrowRight') step(1);
+      else return;
+      e.preventDefault();
+    });
+
+    nav.hidden = false;
+    show(at, false);
+  });
+</script>

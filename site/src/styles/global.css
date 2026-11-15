@@ -754,6 +754,60 @@ compare-slider[data-side='after'] .cs-cap-after {
   stroke-width: 2;
 }
 
+/* one month per panel; the buttons are text, like the page's links */
+.clear-nights .cn-months,
+.clear-nights .cn-nav {
+  max-width: 520px;
+}
+
+.clear-nights .cn-month + .cn-month {
+  margin-top: 1.5rem;
+}
+
+.clear-nights .cn-mhead {
+  margin: 0 0 0.4rem;
+  color: var(--ink);
+}
+
+.clear-nights .cn-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 0.25rem;
+  /* holds its height when a button is hidden at either end of the record */
+  min-height: 2.75rem;
+}
+
+.clear-nights .cn-nav button {
+  font: inherit;
+  font-stretch: inherit;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  /* 44px tall touch target around one line of text */
+  padding: 0.75rem 0;
+  min-width: 44px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.clear-nights .cn-nav .cn-next {
+  text-align: right;
+}
+
+.clear-nights .cn-nav button:hover {
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+.clear-nights .cn-nav button[disabled] {
+  visibility: hidden;
+}
+
 .charts-pair {
   display: grid;
   gap: 2rem;
