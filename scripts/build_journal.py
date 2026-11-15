@@ -338,8 +338,11 @@ def side(m, cond_by_night):
             continue
         skies.append("dark" if c["moon"]["alt_deg_max"] <= 0 else f"moon {c['moon']['illum_pct']:.0f} %")
     sky = " + ".join(dict.fromkeys(skies)) if skies else None
-    return dict(label=m["label"], frames=m["frames"], minutes=round(m["minutes"]) if m["minutes"] else None,
-                fwhm_arcsec=m["fwhm_arcsec"], sky=sky, snr=m["snr"], snr_headline=m["snr_headline"])
+    out = dict(label=m["label"], frames=m["frames"], minutes=round(m["minutes"]) if m["minutes"] else None,
+               fwhm_arcsec=m["fwhm_arcsec"], sky=sky, snr=m["snr"], snr_headline=m["snr_headline"])
+    if "m110" in m:   # what star removal left of M110's core (the /story page quotes it)
+        out["m110"] = {k: m["m110"][k] for k in ("core_kept_pct", "core_removed_pct", "dip_pct")}
+    return out
 
 
 def pct(a, b):

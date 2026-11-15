@@ -33,6 +33,7 @@ const T2 = step('t2-review');
 const T3 = step('t3-two-nights');
 const T4 = step('t4-three-nights');
 const T5 = step('t5-four-nights');
+const T6 = step('t6-companions');
 const [n0, n1, n2, n3] = nights;
 const sideOf = (t: AnyObj, nid: string) => need(t.side_notes?.find((s: AnyObj) => s.night_id === nid), `side note ${nid}`);
 const sMoon = sideOf(T4, n1.id);
@@ -58,6 +59,15 @@ const STEPS: Record<string, AnyObj> = {
   'three-nights': side(T4.after, T4.after.label),
   night4: side(sN4, sN4.label),
   'four-nights': side(T5.after, T5.after.label),
+};
+
+// The latest image is a reprocessing of the four-night stack: same frames, same point on the chart.
+// It is an image key only, not a step, so the chart does not gain a second point at the same place.
+const LATEST = side(T6.after, T6.after.label);
+const IMG: Record<string, AnyObj> = { ...STEPS, companions: LATEST };
+const m110 = {
+  before: need(T6.before.m110, 'M110 figures for ' + T6.before.label),
+  after: need(T6.after.m110, 'M110 figures for ' + T6.after.label),
 };
 
 // strips: dedupe the run-length strings
@@ -102,7 +112,7 @@ const input = {
   ),
   anchor: { minutes: need(J.chart[0], 'chart').minutes, snr: J.chart[0].snr },
   beats: [
-    { strip: null, img: 'four-nights', side: null, main: null },
+    { strip: null, img: 'companions', side: null, main: null },
     { strip: 'first-light', img: 'first-light', side: null, main: 'first-light' },
     { strip: 'first-pipeline', img: 'first-pipeline', side: null, main: 'first-pipeline' },
     { strip: 'review', img: 'review', side: null, main: 'review' },
@@ -112,7 +122,8 @@ const input = {
     { strip: 'three-nights', img: 'three-nights', side: null, main: 'three-nights' },
     { strip: 'night4', img: 'night4', side: n3.id, main: 'three-nights', sides: ['night4'] },
     { strip: 'four-nights', img: 'four-nights', side: null, main: 'four-nights' },
-    { strip: 'four-nights', img: 'four-nights', side: null, main: 'four-nights', placeholder: true },
+    { strip: 'four-nights', img: 'companions', side: null, main: 'four-nights' },
+    { strip: 'four-nights', img: 'companions', side: null, main: 'four-nights', placeholder: true },
   ],
 };
 
@@ -175,7 +186,7 @@ const beats: Beat[] = [
     log: [`ZWO Seestar S30 Pro · ${exp} s exposures`, 'Bortle 6 · Belfast', `${nNights} nights so far`],
     note: null,
     foot: ["Each picture is the timeline's own image for its step, cut to one shared frame so the galaxy holds still."],
-    cap: capLine(FN, `${hero.after.label}, ${dshort(T5.date)}`),
+    cap: capLine(LATEST, `${hero.after.label}, ${dshort(T6.date)}`),
     cnt: 'Frames in the stack',
     ro: null,
   },
@@ -325,6 +336,22 @@ const beats: Beat[] = [
     ro: { v: FN.snr, sub: `first light ${f2(FL.snr)}` },
   },
   {
+    n: 'M110',
+    eb: { date: T6.date, kind: T6.kind },
+    h: T6.title,
+    lede: `Star removal had been taking the core of M110, the companion galaxy above M31, for a star. Its center kept ${m110.before.core_kept_pct} % of its light and it looked like a dumbbell. I gave companion galaxies the protection M31's nucleus already had, and the center now keeps ${m110.after.core_kept_pct} %.`,
+    log: [
+      stackLine(FN),
+      `SNR ${f2(FN.snr)} · same stack, unchanged`,
+      `M110's center · ${m110.before.core_kept_pct} % kept → ${m110.after.core_kept_pct} %`,
+    ],
+    note: null,
+    foot: ['The frames and the stack are the same as in the step before. Only the star removal changed.'],
+    cap: capLine(LATEST, LATEST.label),
+    cnt: 'Frames in the stack',
+    ro: { v: FN.snr, sub: `first light ${f2(FL.snr)}` },
+  },
+  {
     n: "What's next",
     eb: { date: '', kind: 'Next · To do' },
     h: 'Next: more frames, steadier mount',
@@ -332,7 +359,7 @@ const beats: Beat[] = [
     log: todo,
     note: null,
     foot: ['The dashed outline on the wall marks the next clear night. Its size is a placeholder.', curveNote],
-    cap: capLine(FN, FN.label),
+    cap: capLine(LATEST, LATEST.label),
     cnt: 'Frames in the stack',
     ro: { v: FN.snr, sub: `first light ${f2(FL.snr)}` },
   },
@@ -341,14 +368,14 @@ const beats: Beat[] = [
 const N = beats.length;
 beats.forEach((b, i) => {
   const cfg = input.beats[i];
-  const st = S[cfg.img];
+  const st = need(IMG[cfg.img], `step for image ${cfg.img}`);
   b.alt = `M31, the Andromeda Galaxy: ${st.label}, ${c(st.frames)} frames of ${exp} s, stars ${f1(st.fwhm)}″.`;
   const cnt = C.counters[i];
   b.live = `Beat ${i + 1} of ${N}. ${b.h}.` + (cfg.strip ? ` ${c(cnt)} frames, SNR ${f2(b.ro.v)}.` : '');
 });
 
 // ---------- images ----------
-const order = ['four-nights', 'first-light', 'first-pipeline', 'review', 'moon', 'two-nights', 'sharp', 'three-nights', 'night4'];
+const order = ['companions', 'first-light', 'first-pipeline', 'review', 'moon', 'two-nights', 'sharp', 'three-nights', 'night4', 'four-nights'];
 const images = Object.fromEntries(
   order.map((k) => {
     const f = need(IM.steps[k], `story image ${k}`).files as AnyObj;

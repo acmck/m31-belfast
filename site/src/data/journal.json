@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-15T00:56:11Z",
+ "generated": "2026-11-15T01:03:03Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -520,7 +520,12 @@
      "minor 10′ NW": 20.43,
      "minor 20′ NW": 2.43
     },
-    "snr_headline": 26.54
+    "snr_headline": 26.54,
+    "m110": {
+     "core_kept_pct": 58,
+     "core_removed_pct": 42,
+     "dip_pct": 11.1
+    }
    },
    "after": {
     "label": "Four nights, 15 Nov",
@@ -538,7 +543,12 @@
      "minor 10′ NW": 20.43,
      "minor 20′ NW": 2.43
     },
-    "snr_headline": 26.54
+    "snr_headline": 26.54,
+    "m110": {
+     "core_kept_pct": 100,
+     "core_removed_pct": 0,
+     "dip_pct": 0.0
+    }
    },
    "what_changed": "On the four-night stack: star removal that protects only M31's nucleus, against star removal that also protects the cores of companion galaxies.",
    "what_it_did": "Unprotected, M110 kept 58 % of the light at its centre and the brightness beside it dipped 11.1 %, which made it look like a dumbbell. Protected, it keeps 100 % and the dip is 0.0 %.",
@@ -991,7 +1001,12 @@
      "minor 10′ NW": 20.43,
      "minor 20′ NW": 2.43
     },
-    "snr_headline": 26.54
+    "snr_headline": 26.54,
+    "m110": {
+     "core_kept_pct": 58,
+     "core_removed_pct": 42,
+     "dip_pct": 11.1
+    }
    },
    "images": {
     "before": {
@@ -1064,7 +1079,12 @@
      "minor 10′ NW": 20.43,
      "minor 20′ NW": 2.43
     },
-    "snr_headline": 26.54
+    "snr_headline": 26.54,
+    "m110": {
+     "core_kept_pct": 58,
+     "core_removed_pct": 42,
+     "dip_pct": 11.1
+    }
    },
    "after": {
     "label": "Four nights, 15 Nov",
@@ -1082,7 +1102,12 @@
      "minor 10′ NW": 20.43,
      "minor 20′ NW": 2.43
     },
-    "snr_headline": 26.54
+    "snr_headline": 26.54,
+    "m110": {
+     "core_kept_pct": 100,
+     "core_removed_pct": 0,
+     "dip_pct": 0.0
+    }
    },
    "images": {
     "before": {
@@ -1148,7 +1173,12 @@
     "minor 10′ NW": 20.43,
     "minor 20′ NW": 2.43
    },
-   "snr_headline": 26.54
+   "snr_headline": 26.54,
+   "m110": {
+    "core_kept_pct": 100,
+    "core_removed_pct": 0,
+    "dip_pct": 0.0
+   }
   },
   "images": {
    "before": {

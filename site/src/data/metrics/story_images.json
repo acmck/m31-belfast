@@ -439,6 +439,54 @@
      ]
     }
    }
+  },
+  "companions": {
+   "render": "comb_1113_m110",
+   "source": "data/journal_pairs/t6-companions/after.png",
+   "registration_residual_px": 0.041,
+   "story_residual_px": 0.046,
+   "n_stars_matched": 397,
+   "zero_pixel_fraction": 0.0,
+   "width": 1339,
+   "height": 1004,
+   "files": {
+    "companions.avif": {
+     "url": "/img/story/companions.avif",
+     "bytes": 82118,
+     "quality": 62,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "companions.webp": {
+     "url": "/img/story/companions.webp",
+     "bytes": 70442,
+     "quality": 80,
+     "size": [
+      1339,
+      1004
+     ]
+    },
+    "companions-1200.avif": {
+     "url": "/img/story/companions-1200.avif",
+     "bytes": 70411,
+     "quality": 62,
+     "size": [
+      1200,
+      900
+     ]
+    },
+    "companions-1200.webp": {
+     "url": "/img/story/companions-1200.webp",
+     "bytes": 63632,
+     "quality": 80,
+     "size": [
+      1200,
+      900
+     ]
+    }
+   }
   }
  },
  "worst_story_residual_px": 0.179,
