@@ -13,7 +13,7 @@
   ]
  },
  "after": {
-  "src": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-11-13\\final\\final.png",
+  "src": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-11-13\\snap_20261114\\final.png",
   "method": "astroalign similarity",
   "n_stars": 396,
   "n_control": 53,

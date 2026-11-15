@@ -15,14 +15,14 @@
  "after": {
   "src": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-11-13\\final\\final.png",
   "method": "astroalign similarity",
-  "n_stars": 397,
-  "n_control": 53,
-  "median_residual_px": 0.038,
-  "rotation_deg": -0.0,
-  "scale": 1.00001,
+  "n_stars": 396,
+  "n_control": 51,
+  "median_residual_px": 0.041,
+  "rotation_deg": 0.0,
+  "scale": 1.00002,
   "shift_px": [
    200.98,
-   256.0
+   255.99
   ]
  },
  "ref": "C:\\Users\\andre\\src\\m31-belfast\\data\\M31_combined_2026-10-17\\final\\final.png",

@@ -1,0 +1,40 @@
+{
+ "id": "comb_1113_m110",
+ "label": "Four nights, 15 Nov",
+ "nights": [
+  "2026-09-07",
+  "2026-09-25",
+  "2026-10-16",
+  "2026-11-13"
+ ],
+ "frames": 2436,
+ "minutes": 406.0,
+ "fwhm_arcsec": 11.6,
+ "stars": 4873,
+ "sky_noise_pct": 1.311,
+ "snr": {
+  "major 20′ NE": 56.84,
+  "major 40′ NE": 20.33,
+  "major 20′ SW": 49.4,
+  "major 40′ SW": 32.65,
+  "minor 10′ SE": 43.62,
+  "minor 20′ SE": 1.9,
+  "minor 10′ NW": 20.43,
+  "minor 20′ NW": 2.43
+ },
+ "snr_headline": 26.54,
+ "nucleus_wcs_vs_peak_px": 1.5,
+ "provenance": {
+  "snr": "scratch:03_cc.fit (WCS from scratch:03_cc.fit): binned 4x4, per channel sky plane removed, median within 1.2' of each position / sky noise (1.4826 MAD of 9-px median high-pass); channels combined in quadrature (SNR of the optimal channel sum)",
+  "fwhm_arcsec": "scripts/measure_stack.py on scratch:result.fit at 3.668\"/px (from the plate solution)",
+  "frames": "STACKCNT of scratch:result.fit",
+  "minutes": "LIVETIME of scratch:result.fit",
+  "image": "scratch:final.png"
+ },
+ "m110": {
+  "core_kept_pct": 100,
+  "core_removed_pct": 0,
+  "dip_pct": 0.0,
+  "provenance": "scratch:05_starless.fits against scratch:04_dn.fits, both minus the denoised image's median: core = median within 3 px of M110's catalogue position (from the plate solution); dip = largest drop of the starless median radial profile (3 px annuli to 100 px) below the brightest point further out"
+ }
+}

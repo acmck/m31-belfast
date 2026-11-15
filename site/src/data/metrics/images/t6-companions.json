@@ -1,0 +1,62 @@
+{
+ "stage": "t6-companions",
+ "images": {
+  "before": {
+   "width": 1653,
+   "height": 1240,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t6-companions/before.avif",
+   "avif_1200": "/img/t6-companions/before-1200.avif",
+   "webp": "/img/t6-companions/before.webp",
+   "webp_1200": "/img/t6-companions/before-1200.webp"
+  },
+  "after": {
+   "width": 1653,
+   "height": 1240,
+   "width_1200": 1200,
+   "height_1200": 900,
+   "avif": "/img/t6-companions/after.avif",
+   "avif_1200": "/img/t6-companions/after-1200.avif",
+   "webp": "/img/t6-companions/after.webp",
+   "webp_1200": "/img/t6-companions/after-1200.webp"
+  },
+  "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPtFepU8oJSMiKAqpABoJZwDH5BEBQxDYtgNuB3PGOeRtqzKN/gAA/uQFAFKxvYDUAp+uH8mbFr6Hz32Xp0XA7BQnDHjtoqEwYLaNLPYlijbYQmhIXR2c0el8INRswAAA"
+ },
+ "bytes": {
+  "before.avif": 126032,
+  "before-1200.avif": 80866,
+  "before.webp": 112522,
+  "before-1200.webp": 72236,
+  "after.avif": 125995,
+  "after-1200.avif": 80930,
+  "after.webp": 112340,
+  "after-1200.webp": 72082
+ },
+ "frame": {
+  "nucleus_xy": [
+   826,
+   730
+  ],
+  "box": [
+   0,
+   0,
+   1653,
+   1240
+  ],
+  "aspect": "4:3",
+  "center_up": 110,
+  "rotate": 0
+ },
+ "quality": {
+  "before.avif": 62,
+  "before-1200.avif": 62,
+  "before.webp": 80,
+  "before-1200.webp": 80,
+  "after.avif": 62,
+  "after-1200.avif": 62,
+  "after.webp": 80,
+  "after-1200.webp": 80
+ },
+ "metadata_check": "passed: no EXIF/XMP/ICC/FITS keywords in any output"
+}

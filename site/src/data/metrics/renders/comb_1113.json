@@ -1,6 +1,6 @@
 {
  "id": "comb_1113",
- "label": "Four nights, 13 Nov",
+ "label": "Four nights, 14 Nov",
  "nights": [
   "2026-09-07",
   "2026-09-25",
@@ -30,5 +30,11 @@
   "frames": "STACKCNT of scratch:result.fit",
   "minutes": "LIVETIME of scratch:result.fit",
   "image": "scratch:final.png"
+ },
+ "m110": {
+  "core_kept_pct": 58,
+  "core_removed_pct": 42,
+  "dip_pct": 11.1,
+  "provenance": "scratch:05_starless.fits against scratch:04_dn.fits, both minus the denoised image's median: core = median within 3 px of M110's catalogue position (from the plate solution); dip = largest drop of the starless median radial profile (3 px annuli to 100 px) below the brightest point further out"
  }
 }

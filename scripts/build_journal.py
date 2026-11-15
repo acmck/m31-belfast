@@ -12,7 +12,7 @@ SPEC (default site/src/data/metrics/journal_spec_v2.json) lists
   renders: id -> {label, image (stretched PNG/TIFF/JPEG), linear (last linear image before denoise), stack (linear
            stack for FWHM, defaults to linear), wcs (file whose header has the plate solution, default linear),
            nights [ids], frames / minutes (optional overrides; default STACKCNT and LIVETIME of the stack header),
-           extra: ["ring", "color"] for stage-specific measurements}
+           extra: ["ring", "color", "m110"] for stage-specific measurements}
   stages:  [{id, title, before, after, dates, what_changed, what_it_did}]  -- the two sentences are templates
            filled from the measurements ({before.snr_headline}, {after.fwhm_arcsec}, {d.snr_pct}, ...)
   ref, pad: the render whose geometry every pair is registered onto (so all stages share one orientation)
@@ -29,6 +29,8 @@ What is measured (per render, written to site/src/data/metrics/renders/<id>.json
   ring (stage 03): radial profile of the starless linear image around the nucleus; ring depth = the largest dip
   of the profile below the brightest point further out, in % of that point.
   color (stage 05): per-channel signal at the eight points; disk colour as R/G and B/G ratios.
+  m110 (needs `starless` and `denoised` in the render): the share of the light at M110's centre that survives
+  star removal, and the deepest dip in the starless radial profile around it.
 Nothing from the FITS headers other than frame count and live time is written out, and no coordinates.
 """
 import argparse, json, subprocess, sys, warnings
@@ -50,6 +52,7 @@ from measure_stack import measure as measure_stack_fn  # noqa: E402
 
 METRICS = ROOT / "site/src/data/metrics"
 M31 = SkyCoord("00h42m44.3s", "+41d16m07s")
+M110 = SkyCoord("00h40m22.1s", "+41d41m07s")
 PA_MAJOR = 38.0
 POSITIONS = [  # name, position angle (deg E of N), offset (arcmin)
     ("major 20′ NE", PA_MAJOR, 20), ("major 40′ NE", PA_MAJOR, 40),
@@ -185,6 +188,8 @@ def measure_render(r):
                             provenance=f"{rel(lin)}: per-channel median signal above sky at the eight positions")
     if "ring" in r.get("extra", []):
         res["ring"] = ring_depth(r, wcs_p, nuc)
+    if "m110" in r.get("extra", []):
+        res["m110"] = m110_core(r, wcs_p)
     return res
 
 
@@ -211,6 +216,34 @@ def ring_depth(r, wcs_p, nuc):
     return dict(depth_pct=round(float(100 * best), 1), radius_arcmin=round(at * scale / 60, 1) if at is not None else None,
                 provenance=f"{rel(sl)}: median radial profile (3 px annuli to 400 px) around the WCS nucleus, minus the "
                            "image median; depth = largest drop below the brightest point further out")
+
+
+def m110_core(r, wcs_p):
+    """What star removal did to M110's core: the starless image against the denoised image it was made from."""
+    sl = Path(r["starless"]); sl = sl if sl.is_absolute() else ROOT / sl
+    dn = Path(r["denoised"]); dn = dn if dn.is_absolute() else ROOT / dn
+    x, y = [float(v) for v in WCS(fits.getheader(wcs_p), naxis=2).world_to_pixel(M110)]
+    a, b = load_rgb(sl).mean(axis=0), load_rgb(dn).mean(axis=0)
+    sky_v = float(np.median(b[::8, ::8]))
+    H, W = a.shape
+    yy, xx = np.mgrid[0:H, 0:W]
+    rr = np.hypot(xx - x, yy - y)
+    core = rr < 3
+    kept = (float(np.median(a[core])) - sky_v) / (float(np.median(b[core])) - sky_v)
+    sel = rr < 100
+    edges = np.arange(0, 102, 3)
+    idx = np.digitize(rr[sel], edges)
+    v = a[sel]
+    prof = np.array([np.median(v[idx == i]) if np.any(idx == i) else np.nan for i in range(1, len(edges))]) - sky_v
+    best = 0.0
+    for i in range(len(prof) - 1):
+        outer = np.nanmax(prof[i + 1:])
+        if outer > 0 and prof[i] < outer:
+            best = max(best, (outer - prof[i]) / outer)
+    return dict(core_kept_pct=int(round(100 * kept)), core_removed_pct=int(round(100 * (1 - kept))), dip_pct=round(float(100 * best), 1),
+                provenance=f"{rel(sl)} against {rel(dn)}, both minus the denoised image's median: core = median within 3 px of "
+                           "M110's catalogue position (from the plate solution); dip = largest drop of the starless median radial "
+                           "profile (3 px annuli to 100 px) below the brightest point further out")
 
 
 RM = {}

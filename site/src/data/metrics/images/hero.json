@@ -21,22 +21,22 @@
    "webp": "/img/hero/after.webp",
    "webp_1200": "/img/hero/after-1200.webp"
   },
-  "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAADwBACdASoYABIAPtFepE6oJSMiKAqpABoJZwDH5BEBQxDcvCrdG+SfftDey4Ri0oAA/uQFAFJR/Lck6hJ+CW+RvUFe14btsq5QOXUsc7PV+RVm+mqZn2PCxI8hM2KrPCVPaMjqPyiFolw0AAA="
+  "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPtFepU8oJSMiKAqpABoJZwDH5BEBQxDYtgNuB3PGOeRtqzKN/gAA/uQFAFKxvYDUAp+uH8mbFr6Hz32Xp0XA7BQnDHjtoqEwYLaNLPYlijbYQmhIXR2c0el8INRswAAA"
  },
  "bytes": {
   "before.avif": 175405,
   "before-1200.avif": 103865,
   "before.webp": 158852,
   "before-1200.webp": 97500,
-  "after.avif": 126032,
-  "after-1200.avif": 80866,
-  "after.webp": 112522,
-  "after-1200.webp": 72236
+  "after.avif": 126020,
+  "after-1200.avif": 80857,
+  "after.webp": 112378,
+  "after-1200.webp": 72280
  },
  "frame": {
   "nucleus_xy": [
    826,
-   729
+   730
   ],
   "box": [
    0,

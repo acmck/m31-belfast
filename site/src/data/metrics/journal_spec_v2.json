@@ -153,13 +153,35 @@
    "stack": "data/M31_2026-11-13/stack/result.fit"
   },
   "comb_1113": {
-   "label": "Four nights, 13 Nov",
+   "label": "Four nights, 14 Nov",
    "nights": [
     "2026-09-07",
     "2026-09-25",
     "2026-10-16",
     "2026-11-13"
    ],
+   "image": "data/M31_combined_2026-11-13/snap_20261114/final.png",
+   "linear": "data/M31_combined_2026-11-13/final/03_cc.fit",
+   "stack": "data/M31_combined_2026-11-13/stack/result.fit",
+   "extra": [
+    "m110"
+   ],
+   "starless": "data/M31_combined_2026-11-13/snap_20261114/05_starless.fits",
+   "denoised": "data/M31_combined_2026-11-13/snap_20261114/04_dn.fits"
+  },
+  "comb_1113_m110": {
+   "label": "Four nights, 15 Nov",
+   "nights": [
+    "2026-09-07",
+    "2026-09-25",
+    "2026-10-16",
+    "2026-11-13"
+   ],
+   "extra": [
+    "m110"
+   ],
+   "starless": "data/M31_combined_2026-11-13/final/05_starless.fits",
+   "denoised": "data/M31_combined_2026-11-13/final/04_dn.fits",
    "image": "data/M31_combined_2026-11-13/final/final.png",
    "linear": "data/M31_combined_2026-11-13/final/03_cc.fit",
    "stack": "data/M31_combined_2026-11-13/stack/result.fit"
@@ -250,6 +272,17 @@
      "text": "On its own, 13/14 Nov kept {note.frames} frames over {note.minutes:.0f} minutes: SNR {note.snr_headline}, stars {note.fwhm_arcsec}″."
     }
    ]
+  },
+  {
+   "id": "t6-companions",
+   "date": "2026-11-15",
+   "title": "M110 gets its core back",
+   "kind": "processing",
+   "provenance": "today's pipeline, 15 Nov (commit 64d0ebb)",
+   "before": "comb_1113",
+   "after": "comb_1113_m110",
+   "what_changed": "Star removal had been treating the core of M110, the companion galaxy above M31, as a star. I gave companion galaxies the protection M31's nucleus already had, and stopped a bright star at the edge of the frame being mistaken for the nucleus.",
+   "what_it_did": "M110's centre had kept {before[m110][core_kept_pct]} % of its light, and the brightness beside it dipped {before[m110][dip_pct]} %. It now keeps {after[m110][core_kept_pct]} % and the dip is {after[m110][dip_pct]} %. SNR and star size are the same, because the stack is the same."
   }
  ],
  "stages": [
@@ -315,8 +348,8 @@
  ],
  "hero": {
   "before": "scope_0907",
-  "after": "comb_1113",
-  "after_step_id": "t5-four-nights",
+  "after": "comb_1113_m110",
+  "after_step_id": "t6-companions",
   "before_label": "First light",
   "after_label": "Latest: four nights"
  },

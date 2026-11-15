@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-14T23:50:13Z",
+ "generated": "2026-11-15T00:26:48Z",
  "nights": [
   {
    "id": "2026-09-07",
@@ -516,7 +516,13 @@
   },
   {
    "step_id": "t5-four-nights",
-   "label": "Four nights, 13 Nov",
+   "label": "Four nights, 14 Nov",
+   "minutes": 406,
+   "snr": 26.54
+  },
+  {
+   "step_id": "t6-companions",
+   "label": "Four nights, 15 Nov",
    "minutes": 406,
    "snr": 26.54
   }
@@ -891,7 +897,7 @@
     "snr_headline": 23.37
    },
    "after": {
-    "label": "Four nights, 13 Nov",
+    "label": "Four nights, 14 Nov",
     "frames": 2436,
     "minutes": 406,
     "fwhm_arcsec": 11.6,
@@ -955,6 +961,77 @@
      }
     }
    ]
+  },
+  {
+   "id": "t6-companions",
+   "index": 6,
+   "date": "2026-11-15",
+   "title": "M110 gets its core back",
+   "kind": "processing",
+   "provenance": "today's pipeline, 15 Nov (commit 64d0ebb)",
+   "before": {
+    "label": "Four nights, 14 Nov",
+    "frames": 2436,
+    "minutes": 406,
+    "fwhm_arcsec": 11.6,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 56.84,
+     "major 40′ NE": 20.33,
+     "major 20′ SW": 49.4,
+     "major 40′ SW": 32.65,
+     "minor 10′ SE": 43.62,
+     "minor 20′ SE": 1.9,
+     "minor 10′ NW": 20.43,
+     "minor 20′ NW": 2.43
+    },
+    "snr_headline": 26.54
+   },
+   "after": {
+    "label": "Four nights, 15 Nov",
+    "frames": 2436,
+    "minutes": 406,
+    "fwhm_arcsec": 11.6,
+    "sky": "dark + moon 99 %",
+    "snr": {
+     "major 20′ NE": 56.84,
+     "major 40′ NE": 20.33,
+     "major 20′ SW": 49.4,
+     "major 40′ SW": 32.65,
+     "minor 10′ SE": 43.62,
+     "minor 20′ SE": 1.9,
+     "minor 10′ NW": 20.43,
+     "minor 20′ NW": 2.43
+    },
+    "snr_headline": 26.54
+   },
+   "images": {
+    "before": {
+     "avif": "/img/t6-companions/before.avif",
+     "webp": "/img/t6-companions/before.webp",
+     "avif_1200": "/img/t6-companions/before-1200.avif",
+     "webp_1200": "/img/t6-companions/before-1200.webp",
+     "width": 1653,
+     "height": 1240
+    },
+    "after": {
+     "avif": "/img/t6-companions/after.avif",
+     "webp": "/img/t6-companions/after.webp",
+     "avif_1200": "/img/t6-companions/after-1200.avif",
+     "webp_1200": "/img/t6-companions/after-1200.webp",
+     "width": 1653,
+     "height": 1240
+    },
+    "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPtFepU8oJSMiKAqpABoJZwDH5BEBQxDYtgNuB3PGOeRtqzKN/gAA/uQFAFKxvYDUAp+uH8mbFr6Hz32Xp0XA7BQnDHjtoqEwYLaNLPYlijbYQmhIXR2c0el8INRswAAA"
+   },
+   "alignment": {
+    "method": "astroalign similarity",
+    "n_stars": 396,
+    "median_residual_px": 0.041
+   },
+   "what_changed": "Star removal had been treating the core of M110, the companion galaxy above M31, as a star. I gave companion galaxies the protection M31's nucleus already had, and stopped a bright star at the edge of the frame being mistaken for the nucleus.",
+   "what_it_did": "M110's centre had kept 58 % of its light, and the brightness beside it dipped 11.1 %. It now keeps 100 % and the dip is 0.0 %. SNR and star size are the same, because the stack is the same.",
+   "side_notes": []
   }
  ],
  "hero": {
@@ -1011,16 +1088,16 @@
     "width": 1653,
     "height": 1240
    },
-   "placeholder": "data:image/webp;base64,UklGRngAAABXRUJQVlA4IGwAAADwBACdASoYABIAPtFepE6oJSMiKAqpABoJZwDH5BEBQxDcvCrdG+SfftDey4Ri0oAA/uQFAFJR/Lck6hJ+CW+RvUFe14btsq5QOXUsc7PV+RVm+mqZn2PCxI8hM2KrPCVPaMjqPyiFolw0AAA="
+   "placeholder": "data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADwBACdASoYABIAPtFepU8oJSMiKAqpABoJZwDH5BEBQxDYtgNuB3PGOeRtqzKN/gAA/uQFAFKxvYDUAp+uH8mbFr6Hz32Xp0XA7BQnDHjtoqEwYLaNLPYlijbYQmhIXR2c0el8INRswAAA"
   },
   "alignment": {
    "method": "astroalign similarity",
    "n_stars": 366,
    "median_residual_px": 0.177
   },
-  "after_step_id": "t5-four-nights"
+  "after_step_id": "t6-companions"
  },
  "method": {
-  "snr": "(per render, written to site/src/data/metrics/renders/<id>.json):\n  SNR at fixed M31 positions.  The image's own plate solution (WCS) places eight points at fixed offsets from\n  M31's nucleus (RA 00h42m44.3s, Dec +41d16m07s) along the major axis (PA 38 deg: 20' and 40' each way) and the\n  minor axis (10' and 20' each way), clear of M32 and NGC 205.  Binned 4x4 (14.7\"; removes the different\n  pixel-to-pixel correlation of drizzle and of the scope's own debayering), per channel: a plane is fitted to sky\n  pixels and subtracted; signal = median within 1.2' of each point; noise = 1.4826 x MAD of the sky after a 9-px\n  median high-pass.  The three channel SNRs are added in quadrature (the SNR of the optimally weighted channel\n  sum), which makes the figure independent of colour-calibration factors.  Headline = median of the eight points.\n  FWHM, sky noise, frame count and minutes: scripts/measure_stack.py on the linear stack, and its FITS header.\n  ring (stage 03): radial profile of the starless linear image around the nucleus; ring depth = the largest dip\n  of the profile below the brightest point further out, in % of that point.\n  color (stage 05): per-channel signal at the eight points; disk colour as R/G and B/G ratios."
+  "snr": "(per render, written to site/src/data/metrics/renders/<id>.json):\n  SNR at fixed M31 positions.  The image's own plate solution (WCS) places eight points at fixed offsets from\n  M31's nucleus (RA 00h42m44.3s, Dec +41d16m07s) along the major axis (PA 38 deg: 20' and 40' each way) and the\n  minor axis (10' and 20' each way), clear of M32 and NGC 205.  Binned 4x4 (14.7\"; removes the different\n  pixel-to-pixel correlation of drizzle and of the scope's own debayering), per channel: a plane is fitted to sky\n  pixels and subtracted; signal = median within 1.2' of each point; noise = 1.4826 x MAD of the sky after a 9-px\n  median high-pass.  The three channel SNRs are added in quadrature (the SNR of the optimally weighted channel\n  sum), which makes the figure independent of colour-calibration factors.  Headline = median of the eight points.\n  FWHM, sky noise, frame count and minutes: scripts/measure_stack.py on the linear stack, and its FITS header.\n  ring (stage 03): radial profile of the starless linear image around the nucleus; ring depth = the largest dip\n  of the profile below the brightest point further out, in % of that point.\n  color (stage 05): per-channel signal at the eight points; disk colour as R/G and B/G ratios.\n  m110 (needs `starless` and `denoised` in the render): the share of the light at M110's centre that survives\n  star removal, and the deepest dip in the starless radial profile around it."
  }
 }
