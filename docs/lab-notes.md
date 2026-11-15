@@ -67,6 +67,23 @@ scriptable download, non-commercial license); GraXpert 3.0.2 has no star removal
   smoothed sky noise). Calibrated so Sep 7's mask is unchanged.
 - Judge ring fixes with a radial profile around the WCS position of the nucleus; the globally brightest
   spot can be an edge star.
+- **M110's dumbbell and the edge star (2026-11-15).** The mask is scaled to M31's nucleus, and M110's core is
+  under 3 % of it, so M110 had no protection: the network removed 19-38 % of its smooth light (half of the
+  light at its centre on the four-night stack) and left dark lobes either side of the core, a 10.7 % dip.
+  Separately, on three of six stacks (25/26 Sep, the three- and four-night combines) the "nucleus" was a
+  bright star cut by the left frame edge, so the mask was scaled to the star: 48-50 k px above 0.5 against
+  60-68 k px on the other nights.
+  Both are settled by one measure, concentration = (12 px-smoothed peak) / (40 px-smoothed peak) above a
+  local annulus background. On the six stacks: M31's nucleus 3.39-3.42, M110 3.19-3.23, M32 7.6, single
+  stars 8-11.3, blended star groups 4.8-6.6. The nucleus is now the brightest core with concentration
+  <= 4.5. Any other such core at least 10x the smoothed sky noise gets its own mask (the same 3-9 % levels,
+  relative to its own brightness above its surroundings), but only if the network removed less than 0.7 of
+  it: the other low-concentration candidates (two per stack, at most) had 0.90-1.07 removed, which marks
+  them as tight groups of stars. On all six stacks this protects M110 and nothing else; where the nucleus
+  was already right its mask is unchanged. Four-night stack: M110's centre keeps 100 % (was 51 %), no dip,
+  ring depth round M31's nucleus 0.83 % (was 0.76 %). `--no-companions` gives the old behaviour.
+  M32 is too star-like for this (7.6): about a fifth of its centre survives star removal, as before, and
+  the rest returns with the star layer.
 
 ## Stacking several nights
 

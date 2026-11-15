@@ -9,7 +9,8 @@ Reproduces the Cosmic Clarity pre/post-processing:
   * soft-ramp stitching, inverse stretch, border removed
   * stars-only layer by "unscreen":  stars = (orig - starless) / (1 - starless)
   * runs the network per channel (mono mode) to avoid its colour bias; bright extended cores
-    (galaxy nuclei) are protected because the network mistakes them for stars
+    (the galaxy's nucleus, and the core of any companion galaxy) are protected because the network
+    mistakes them for stars
 
 Writes <out>_starless.fits and <out>_stars.fits (same dtype range as input, 3xHxW float32).
 Recombine with a screen blend:  orig = 1 - (1 - starless) * (1 - stars)   (stretch.py --stars does this).
@@ -114,11 +115,73 @@ PROTECT_REL_LO = 0.03     # protection starts where the galaxy is 3 % of the nuc
 PROTECT_REL_RAMP = 0.06   # ...and is full at 9 %
 NUCLEUS_SIGMA = 40.0      # heavy smoothing used only to locate the nucleus (stars wash out, the core does not)
 NUCLEUS_MIN_SNR = 20.0    # skip protection if no extended peak stands this far above the smoothed sky noise
+# Extended cores.  A core is "extended" by its concentration: (12 px-smoothed peak) / (40 px-smoothed peak),
+# both above the local background (the median of an annulus round it).  A point source gives (40/12)^2 = 11;
+# the wider the object, the closer to 1.  Measured on six stacks (four single nights, the three- and
+# four-night combines): M31's nucleus 3.39-3.42, M110's core 3.19-3.23, M32 7.6, single stars 8-11.3,
+# blended star groups 4.8-6.6.
+#
+# Two uses:
+#   * The nucleus is the brightest EXTENDED core.  The brightest 40 px-smoothed peak alone was wrong on three
+#     of the six stacks: a bright star cut by the left frame edge out-shone the nucleus (reflection at the
+#     edge doubles it), so the mask was scaled to the star and came out smaller than calibrated.
+#   * Companions.  The mask is scaled to the nucleus, so a fainter galaxy in the field gets none: M110's core
+#     is under 3 % of M31's, and the network removed 19-38 % of its smooth light as if it were a star,
+#     leaving dark lobes either side of the core.  Any other extended core therefore gets its own mask, with
+#     the same two levels taken relative to its own brightness above its surroundings - but only if the
+#     network left most of it in place.  The other low-concentration candidates in these stacks (0.90-1.07
+#     of their light removed) are tight groups of stars, which the network is right to remove.
+CORE_MAX_CONC = 4.5               # more concentrated than this is a star, a star group or a near-stellar core
+CORE_SEP = 60                     # px: a candidate is the highest 40 px-smoothed value within this distance
+CORE_BG_IN, CORE_BG_OUT = 120, 160   # px: annulus that gives a candidate's local background
+COMPANION_MIN_SNR = 10.0          # companion core must stand this far above the smoothed sky noise (M110: 16-23)
+COMPANION_MAX_REMOVED = 0.7       # ...and the network must have removed less than this fraction of it (M110: 0.19-0.38)
 
 
-def relative_protect_mask(lin_hwc, lo=PROTECT_REL_LO, ramp=PROTECT_REL_RAMP, sigma=PROTECT_SIGMA):
+def find_cores(s12, s40, noise):
+    """Candidate cores: local maxima of the 40 px-smoothed image with room for a background annulus.
+    Each is a dict: cy, cx (the 40 px-smoothed peak), py, px (the 12 px-smoothed peak within 20 px of it),
+    bg (local background), a12 and a40 (the two smoothed peaks above bg), conc = a12 / a40."""
+    from scipy.ndimage import maximum_filter
+    H, W = s12.shape
+    R = CORE_BG_OUT
+    yy, xx = np.mgrid[-R:R + 1, -R:R + 1]
+    rr = np.hypot(yy, xx)
+    ring = (rr >= CORE_BG_IN) & (rr <= CORE_BG_OUT)
+    peaks = (s40 == maximum_filter(s40, size=2 * CORE_SEP + 1))
+    cores = []
+    for cy, cx in zip(*np.nonzero(peaks)):
+        if min(cy, cx, H - 1 - cy, W - 1 - cx) < R + 20:
+            continue
+        win = s12[cy - 20:cy + 21, cx - 20:cx + 21]
+        dy, dx = np.unravel_index(int(np.argmax(win)), win.shape)
+        py, px = int(cy - 20 + dy), int(cx - 20 + dx)
+        bg = float(np.median(s12[py - R:py + R + 1, px - R:px + R + 1][ring]))
+        a12 = float(s12[py, px]) - bg
+        a40 = float(s40[py, px]) - bg
+        if a12 <= 0 or a40 <= 0:
+            continue
+        cores.append(dict(cy=int(cy), cx=int(cx), py=py, px=px, bg=bg, a12=a12, a40=a40, conc=a12 / a40))
+    return cores
+
+
+def companion_mask(s12, core, lo, ramp):
+    """Raw mask for one companion core: the nucleus's two levels, relative to this core's own brightness above
+    its local background, rolled off to zero before the background annulus."""
+    R = CORE_BG_OUT
+    yy, xx = np.mgrid[-R:R + 1, -R:R + 1]
+    rr = np.hypot(yy, xx)
+    # full weight out to 60 % of the annulus's inner radius, then a cosine roll-off to zero at that radius
+    taper = np.clip((CORE_BG_IN - rr) / (0.4 * CORE_BG_IN), 0, 1)
+    taper = 0.5 - 0.5 * np.cos(np.pi * taper)
+    sl = (slice(core["py"] - R, core["py"] + R + 1), slice(core["px"] - R, core["px"] + R + 1))
+    return sl, np.clip(((s12[sl] - core["bg"]) / core["a12"] - lo) / ramp, 0, 1) * taper
+
+
+def relative_protect_mask(lin_hwc, removed=None, lo=PROTECT_REL_LO, ramp=PROTECT_REL_RAMP, sigma=PROTECT_SIGMA):
     """Protection mask (H, W) in 0..1 from the linear image, independent of sky brightness and stretch.
-    Returns (mask, info) where info describes the nucleus found (or why protection was skipped)."""
+    removed: (H, W) luminance the network took out (linear, >= 0); needed to protect companion cores, and
+    None switches that off.  Returns (mask, info) where info describes what was protected (or why not)."""
     from scipy.ndimage import gaussian_filter
     lum = lin_hwc.mean(-1).astype(np.float64)
     s12 = gaussian_filter(lum, 12)
@@ -126,17 +189,41 @@ def relative_protect_mask(lin_hwc, lo=PROTECT_REL_LO, ramp=PROTECT_REL_RAMP, sig
     noise = 1.4826 * float(np.median(np.abs(s12 - sky))) + 1e-12
     s40 = gaussian_filter(lum, NUCLEUS_SIGMA)
     iy, ix = np.unravel_index(int(np.argmax(s40)), s40.shape)
+    cores = find_cores(s12, s40, noise)
+    extended = sorted((c for c in cores if c["conc"] <= CORE_MAX_CONC), key=lambda c: -c["a12"])
+    notes = []
+    main = next((c for c in extended if (c["cy"], c["cx"]) == (iy, ix)), None)
+    if main is None and extended and extended[0]["a12"] >= NUCLEUS_MIN_SNR * noise:
+        main = extended[0]
+        notes.append(f"the brightest smoothed peak, at (row {iy}, col {ix}), is star-like or cut by the frame edge; "
+                     f"using the brightest extended core instead (concentration {main['conc']:.2f})")
+        iy, ix = main["cy"], main["cx"]
     norm = float(s12[iy, ix]) - sky
     if norm < NUCLEUS_MIN_SNR * noise:
         return np.zeros(lum.shape, np.float32), f"no extended core (peak {norm / noise:.1f}x smoothed sky noise < {NUCLEUS_MIN_SNR:g}); protection off"
     m = np.clip(((s12 - sky) / norm - lo) / ramp, 0, 1)
+    if removed is not None:
+        r12 = gaussian_filter(np.clip(removed, 0, None).astype(np.float64), 12)
+        for c in extended:
+            if c is main or c["a12"] < COMPANION_MIN_SNR * noise or m[c["py"], c["px"]] >= 1:   # already fully inside the nucleus's mask
+                continue
+            frac = float(r12[c["py"], c["px"]]) / c["a12"]
+            what = (f"extended core at (row {c['py']}, col {c['px']}): {c['a12'] / noise:.0f}x noise, "
+                    f"concentration {c['conc']:.2f}, network removed {frac:.2f} of it")
+            if frac >= COMPANION_MAX_REMOVED:
+                notes.append(what + " - a group of stars, left alone")
+                continue
+            sl, mi = companion_mask(s12, c, lo, ramp)
+            m[sl] = np.maximum(m[sl], mi)
+            notes.append(what + " - companion galaxy, protected")
     m = gaussian_filter(m, sigma).astype(np.float32)
-    return m, f"nucleus at (row {iy}, col {ix}), {norm / noise:.0f}x smoothed sky noise; mask >0.5 over {int((m > 0.5).sum())} px"
+    info = f"nucleus at (row {iy}, col {ix}), {norm / noise:.0f}x smoothed sky noise; mask >0.5 over {int((m > 0.5).sum())} px"
+    return m, "".join([info] + [f"\n    {n}" for n in notes])
 
 
 def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True, protect=0.45, mode="mono",
            protect_sigma=PROTECT_SIGMA, protect_ramp=PROTECT_RAMP, protect_flux_ramp=PROTECT_FLUX_RAMP,
-           require_removed=False, protect_mode="relative"):
+           require_removed=False, protect_mode="relative", companions=True):
     """rgb_chw: (3,H,W) float32 in 0..1. Returns (starless, stars) both (3,H,W).
     mode:    "mono" runs the network on each channel separately as a grey image (3 passes; no
              cross-channel colour bias, measured residual < 2.5 % per channel) - default.
@@ -190,7 +277,12 @@ def destar(rgb_chw, session, strength=1.0, norm="mtf", bg_match=False, bgr=True,
         # measures brightness above sky as a fraction of the nucleus in the linear input instead.
         from scipy.ndimage import gaussian_filter
         if protect_mode == "relative":
-            m, info = relative_protect_mask(bordered, sigma=protect_sigma)
+            removed = None
+            if companions:
+                # what the network took out, in the linear domain the mask is measured in
+                lin_starless = mtf_undo(starless, m0, mn0) if linear else starless
+                removed = bordered.mean(-1) - lin_starless.mean(-1)
+            m, info = relative_protect_mask(bordered, removed=removed, sigma=protect_sigma)
             print(f"  core protection (relative): {info}", flush=True)
             m = m[..., None]
         else:
@@ -296,6 +388,8 @@ def main():
                     help="skip the residual-star cleanup pass (stars the network missed near a bright core)")
     ap.add_argument("--cleanup-sigma", type=float, default=10.0, help="detection threshold for residual stars, in background sigma")
     ap.add_argument("--protect", type=float, default=0.45, help="restore bright, extended structures the network removed (galaxy cores); 0 = off. In --protect-mode stretched this is the threshold on 12 px-smoothed stretched luminance")
+    ap.add_argument("--no-companions", action="store_true",
+                    help="protect only the main nucleus, not other extended cores (M110 next to M31); see the module constants")
     ap.add_argument("--protect-mode", choices=["relative", "stretched"], default="relative",
                     help="relative (default): protect where the linear image is >3-9 %% of the nucleus brightness above sky - independent of sky brightness; stretched: the old absolute threshold --protect on the stretched image (fails under moonlight)")
     a = ap.parse_args()
@@ -314,7 +408,8 @@ def main():
     d /= scale
     t0 = time.time()
     starless, stars = destar(d, sess, a.strength, a.norm, a.bg_match, not a.rgb_order, a.protect, a.mode,
-                              require_removed=a.require_removed, protect_mode=a.protect_mode)
+                              require_removed=a.require_removed, protect_mode=a.protect_mode,
+                              companions=not a.no_companions)
     if not a.no_cleanup:
         starless, n = remove_residual_points(starless, k_sigma=a.cleanup_sigma)
         print(f"  residual-star cleanup: {n} leftover point sources filled")
